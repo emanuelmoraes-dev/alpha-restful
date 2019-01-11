@@ -1,0 +1,22 @@
+{
+  "name": "restful-developer",
+  "version": "0.0.1",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "DEBUG=restful-developer:* node main.js"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "es6-promise": "^4.2.5",
+    "express": "~4.16.0",
+    "is-iso-date": "^0.0.1",
+    "mongoose": "^5.4.2",
+    "morgan": "~1.9.0"
+  },
+  "repository": "https://github.com/emanuelmoraes-dev/restful-developer.git",
+  "author": "Emanuel Moraes",
+  "license": "MIT",
+  "private": true
+}
