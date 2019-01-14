@@ -16,7 +16,6 @@ module.exports = class Connector {
 
     onOpen(resolve) {
         this.restful.structDb()
-        this.restful.applyRouters(this.app)
         resolve()
     }
 

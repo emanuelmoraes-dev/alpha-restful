@@ -1,3 +1,4 @@
+const { Restful, Connector, www, Entity } = require('./app')
 const debug = require('debug')('restful-developer:server')
 const express = require('express')
 const path = require('path')
@@ -16,6 +17,10 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', routesIndex)
 
+const restful = new Restful()
+
+restful.applyRouters(app)
+
 app.use(function(err, req, res, next) {
     err.status = err.status || 500
     err.message = err.message || 'Um Erro Inesperado Ocorreu!'
@@ -26,8 +31,5 @@ app.use(function(err, req, res, next) {
     res.status(err.status).send({ message: err.message, messageDev: err.messageDev })
 })
 
-const { Restful, Connector, www, Entity } = require('./app')
-
-const restful = new Restful()
 const connector = new Connector('test', 'localhost', restful, app)
 www(app, connector, debug)
