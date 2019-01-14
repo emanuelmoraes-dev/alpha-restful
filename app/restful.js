@@ -328,7 +328,7 @@ module.exports = class Restful {
             for (let entityName in this.entities) {
                 let entity = this.entities[entityName]
                 entity.schema = new mongoose.Schema(entity.descriptor)
-                entity.model = mongoose.model(entityName, schema)
+                entity.model = mongoose.model(entityName, entity.schema)
 
                 if (this.isLocale) {
                     let find = entity.model.find.bind(entity.model)
