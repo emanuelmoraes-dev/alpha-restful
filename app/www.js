@@ -4,7 +4,6 @@
  * Module dependencies.
  */
 
-const debug = require('debug')('restful-developer:server')
 const http = require('http')
 
 /**
@@ -61,7 +60,7 @@ function onError(reject, port, error) {
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening(resolve, server) {
+function onListening(resolve, server, debug) {
 	var addr = server.address();
 	var bind = typeof addr === 'string'
 		? 'pipe ' + addr
@@ -70,7 +69,7 @@ function onListening(resolve, server) {
 	resolve()
 }
 
-module.exports = async function start(app, connector) {
+module.exports = async function start(app, connector, debug) {
 	/**
 	 * Get port from environment and store in Express.
 	 */
@@ -93,6 +92,6 @@ module.exports = async function start(app, connector) {
 
 		server.listen(port)
 		server.on('error', onError.bind(null, reject, port))
-		server.on('listening', onListening.bind(null, resolve, server))
+		server.on('listening', onListening.bind(null, resolve, server, debug))
 	}))
 }

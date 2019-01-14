@@ -1,3 +1,4 @@
+const debug = require('debug')('restful-developer:server')
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
@@ -29,4 +30,4 @@ const { Restful, Connector, www, Entity } = require('./app')
 
 const restful = new Restful()
 const connector = new Connector('test', 'localhost', restful, app)
-www(app, connector)
+www(app, connector, debug)

@@ -28,7 +28,7 @@ module.exports = class Entity {
 
     applyRouters (app, restful) {
         if (this.methods.indexOf('get')+1) {
-            app.get(`/${this.resource}/:id`, this.findOneRouter())
+            app.get(`/${this.resource}/:id`, this.findOneRouter(restful))
             app.get(`/${this.resource}`, this.getRouter(restful))
         }
 
@@ -45,7 +45,7 @@ module.exports = class Entity {
             app.post(`/${this.resource}/:id`, this.patchRouter(restful))
     }
 
-    findOneRouter () {
+    findOneRouter (restful) {
         let that = this
         return execAsync(true,
             this.beforeGet.bind(this),
