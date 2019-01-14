@@ -346,7 +346,7 @@ module.exports = class Restful {
     applyRouters (app) {
         for (let entityName in this.entities) {
             let entity = this.entities[entityName]
-            entity.applyRouters(app)
+            entity.applyRouters(app, this)
         }
     }
 }
