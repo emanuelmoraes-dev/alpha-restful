@@ -1,7 +1,7 @@
 module.exports = {
     internalError(err) {
         if (!err.messageClient && (!err.status || err.status >= 500))
-            return Object.assign(err, { status: 500, message: err.message, 
+            return Object.assign(err, { status: err.status || 500, message: err.message, 
                 messageClient: 'Erro Interno! Por Favor, Contatar seu Suporte!' })
         return err
     },

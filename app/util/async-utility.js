@@ -28,7 +28,7 @@ exports.execAsync = function () {
                     }
                 })
                 .catch(err => { 
-                    next({ status: err.status, message: err.message, messageDev: err.messageDev })
+                    next(internalError(err))
                 })
         })
     } catch (err) {
