@@ -12,6 +12,8 @@ module.exports = class Restful {
             locale
         })
 
+        this.entities = {}
+
         for (let entityName in entities) {
             let entity = entities[entityName]
             this.add(entity)
