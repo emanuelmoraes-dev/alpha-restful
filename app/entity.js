@@ -28,21 +28,21 @@ module.exports = class Entity {
 
     applyRouters (app, restful) {
         if (this.methods.indexOf('get')+1) {
-            app.get(`/${resource}/:id`, this.findOneRouter())
-            app.get(`/${resource}`, this.getRouter(restful))
+            app.get(`/${this.resource}/:id`, this.findOneRouter())
+            app.get(`/${this.resource}`, this.getRouter(restful))
         }
 
         if (this.methods.indexOf('post')+1)
-            app.post(`/${resource}`, this.postRouter(restful))
+            app.post(`/${this.resource}`, this.postRouter(restful))
 
         if (this.methods.indexOf('put')+1)
-            app.post(`/${resource}/:id`, this.putRouter(restful))
+            app.post(`/${this.resource}/:id`, this.putRouter(restful))
         
         if (this.methods.indexOf('delete')+1)
-            app.post(`/${resource}/:id`, this.deleteRouter(restful))
+            app.post(`/${this.resource}/:id`, this.deleteRouter(restful))
 
         if (this.methods.indexOf('patch')+1)
-            app.post(`/${resource}/:id`, this.patchRouter(restful))
+            app.post(`/${this.resource}/:id`, this.patchRouter(restful))
     }
 
     findOneRouter () {
