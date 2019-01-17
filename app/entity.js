@@ -155,7 +155,7 @@ module.exports = class Entity {
         return execAsync(
             this.beforePut.bind(this),
             async function (req, res, next) {
-                const id = req.body._id
+                const id = req.params.id
                 
                 let content = await that.model.findOne({ _id: id }).exec()
                 
