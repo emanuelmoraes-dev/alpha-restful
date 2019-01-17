@@ -47,7 +47,7 @@ module.exports = class Entity {
 
     findOneRouter (restful) {
         let that = this
-        return execAsync(true,
+        return execAsync(
             this.beforeGet.bind(this),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
@@ -65,7 +65,7 @@ module.exports = class Entity {
         if (this.methods.indexOf('get') === -1)
             return
 
-        return execAsync(true,
+        return execAsync(
             this.beforeGet.bind(this),
             this.query(restful),
             this.afterGetFill(restful),
@@ -82,7 +82,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(true,
+        return execAsync(
             this.beforePost.bind(this),
             async function (req, res, next) {
                 const entity = new that.model(req.body)
@@ -101,7 +101,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(true,
+        return execAsync(
             this.beforePut.bind(this),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
@@ -129,7 +129,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(true,
+        return execAsync(
             this.beforeDeleteSync(restful),
             this.beforeDelete.bind(this),
             async function (req, res, next) {
@@ -152,7 +152,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(true,
+        return execAsync(
             this.beforePut.bind(this),
             async function (req, res, next) {
                 const id = req.bpdy._id
