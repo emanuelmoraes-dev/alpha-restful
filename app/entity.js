@@ -56,7 +56,7 @@ module.exports = class Entity {
             this.afterGetProjections(),
             this.afterGet.bind(this),
             async function (req, res, next) {
-                res.status(200).send(req._content_)
+                res.status(200).send(res._content_)
             }
         )
     }
@@ -72,7 +72,7 @@ module.exports = class Entity {
             this.afterGetProjections(),
             this.afterGet.bind(this),
             async function (req, res, next) {
-                res.status(200).send(req._content_)
+                res.status(200).send(res._content_)
             }
         )
     }
@@ -91,7 +91,7 @@ module.exports = class Entity {
             },
             this.beforePost.bind(this),
             async function (req, res, next) {
-                res.status(201).send(req._content_)
+                res.status(201).send(res._content_)
             }
         )
     }
@@ -119,7 +119,7 @@ module.exports = class Entity {
             },
             this.afterPut.bind(this),
             async function (req, res, next) {
-                res.status(200).send(req._content_)
+                res.status(200).send(res._content_)
             }
         )
     }
@@ -183,7 +183,7 @@ module.exports = class Entity {
             },
             this.afterPut.bind(this),
             async function (req, res, next) {
-                res.status(200).send(req._content_)
+                res.status(200).send(res._content_)
             }
         )
     }
