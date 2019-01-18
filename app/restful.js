@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const { internalError } = require('./util/exception-utility')
+const { copyEntity } = require('./util/db-utility')
 
 module.exports = class Restful {
     constructor ({
@@ -91,7 +92,7 @@ module.exports = class Restful {
             if (select)
                 find = find.select(select)
 
-            return await find.exec()
+            return copyEntity(await find.exec())
         }
     }
 
@@ -185,6 +186,7 @@ module.exports = class Restful {
                     if (options.name) {
                         subEntity = this.entities[options.name]
                         subEntities = await subEntity.findByIds(ids)
+                        subEntities = copyEntity(subEntities)
                     }
 
                     let recursive = rec
@@ -204,17 +206,18 @@ module.exports = class Restful {
                         if (options.sync)
                             value[index] = await this.fill(v, options.sync, recursive)
 
-                    for (let [v, index] of enumerate(value))
+                    for (let [v, index] of enumerate(value)) {
                         value[index] = {
                             ...(subEntities && subEntities[index] || {}),
                             ...v,
                             $init: undefined
                         }
+                    }
                 }
 
                 if (!originalIsArray)
                     value = value[0]
-                
+
                 data[attr] = value
             }
 

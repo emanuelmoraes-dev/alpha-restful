@@ -52,6 +52,7 @@ module.exports = class Entity {
             this.beforeGet.bind(this),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
+                res._content_ = copyEntity(res._content_)
             }, 
             this.afterGetFill(restful),
             this.afterGetProjections(),
