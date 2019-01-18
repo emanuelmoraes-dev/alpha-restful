@@ -1,6 +1,6 @@
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { execAsync } = require('./util/async-utility')
-const { copyEntity } = requrie('./util/db-utility')
+const { copyEntity } = require('./util/db-utility')
 
 module.exports = class Entity {
     constructor ({
