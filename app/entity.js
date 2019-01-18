@@ -1,5 +1,6 @@
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { execAsync } = require('./util/async-utility')
+const { copyEntity } = requrie('./util/dbUtility')
 
 module.exports = class Entity {
     constructor ({
@@ -159,8 +160,7 @@ module.exports = class Entity {
                 
                 let content = await that.model.findOne({ _id: id }).exec()
                 
-                if (content._doc)
-                    content = content._doc
+                content = copyEntity(content)
                 
                 content = {
                     ...content,
@@ -221,8 +221,7 @@ module.exports = class Entity {
                     _id: id
                 }).exec()
 
-                if (d._doc)
-                    d = { ...d._doc }
+                d = copyEntity(d)
 
                 if (d) data.push(d)
             }
@@ -298,15 +297,11 @@ module.exports = class Entity {
 
             if (content instanceof Array) {
                 for (let [entity, i] of enumerate(content)) {
-                    if (entity._doc)
-                        entity = entity._doc
-                    entity = { ...entity }
+                    entity = copyEntity(entity)
                     content[i] = await this.parseFromProjection(projection, entity)
                 }
             } else {
-                if (content._doc)
-                    content = content._doc
-                content = { ...content }
+                content = copyEntity(content)
                 content = await this.parseFromProjection(projection, content)
             }
 
@@ -322,10 +317,7 @@ module.exports = class Entity {
     }
 
     async deleteCascadeAttrs (id, options, entity) {
-        if (entity._doc)
-            entity = entity._doc
-
-        entity = { ...entity }
+        entity = copyEntity(entity)
 
         for (let descriptor of options.descriptors) {
             let field = descriptor.field
