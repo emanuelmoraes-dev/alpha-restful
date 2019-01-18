@@ -178,7 +178,10 @@ module.exports = class Restful {
 
                 options.rec = options.rec || 0
 
-                if (options.rec > 0 && rec === true || rec > 0 || rec < 0) {
+                if (options.rec > 0 && rec === true || 
+                        options.rec < 0 && rec === true ||
+                        typeof(rec) === 'number' && rec > 0 || 
+                        typeof(rec) === 'number' && rec < 0) {
 
                     let subEntities = []
                     let subEntity = null
