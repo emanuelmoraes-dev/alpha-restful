@@ -289,7 +289,7 @@ module.exports = class Restful {
 
                 let entities = []
 
-                conditions = this.getConditionsBySubEntity(id, options, options=>options.deleteCascade)
+                let conditions = this.getConditionsBySubEntity(id, options, options=>options.deleteCascade)
 
                 if (conditions.length) {
                     entities = await subEntity.model.find({
