@@ -49,19 +49,18 @@ module.exports = class Restful {
         return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync.sync[attr], descriptor[attr], descriptor, attr)
     }
 
-    async query (conditions, targetSync, descriptor, select) {
+    async query (conditions, targetSync, descriptor, select, internalSearch=true) {
         let newFind
 
         if (conditions instanceof Array) {
             newFind=[]
             for (let [value, index] of enumerate(conditions))
-                newFind[index] = await this.query(value, targetSync, descriptor, select)
-            return newFind
+                newFind[index] = await this.query(value, targetSync, descriptor, select, false)
         } else {
             newFind = {}
             for (let key in conditions) {
                 if (key === '$or' || key === '$and') {
-                    newFind[key] = await this.query(conditions[key], targetSync, descriptor, select)
+                    newFind[key] = await this.query(conditions[key], targetSync, descriptor, select, false)
                     continue
                 }
 
@@ -78,6 +77,9 @@ module.exports = class Restful {
                     newFind[`${rt.attrSearch}.id`].$in = newFind[`${rt.attrSearch}.id`].$in.map(e => e._id)
                 }
             }
+
+            if (!internalSearch)
+                return newFind
 
             if (typeof targetSync === 'string')
                 targetSync = { name: targetSync }
@@ -178,9 +180,10 @@ module.exports = class Restful {
                 if (options.rec > 0 && rec === true || rec > 0 || rec < 0) {
 
                     let subEntities = []
+                    let subEntity = null
 
                     if (options.name) {
-                        let subEntity = this.entities[options.name]
+                        subEntity = this.entities[options.name]
                         subEntities = await subEntity.findByIds(ids)
                     }
 
