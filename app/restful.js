@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { internalError } = require('./util/exception-utility')
+const { internalError, IlegallArgumentError } = require('./util/exception-utility')
 const { copyEntity } = require('./util/db-utility')
 
 module.exports = class Restful {
@@ -233,17 +233,20 @@ module.exports = class Restful {
     getConditionsBySubEntity (id, options, cmp=()=>true, path='') {
         try {
             let conditions = []
-            
-            if (cmp(options, id, path)) {
-                conditions = options.descriptors.reduce((rt, descriptor) => {
-                    let condition = {}
-                    if (path)
-                        condition[`${path}${descriptor.field}.id`] = id
-                    else
-                        condition[`${descriptor.field}.id`] = id
-                    return [...rt, condition]
-                }, [])
-            }
+
+            conditions = options.descriptors.reduce((rt, descriptor) => {
+                if (!cmp(descriptor, options, path))
+                    return rt
+
+                let condition = {}
+
+                if (path)
+                    condition[`${path}${descriptor.field}.id`] = id
+                else
+                    condition[`${descriptor.field}.id`] = id
+
+                return [...rt, condition]
+            }, [])
 
             if (options.syncronized) {
                 for (let subAttr in options.syncronized) {
@@ -271,7 +274,7 @@ module.exports = class Restful {
 
                 let count = 0
 
-                let conditions = this.getConditionsBySubEntity(id, options, options=>options.required)
+                let conditions = this.getConditionsBySubEntity(id, options, descriptor=>descriptor.required)
 
                 if (conditions.length) {
                     count = await subEntity.model.count({
@@ -289,7 +292,7 @@ module.exports = class Restful {
 
                 let entities = []
 
-                let conditions = this.getConditionsBySubEntity(id, options, options=>options.deleteCascade)
+                let conditions = this.getConditionsBySubEntity(id, options, descriptor=>descriptor.deleteCascade)
 
                 if (conditions.length) {
                     entities = await subEntity.model.find({
@@ -298,7 +301,7 @@ module.exports = class Restful {
                 }
 
                 for (let entity of entities)
-                    await subEntity.findByIdAndRemove(`${entity.id}`).exec()
+                    await subEntity.model.findByIdAndRemove(`${entity.id}`).exec()
             }
 
             for (let entityName in syncronized) {
