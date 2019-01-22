@@ -96,7 +96,7 @@ module.exports = class Restful {
         }
     }
 
-    syncronized (entityName, field, source, target, nameSyncronized) {
+    syncronized (entityName, target, field, source, nameSyncronized) {
         try {
             if (!target.syncronized)
                 target.syncronized = {}
@@ -109,17 +109,24 @@ module.exports = class Restful {
 
                 nameSyncronized = nameSyncronized.split('.').slice(1).join('.')
 
-                this.syncronized(entityName, field, source, target.syncronized[newNameSyncronized], nameSyncronized)
+                this.syncronized(entityName, target.syncronized[newNameSyncronized], field, source, nameSyncronized)
             } else {
                 if (!target.syncronized[nameSyncronized])
                     target.syncronized[nameSyncronized] = { attrs: [], descriptors: [] }
 
                 target.syncronized[nameSyncronized].attrs.push(field)
 
-                if (typeof source.sync[field] === 'object')
-                    target.syncronized[nameSyncronized].descriptors.push({ ...source.sync[field], field })
-                else
+                if (typeof source.sync[field] === 'object') {
+                    let options = {
+                        ...source.sync[field]
+                    }
+
+                    delete options.sync
+
+                    target.syncronized[nameSyncronized].descriptors.push({ ...options, field })
+                } else {
                     target.syncronized[nameSyncronized].descriptors.push({ name: entityName, field })
+                }
             }
         } catch (err) {
             throw internalError(err)
@@ -129,18 +136,67 @@ module.exports = class Restful {
     sync (source, nameSyncronized) {
         try {
             for (let field in source.sync) {
-                let entityName = source.sync[field]
+                if (field === 'sync') continue
+                
+                let options = source.sync[field]
 
-                if (typeof entityName === 'object')
-                    entityName = entityName.name
-
+                if (typeof options === 'string')
+                    options = { name: options }
+                
+                let entityName = options.name
                 let subEntity = this.entities[entityName]
 
-                this.syncronized(entityName, field, source, subEntity, nameSyncronized)
+                this.syncronized(entityName, subEntity, field, source, nameSyncronized)
 
-                if (source.sync.sync)
-                    this.sync(source.sync, `${nameSyncronized}.${field}`)
+                if (options.sync)
+                    this.sync(options, `${nameSyncronized}.${field}`)
             }
+        } catch (err) {
+            throw internalError(err)
+        }
+    }
+
+    add (entity) {
+        try {
+            this.entities[entity.name] = entity
+            this.sync(entity, entity.name)
+        } catch (err) {
+            throw internalError(err)
+        }
+    }
+
+    ignoreFields (data, sync) {
+        try {
+            if (!data || !sync) return data
+
+            for (let attr in sync) {
+                let options = sync[attr]
+
+                if (typeof options === 'string')
+                    options = { name: options }
+
+                if (!data[attr])
+                    continue
+                
+                if (options.jsonIgnore && data && data.hasOwnProperty(attr)) {
+                    delete data[attr]
+                    continue
+                }
+
+                if (options.sync)
+                    data[attr] = this.ignoreFields(data[attr], options.sync)
+                
+                if (options.name) {
+                    let entityName = options.name
+                    let subEntity = this.entities[entityName]
+                    
+                    if (subEntity.sync) {
+                        data[attr] = this.ignoreFields(data[attr], subEntity.sync, true)
+                    }
+                }
+            }
+
+            return data
         } catch (err) {
             throw internalError(err)
         }
@@ -161,7 +217,7 @@ module.exports = class Restful {
                     continue
                 
                 let value = data[attr]
-
+                
                 if (value instanceof Array && value.length === 0)
                     continue
                 if (!(value instanceof Array) && !value.id)
@@ -178,10 +234,11 @@ module.exports = class Restful {
 
                 options.rec = options.rec || 0
 
-                if (options.rec > 0 && rec === true || 
+                if (!options.jsonIgnore && (options.fill ||
+                        options.rec > 0 && rec === true || 
                         options.rec < 0 && rec === true ||
                         typeof(rec) === 'number' && rec > 0 || 
-                        typeof(rec) === 'number' && rec < 0) {
+                        typeof(rec) === 'number' && rec < 0)) {
 
                     let subEntities = []
                     let subEntity = null
@@ -194,16 +251,13 @@ module.exports = class Restful {
 
                     let recursive = rec
                     
-                    if (rec === true)
+                    if (options.fill)
+                        recursive = true
+                    else if (rec === true)
                         recursive = options.rec-1
                     
                     for (let [se, index] of enumerate(subEntities))
                         subEntities[index] = await this.fill(se, subEntity.sync, recursive)
-
-                    recursive = rec
-
-                    if (rec === true)
-                        recursive = options.rec
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
@@ -230,7 +284,7 @@ module.exports = class Restful {
         }
     }
 
-    getConditionsBySubEntity (id, options, cmp=()=>true, path='') {
+    getConditionsBySyncronizedEntity (id, options, cmp=()=>true, path='') {
         try {
             let conditions = []
 
@@ -251,8 +305,8 @@ module.exports = class Restful {
             if (options.syncronized) {
                 for (let subAttr in options.syncronized) {
                     conditions.push(
-                        ...this.getConditionsBySubEntity(
-                            id, options.syncronized[subAttr], cmp, `${subAttr}.`
+                        ...this.getConditionsBySyncronizedEntity(
+                            id, options.syncronized[subAttr], cmp, `${path || ''}${subAttr}.`
                         )
                     )
                 }
@@ -274,7 +328,7 @@ module.exports = class Restful {
 
                 let count = 0
 
-                let conditions = this.getConditionsBySubEntity(id, options, descriptor=>descriptor.required)
+                let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.required)
 
                 if (conditions.length) {
                     count = await subEntity.model.count({
@@ -292,7 +346,7 @@ module.exports = class Restful {
 
                 let entities = []
 
-                let conditions = this.getConditionsBySubEntity(id, options, descriptor=>descriptor.deleteCascade)
+                let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.deleteCascade)
 
                 if (conditions.length) {
                     entities = await subEntity.model.find({
@@ -308,28 +362,21 @@ module.exports = class Restful {
                 let options = syncronized[entityName]
                 let subEntity = this.entities[entityName]
                 
-                let conditions = this.getConditionsBySubEntity(id, options)
+                let conditions = this.getConditionsBySyncronizedEntity(id, options)
                 
                 if (conditions.length) {
                     let entities = await subEntity.model.find({
                         $or: conditions
                     }).exec()
+                    
+                    entities = copyEntity(entities)
 
                     for (let entity of entities) {
-                        entity = await subEntity.deleteCascadeAttrs(id, options, entity)
+                        entity = subEntity.deleteCascadeAttrs(id, options, entity)
                         await subEntity.model.findByIdAndUpdate(entity._id, entity, { new: true }).exec()
                     }
                 }
             }
-        } catch (err) {
-            throw internalError(err)
-        }
-    }
-
-    add (entity) {
-        try {
-            this.entities[entity.name] = entity
-            this.sync(entity, entity.name)
         } catch (err) {
             throw internalError(err)
         }

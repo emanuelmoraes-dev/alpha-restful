@@ -132,8 +132,8 @@ module.exports = class Entity {
 
         const that = this
         return execAsync(
-            this.beforeDeleteSync(restful),
             this.beforeDelete.bind(this),
+            this.beforeDeleteSync(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
                     that.model.findByIdAndRemove(req.params.id, (err, todo) => {
@@ -189,7 +189,7 @@ module.exports = class Entity {
         )
     }
 
-    query(restful) {
+    query (restful) {
         const that = this
         return async function (req, res, next) {
             let select = null
@@ -201,7 +201,13 @@ module.exports = class Entity {
 
             let newFind = {}
             for (let key in req.query) {
-                if (key.match(/__/)) {
+                if (key.endsWith('__regex')) {
+                    let value = req.query[key]
+                    key = key.split('__regex')[0]
+                    let regexp = value.split('/')
+                    regexp = new RegExp(regexp[1], regexp[2])
+                    newFind[attr] = regexp
+                } else if (key.match(/__/)) {
                     let keyArray = key.split(/__/g)
                     newFind[keyArray[0]] = {}
                     newFind[keyArray[0]][keyArray[1]] = req.query[key]
@@ -244,8 +250,10 @@ module.exports = class Entity {
                     content = [content]
                 }
 
-                for (let { value, index } of enumerate(content))
+                for (let { value, index } of enumerate(content)) {
                     content[index] = await restful.fill(value, that.sync)
+                    content[index] = restful.ignoreFields(value, that.sync)
+                }
 
                 if (!isOriginalArray)
                     res._content_ = content[0]
@@ -317,22 +325,28 @@ module.exports = class Entity {
         }
     }
 
-    async deleteCascadeAttrs (id, options, entity) {
-        entity = copyEntity(entity)
+    deleteCascadeAttrs (subEntityId, options, target) {
 
         for (let descriptor of options.descriptors) {
             let field = descriptor.field
 
-            if (entity[field] === undefined || entity[field] === null)
+            if (target[field] === undefined || target[field] === null)
                 continue
-            if (entity[field] instanceof Array && entity[field].length) {
-                entity[field] = entity[field].filter(it => it.id != id)
+            if (target[field] instanceof Array && target[field].length) {
+                target[field] = target[field].filter(it => it.id != subEntityId)
             } else {
-                entity[field] = entity[field].id == id ? null : entity[field]
+                target[field] = target[field].id == subEntityId ? null : target[field]
             }
         }
 
-        return entity
+        if (options.syncronized) {
+            for (let attr in options.syncronized) {
+                let optionsAttr = options.syncronized[attr]
+                target[attr] = this.deleteCascadeAttrs(subEntityId, optionsAttr, target[attr])
+            }
+        }
+
+        return target
     }
 
     async beforeGet (req, res, next){}
