@@ -15,7 +15,7 @@
     "mongoose": "^5.4.2",
     "morgan": "~1.9.0"
   },
-  "repository": "https://github.com/emanuelmoraes-dev/restful-developer.git",
+  "repository": "https://github.com/emanuelmoraes-dev/alpha-js.git",
   "author": "Emanuel Moraes",
   "license": "MIT",
   "private": true
