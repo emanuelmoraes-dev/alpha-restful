@@ -1,5 +1,6 @@
 const { Connector, www } = require('./app')
 const restful = require('./restful')
+require('./models')
 const debug = require('debug')('restful-developer:server')
 const express = require('express')
 const path = require('path')

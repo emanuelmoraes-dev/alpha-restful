@@ -21,15 +21,15 @@ module.exports = class Restful {
         }
     }
 
-    getAttrSearchValid (attrSearch, targetSync, descriptor, descriptorContext, context='') {
-        if (!descriptorContext)
-            descriptorContext = descriptor
+    getAttrSearchValid (attrSearch, targetSync, descriptor, context='') {
+        if (typeof targetSync === 'string')
+            targetSync = { name: targetSync }
 
         if (!descriptor || typeof descriptor !== 'object')
-            return { sync: targetSync, remaining: attrSearch, attrSearch: context, descriptor: descriptorContext, end: !attrSearch }
+            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch }
 
-        if (!attrSearch || !targetSync.sync)
-            return { sync: targetSync, remaining: attrSearch, attrSearch: context, descriptor: descriptorContext, end: !attrSearch }
+        if (!attrSearch)
+            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch }
 
         let attr, attrSearchArray
 
@@ -41,13 +41,16 @@ module.exports = class Restful {
             attr = attrSearch
         }
 
-        if (!descriptor[attr] || !targetSync.sync[attr])
-            return { sync: targetSync, remaining: attrSearch, attrSearch: context, descriptor: descriptorContext, end: !attrSearch }
+        if (!descriptor[attr])
+            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch }
+
+        if (targetSync.sync && targetSync.sync[attr])
+            targetSync = targetSync.sync[attr]
 
         if (context)
-            return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync.sync[attr], descriptor[attr], descriptor, `${context}.${attr}`)
+            return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], `${context}.${attr}`)
 
-        return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync.sync[attr], descriptor[attr], descriptor, attr)
+        return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], attr)
     }
 
     async query (conditions, targetSync, descriptor, select, internalSearch=true) {
@@ -66,6 +69,14 @@ module.exports = class Restful {
                 }
 
                 let rt = this.getAttrSearchValid(key, targetSync, descriptor)
+
+                if (!rt.targetSync.name && !rt.end)
+                    throw new IlegallArgumentError(`O atributo ${rt.remaining} não existe!`)
+
+                if (!rt.end) {
+                    rt.targetSync = this.entities[rt.targetSync.name]
+                    rt.descriptor = this.entities[rt.targetSync.name].descriptor
+                }
                 
                 if (rt.end) {
                     newFind[key] = conditions[key]
@@ -73,7 +84,7 @@ module.exports = class Restful {
                     let subConditions = {}
                     subConditions[rt.remaining] = conditions[key]
                     newFind[`${rt.attrSearch}.id`] = {
-                        $in: await this.query(subConditions, rt.sync, rt.descriptor, 'id')
+                        $in: await this.query(subConditions, rt.targetSync, rt.descriptor, 'id', true)
                     }
                     newFind[`${rt.attrSearch}.id`].$in = newFind[`${rt.attrSearch}.id`].$in.map(e => e._id)
                 }
