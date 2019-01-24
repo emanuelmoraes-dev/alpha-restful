@@ -165,7 +165,7 @@ module.exports = class Restful {
         }
     }
 
-    ignoreFields (data, sync) {
+    ignoreFields (data, sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity) {
         try {
             if (!data || !sync) return data
 
@@ -183,15 +183,15 @@ module.exports = class Restful {
                     continue
                 }
 
-                if (options.sync)
-                    data[attr] = this.ignoreFields(data[attr], options.sync)
+                if (options.sync && ignoreFieldsRecursive)
+                    data[attr] = this.ignoreFields(data[attr], options.sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity)
                 
                 if (options.name) {
                     let entityName = options.name
                     let subEntity = this.entities[entityName]
                     
-                    if (subEntity.sync) {
-                        data[attr] = this.ignoreFields(data[attr], subEntity.sync, true)
+                    if (subEntity.sync && ignoreFieldsRecursiveSubEntity) {
+                        data[attr] = this.ignoreFields(data[attr], subEntity.sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity)
                     }
                 }
             }
@@ -202,12 +202,16 @@ module.exports = class Restful {
         }
     }
 
-    async fill (data, sync, rec=true) {
+    async fill (data, sync, rec=true, ignoreFillProperties=[]) {
+        let newIgnoreFillProperties = [...ignoreFillProperties]
         try {
             if (!rec || !data || !sync) return data
             if (typeof rec === 'number' && rec > 0) rec--
 
             for (let attr in sync) {
+                if (attr === 'sync') continue
+                if (ignoreFillProperties.indexOf(attr)+1) continue
+
                 let options = sync[attr]
 
                 if (typeof options === 'string')
@@ -215,6 +219,11 @@ module.exports = class Restful {
 
                 if (!data[attr])
                     continue
+
+                if (options.ignoreFillProperties && options.ignoreFillProperties instanceof Array)
+                    newIgnoreFillProperties.push(...options.ignoreFillProperties)
+                else if (options.ignoreFillProperties && typeof options.ignoreFillProperties === 'string')
+                    newIgnoreFillProperties.push(options.ignoreFillProperties)
                 
                 let value = data[attr]
                 
@@ -257,11 +266,11 @@ module.exports = class Restful {
                         recursive = options.rec-1
                     
                     for (let [se, index] of enumerate(subEntities))
-                        subEntities[index] = await this.fill(se, subEntity.sync, recursive)
+                        subEntities[index] = await this.fill(se, subEntity.sync, recursive, newIgnoreFillProperties)
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
-                            value[index] = await this.fill(v, options.sync, recursive)
+                            value[index] = await this.fill(v, options.sync, recursive, newIgnoreFillProperties)
 
                     for (let [v, index] of enumerate(value)) {
                         value[index] = {

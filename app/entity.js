@@ -10,7 +10,9 @@ module.exports = class Entity {
         sync={},
         projections={},
         projectionDefault=null,
-        methods=['get', 'post', 'put', 'delete', 'patch']
+        methods=['get', 'post', 'put', 'delete', 'patch'],
+        ignoreFieldsRecursiveSubEntity=false,
+        ignoreFieldsRecursive=false
     }={}) {
         Object.assign(this, {
             name,
@@ -19,7 +21,9 @@ module.exports = class Entity {
             sync,
             projections,
             projectionDefault,
-            methods
+            methods,
+            ignoreFieldsRecursiveSubEntity,
+            ignoreFieldsRecursive
         })
 
         this.syncronized = {}
@@ -252,7 +256,8 @@ module.exports = class Entity {
 
                 for (let { value, index } of enumerate(content)) {
                     content[index] = await restful.fill(value, that.sync)
-                    content[index] = restful.ignoreFields(value, that.sync)
+                    content[index] = restful.ignoreFields(value, that.sync, 
+                        that.ignoreFieldsRecursive, that.ignoreFieldsRecursiveSubEntity)
                 }
 
                 if (!isOriginalArray)

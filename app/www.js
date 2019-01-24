@@ -69,10 +69,12 @@ function onListening(resolve, server, debug) {
 	resolve()
 }
 
-module.exports = async function start(app, connector, debug) {
+module.exports = async function start(connector, debug) {
 	/**
 	 * Get port from environment and store in Express.
 	 */
+
+	const app = connector.app
 
 	await connector.connect()
 

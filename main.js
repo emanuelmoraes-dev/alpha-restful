@@ -1,4 +1,5 @@
-const { Restful, Connector, www, Entity } = require('./app')
+const { Connector, www } = require('./app')
+const restful = require('./restful')
 const debug = require('debug')('restful-developer:server')
 const express = require('express')
 const path = require('path')
@@ -17,8 +18,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', routesIndex)
 
-const restful = new Restful()
-
 restful.applyRouters(app)
 
 app.use(function(err, req, res, next) {
@@ -32,4 +31,4 @@ app.use(function(err, req, res, next) {
 })
 
 const connector = new Connector('test', 'localhost', restful, app)
-www(app, connector, debug)
+www(connector, debug)
