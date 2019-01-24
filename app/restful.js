@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const { internalError, IlegallArgumentError } = require('./util/exception-utility')
-const { copyEntity } = require('./util/db-utility')
+const { copyEntity, convertType } = require('./util/db-utility')
 
 module.exports = class Restful {
     constructor ({
@@ -21,15 +21,15 @@ module.exports = class Restful {
         }
     }
 
-    getAttrSearchValid (attrSearch, targetSync, descriptor, context='') {
+    getAttrSearchValid (attrSearch, targetSync, descriptor, context='', type) {
         if (typeof targetSync === 'string')
             targetSync = { name: targetSync }
 
         if (!descriptor || typeof descriptor !== 'object')
-            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch }
+            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
 
         if (!attrSearch)
-            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch }
+            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
 
         let attr, attrSearchArray
 
@@ -42,15 +42,17 @@ module.exports = class Restful {
         }
 
         if (!descriptor[attr])
-            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch }
+            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
+
+        type = descriptor[attr]
 
         if (targetSync.sync && targetSync.sync[attr])
             targetSync = targetSync.sync[attr]
 
         if (context)
-            return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], `${context}.${attr}`)
+            return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], `${context}.${attr}`, type)
 
-        return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], attr)
+        return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], attr, type)
     }
 
     async query (conditions, targetSync, descriptor, select, internalSearch=true) {
@@ -79,7 +81,7 @@ module.exports = class Restful {
                 }
                 
                 if (rt.end) {
-                    newFind[key] = conditions[key]
+                    newFind[key] = convertType(rt.type, conditions[key])
                 } else {
                     let subConditions = {}
                     subConditions[rt.remaining] = conditions[key]
