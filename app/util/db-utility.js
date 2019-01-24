@@ -1,3 +1,5 @@
+const isISODate = require('is-iso-date')
+
 module.exports = exports = {
     copyEntity (data) {
         if (!data) return data
@@ -29,7 +31,7 @@ module.exports = exports = {
                 return parseFloat(value)
             else if (type === String)
                 return `${value}`
-            else if (type === Date)
+            else if (type === Date && typeof value === 'string' && isISODate(value))
                 return new Date(value)
             return value
         }
