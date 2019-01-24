@@ -256,7 +256,8 @@ module.exports = class Restful {
 
                 options.rec = options.rec || 0
 
-                if (!options.jsonIgnore && (options.fill ||
+                if (!options.jsonIgnore && options.fill !== false && 
+                        (options.fill ||
                         options.rec > 0 && rec === true || 
                         options.rec < 0 && rec === true ||
                         typeof(rec) === 'number' && rec > 0 || 

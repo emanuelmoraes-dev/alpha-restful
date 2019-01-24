@@ -1,13 +1,11 @@
-const { Connector, www } = require('./app')
+const { Connector, www } = require('../app')
 const restful = require('./restful')
 require('./models')
-const debug = require('debug')('restful-developer:server')
+const debug = require('debug')('alpha-js:server')
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
-
-const routesIndex = require('./routes')
 
 const app = express()
 
@@ -16,8 +14,6 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
-
-app.use('/', routesIndex)
 
 restful.applyRouters(app)
 

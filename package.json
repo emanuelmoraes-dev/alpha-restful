@@ -1,10 +1,10 @@
 {
-  "name": "restful-developer",
+  "name": "alpha-js",
   "version": "0.0.1",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node main.js",
-    "dev": "DEBUG=restful-developer:* node main.js"
+    "start": "node example/main.js",
+    "dev": "DEBUG=alpha-js:* node example/main.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.3",
