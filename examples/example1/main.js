@@ -1,7 +1,7 @@
 const { Connector, www } = require('../../app')
 const restful = require('./restful')
 require('./models')
-const debug = require('debug')('alpha-js:server')
+const debug = require('debug')('alpha-restful:server')
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
