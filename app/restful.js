@@ -230,6 +230,9 @@ module.exports = class Restful {
             if (!rec || !data || !sync) return data
             if (typeof rec === 'number' && rec > 0) rec--
 
+            if (data._id && !data.id)
+                data.id = data._id
+
             for (let attr in sync) {
                 if (attr === 'sync') continue
                 if (ignoreFillProperties.indexOf(attr)+1) continue

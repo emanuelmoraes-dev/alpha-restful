@@ -1,6 +1,6 @@
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { execAsync } = require('./util/async-utility')
-const { copyEntity } = require('./util/db-utility')
+const { copyEntity, prepareEntity, patchUpdate } = require('./util/db-utility')
 
 module.exports = class Entity {
     constructor ({
@@ -91,6 +91,7 @@ module.exports = class Entity {
         return execAsync(
             this.beforePost.bind(this),
             async function (req, res, next) {
+                req.body = prepareEntity(req.body, that.descriptor)
                 const entity = new that.model(req.body)
                 await entity.save()
                 res._content_ = entity
@@ -111,6 +112,8 @@ module.exports = class Entity {
             this.beforePut.bind(this),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
+                    req.body = prepareEntity(req.body, that.descriptor)
+                    req.body._id = req.params.id
                     that.model.findByIdAndUpdate(
                         req.params.id,
                         req.body,
@@ -162,15 +165,13 @@ module.exports = class Entity {
             this.beforePut.bind(this),
             async function (req, res, next) {
                 const id = req.params.id
+                req.body._id = id
                 
                 let content = await that.model.findOne({ _id: id }).exec()
                 
                 content = copyEntity(content)
-                
-                content = {
-                    ...content,
-                    ...req.body
-                }
+                req.body = prepareEntity(req.body, that.descriptor)
+                content = patchUpdate(content, req.body)
 
                 return await new Promise((resolve, reject) => {
                     
@@ -249,12 +250,18 @@ module.exports = class Entity {
                 let content = res._content_
                 let isOriginalArray = true
 
+                if (!content)
+                    return
+
                 if (!(content instanceof Array)) {
                     isOriginalArray = false
                     content = [content]
                 }
 
                 for (let { value, index } of enumerate(content)) {
+                    if (!value)
+                        return
+
                     content[index] = await restful.fill(value, that.sync, value._id)
                     content[index] = restful.ignoreFields(value, that.sync, 
                         that.ignoreFieldsRecursive, that.ignoreFieldsRecursiveSubEntity)
