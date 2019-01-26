@@ -91,7 +91,7 @@ module.exports = class Entity {
         return execAsync(
             this.beforePost.bind(this),
             async function (req, res, next) {
-                req.body = prepareEntity(req.body, that.descriptor)
+                // req.body = prepareEntity(req.body, that.descriptor)
                 const entity = new that.model(req.body)
                 await entity.save()
                 res._content_ = entity
@@ -112,7 +112,7 @@ module.exports = class Entity {
             this.beforePut.bind(this),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
-                    req.body = prepareEntity(req.body, that.descriptor)
+                    // req.body = prepareEntity(req.body, that.descriptor)
                     req.body._id = req.params.id
                     that.model.findByIdAndUpdate(
                         req.params.id,
@@ -170,7 +170,7 @@ module.exports = class Entity {
                 let content = await that.model.findOne({ _id: id }).exec()
                 
                 content = copyEntity(content)
-                req.body = prepareEntity(req.body, that.descriptor)
+                // req.body = prepareEntity(req.body, that.descriptor)
                 content = patchUpdate(content, req.body)
 
                 return await new Promise((resolve, reject) => {
