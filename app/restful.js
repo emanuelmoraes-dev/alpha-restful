@@ -215,7 +215,7 @@ module.exports = class Restful {
         }
     }
 
-    async fill (data, sync, rec=true, ignoreFillProperties=[]) {
+    async fill (data, sync, rec=true, id=null, ignoreFillProperties=[]) {
         let newIgnoreFillProperties = [...ignoreFillProperties]
         try {
             if (!rec || !data || !sync) return data
@@ -230,8 +230,28 @@ module.exports = class Restful {
                 if (typeof options === 'string')
                     options = { name: options }
 
-                if (!data[attr])
+                if (!data[attr] && !options.jsonIgnore && options.syncronized && id) {
+                    let attrSyncronized = options.syncronized
+                    if (attrSyncronized instanceof Array) {
+                        attrSyncronized = attrSyncronized[0]
+                        let subEntity = this.entities[options.name]
+                        let find = {}
+                        find[`${attrSyncronized}.id`] = id
+                        data[attr] = await subEntity.model.find(find).select('_id').exec()
+                        data[attr] = copyEntity(data[attr])
+                        data[attr] = data[attr].map(d => ({ id: d._id }))
+                    } else {
+                        let subEntity = this.entities[options.name]
+                        let find = {}
+                        find[`${attrSyncronized}.id`] = id
+                        data[attr] = await subEntity.model.findOne(find).select('_id').exec()
+                        data[attr] = {
+                            id: copyEntity(data[attr])._id
+                        }
+                    }
+                } else if (!data[attr]) {
                     continue
+                }
 
                 if (options.ignoreFillProperties && options.ignoreFillProperties instanceof Array)
                     newIgnoreFillProperties.push(...options.ignoreFillProperties)
@@ -280,11 +300,11 @@ module.exports = class Restful {
                         recursive = options.rec-1
                     
                     for (let [se, index] of enumerate(subEntities))
-                        subEntities[index] = await this.fill(se, subEntity.sync, recursive, newIgnoreFillProperties)
+                        subEntities[index] = await this.fill(se, subEntity.sync, recursive, se._id, newIgnoreFillProperties)
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
-                            value[index] = await this.fill(v, options.sync, recursive, newIgnoreFillProperties)
+                            value[index] = await this.fill(v, options.sync, recursive, id, newIgnoreFillProperties)
 
                     for (let [v, index] of enumerate(value)) {
                         value[index] = {

@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "start": "node example/main.js",
-    "dev": "DEBUG=alpha-js:* node example/main.js"
+    "start": "node examples/example1/main.js",
+    "dev": "DEBUG=alpha-js:* node examples/example1/main.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.3",

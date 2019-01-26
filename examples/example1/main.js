@@ -1,4 +1,4 @@
-const { Connector, www } = require('../app')
+const { Connector, www } = require('../../app')
 const restful = require('./restful')
 require('./models')
 const debug = require('debug')('alpha-js:server')
