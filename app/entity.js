@@ -255,7 +255,7 @@ module.exports = class Entity {
                 }
 
                 for (let { value, index } of enumerate(content)) {
-                    content[index] = await restful.fill(value, that.sync)
+                    content[index] = await restful.fill(value, that.sync, value._id)
                     content[index] = restful.ignoreFields(value, that.sync, 
                         that.ignoreFieldsRecursive, that.ignoreFieldsRecursiveSubEntity)
                 }

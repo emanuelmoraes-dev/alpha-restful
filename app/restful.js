@@ -215,7 +215,7 @@ module.exports = class Restful {
         }
     }
 
-    async fill (data, sync, rec=true, id=null, ignoreFillProperties=[]) {
+    async fill (data, sync, id=null, rec=true, ignoreFillProperties=[]) {
         let newIgnoreFillProperties = [...ignoreFillProperties]
         try {
             if (!rec || !data || !sync) return data
@@ -300,11 +300,11 @@ module.exports = class Restful {
                         recursive = options.rec-1
                     
                     for (let [se, index] of enumerate(subEntities))
-                        subEntities[index] = await this.fill(se, subEntity.sync, recursive, se._id, newIgnoreFillProperties)
+                        subEntities[index] = await this.fill(se, subEntity.sync, se._id, recursive, newIgnoreFillProperties)
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
-                            value[index] = await this.fill(v, options.sync, recursive, id, newIgnoreFillProperties)
+                            value[index] = await this.fill(v, options.sync, id, recursive, newIgnoreFillProperties)
 
                     for (let [v, index] of enumerate(value)) {
                         value[index] = {
