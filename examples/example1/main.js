@@ -27,5 +27,6 @@ app.use(function(err, req, res, next) {
     res.status(err.status).send({ message: err.message, messageDev: err.messageDev })
 })
 
+process.env.PORT = 3001
 const connector = new Connector('test', 'localhost', restful, app)
 www(connector, debug)

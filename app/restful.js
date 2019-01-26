@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { internalError, IlegallArgumentError } = require('./util/exception-utility')
+const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { copyEntity, convertType } = require('./util/db-utility')
 
 module.exports = class Restful {
@@ -156,10 +156,17 @@ module.exports = class Restful {
                 if (typeof options === 'string')
                     options = { name: options }
                 
-                let entityName = options.name
-                let subEntity = this.entities[entityName]
+                if (!options.syncronized && options.name) {
+                    let entityName = options.name
+                    let subEntity = this.entities[entityName]
 
-                this.syncronized(entityName, subEntity, field, source, nameSyncronized)
+                    if (!subEntity) {
+                        subEntity = { syncronized: {} }
+                        this.entities[entityName] = subEntity
+                    }
+
+                    this.syncronized(entityName, subEntity, field, source, nameSyncronized)
+                }
 
                 if (options.sync)
                     this.sync(options, `${nameSyncronized}.${field}`)
@@ -171,6 +178,8 @@ module.exports = class Restful {
 
     add (entity) {
         try {
+            if (this.entities[entity.name])
+                Object.assign(entity, this.entities[entity.name])
             this.entities[entity.name] = entity
             this.sync(entity, entity.name)
         } catch (err) {
@@ -262,8 +271,6 @@ module.exports = class Restful {
                 
                 if (value instanceof Array && value.length === 0)
                     continue
-                if (!(value instanceof Array) && !value.id)
-                    continue
 
                 let originalIsArray = true
 
@@ -294,10 +301,15 @@ module.exports = class Restful {
 
                     let recursive = rec
                     
-                    if (options.fill)
-                        recursive = true
-                    else if (rec === true)
+                    if (rec === true && options.rec > 0)
                         recursive = options.rec-1
+                    else if (rec === true && options.rec < 0)
+                        recursive = options.rec
+                    else if (rec === true)
+                        recursive = false
+                        
+                    if (options.fill)
+                        recursive = recursive || 1
                     
                     for (let [se, index] of enumerate(subEntities))
                         subEntities[index] = await this.fill(se, subEntity.sync, se._id, recursive, newIgnoreFillProperties)
@@ -448,6 +460,8 @@ module.exports = class Restful {
     applyRouters (app) {
         for (let entityName in this.entities) {
             let entity = this.entities[entityName]
+            if (!entity.name)
+                throw new RuntimeError(`Entidade ${entityName} não existe!`)
             entity.applyRouters(app, this)
         }
     }
