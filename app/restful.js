@@ -46,13 +46,16 @@ module.exports = class Restful {
 
         type = descriptor[attr]
 
+        if (type instanceof Array)
+            type = type[0]
+
         if (targetSync.sync && targetSync.sync[attr])
             targetSync = targetSync.sync[attr]
 
         if (context)
-            return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], `${context}.${attr}`, type)
+            return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, type, `${context}.${attr}`, type)
 
-        return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, descriptor[attr], attr, type)
+        return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, type, attr, type)
     }
 
     async query (conditions, targetSync, descriptor, select, internalSearch=true) {
