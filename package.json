@@ -1,6 +1,6 @@
 {
   "name": "alpha-restful",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "index.js",
   "scripts": {
     "start": "node examples/example1/main.js",
@@ -11,6 +11,7 @@
     "debug": "~2.6.9",
     "es6-promise": "^4.2.5",
     "express": "~4.16.0",
+    "http-errors": "^1.7.1",
     "is-iso-date": "^0.0.1",
     "mongoose": "^5.4.2",
     "morgan": "~1.9.0"

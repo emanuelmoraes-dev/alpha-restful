@@ -69,14 +69,17 @@ function onListening(resolve, server, debug) {
 	resolve()
 }
 
-module.exports = async function start(connector, debug) {
-	/**
-	 * Get port from environment and store in Express.
-	 */
+module.exports = async function start(connector, applicationName) {
+
+	const debug = require('debug')(applicationName + ':server')
 
 	const app = connector.app
 
 	await connector.connect()
+
+	/**
+	 * Get port from environment and store in Express.
+	 */
 
 	const port = normalizePort(process.env.PORT || '3000')
 	app.set('port', port)
