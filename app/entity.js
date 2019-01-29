@@ -199,10 +199,17 @@ module.exports = class Entity {
         return async function (req, res, next) {
             let select = null
 
-            if (req.query.select) {
+            if (req.query.__select) {
                 select = req.query.__select
-                delete req.query.select
+                select = select.split(/[,./\\; -+_]+/g).join(' ')
+                delete req.query.__select
             }
+
+            let limit = parseInt(req.query.__limit)
+            let skip = parseInt(req.query.__skip)
+
+            delete req.query.__limit
+            delete req.query.__skip
 
             let newFind = {}
             for (let key in req.query) {
@@ -221,7 +228,33 @@ module.exports = class Entity {
                 }
             }
 
-            res._content_ = await restful.query(newFind, that, that.descriptor, select)
+            if (req.query.__selectCount == 'true') {
+                let find = await restful.query(newFind, that, that.descriptor, select, false)
+                let count = await that.model.count(find)
+
+                if (!Number.isNaN(limit))
+                    count = count.limit(limit)
+                
+                if (!Number.isNaN(skip))
+                    count = count.skip(skip)
+
+                count = await count.exec()
+
+                res._content_ = { count }
+            } else {
+                let find = await restful.query(newFind, that, that.descriptor, select, false)
+                let query = await that.model.find(find)
+
+                if (!Number.isNaN(limit))
+                    query = query.limit(limit)
+                
+                if (!Number.isNaN(skip))
+                    query = query.skip(skip)
+
+                query = await query.exec()
+
+                res._content_ = query
+            }
         }
     }
 
