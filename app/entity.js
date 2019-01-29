@@ -59,7 +59,7 @@ module.exports = class Entity {
                 res._content_ = copyEntity(res._content_)
             }, 
             this.afterGetFill(restful),
-            this.afterGetProjections(),
+            this.afterGetProjections(restful),
             this.afterGet.bind(this),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
@@ -75,7 +75,7 @@ module.exports = class Entity {
             this.beforeGet.bind(this),
             this.query(restful),
             this.afterGetFill(restful),
-            this.afterGetProjections(),
+            this.afterGetProjections(restful),
             this.afterGet.bind(this),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
@@ -339,7 +339,7 @@ module.exports = class Entity {
         }
     }
 
-    afterGetProjections() {
+    afterGetProjections(restful) {
         const that = this
         return async function (req, res, next) {
             let projectionName = req.query.projection
