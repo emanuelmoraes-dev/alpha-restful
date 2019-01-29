@@ -171,7 +171,14 @@ module.exports = class Entity {
                 
                 content = copyEntity(content)
                 // req.body = prepareEntity(req.body, that.descriptor)
-                content = patchUpdate(content, req.body)
+                if ((req.query.__patchRecursive == 'true'  || restful.patchRecursive)
+                        && req.query.__patchRecursive != 'false')
+                    content = patchUpdate(content, req.body)
+                else
+                    content = {
+                        ...content,
+                        ...req.body
+                    }
 
                 return await new Promise((resolve, reject) => {
                     

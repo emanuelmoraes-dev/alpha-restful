@@ -6,11 +6,13 @@ module.exports = class Restful {
     constructor ({
         isLocale=true,
         locale='pt',
-        entities={}
+        entities={},
+        patchRecursive=true
     }={}) {
         Object.assign(this, {
             isLocale, 
-            locale
+            locale,
+            patchRecursive
         })
 
         this.entities = {}
