@@ -236,7 +236,7 @@ module.exports = class Entity {
             }
 
             if (req.query.__selectCount == 'true') {
-                let find = await restful.query(newFind, that, that.descriptor, select, false)
+                let find = await restful.query(newFind, that, that.descriptor, false, false)
                 let count = await that.model.count(find)
 
                 if (!Number.isNaN(limit))
@@ -249,7 +249,7 @@ module.exports = class Entity {
 
                 res._content_ = { count }
             } else {
-                let find = await restful.query(newFind, that, that.descriptor, select, false)
+                let find = await restful.query(newFind, that, that.descriptor, false, false)
                 let query = that.model.find(find)
 
                 if (!Number.isNaN(limit))
@@ -257,6 +257,9 @@ module.exports = class Entity {
                 
                 if (!Number.isNaN(skip))
                     query = query.skip(skip)
+
+                if (select)
+                    query = query.select(select)
 
                 query = await query.exec()
                 query = copyEntity(query)
