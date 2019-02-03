@@ -250,7 +250,7 @@ module.exports = class Entity {
                 res._content_ = { count }
             } else {
                 let find = await restful.query(newFind, that, that.descriptor, select, false)
-                let query = await that.model.find(find)
+                let query = that.model.find(find)
 
                 if (!Number.isNaN(limit))
                     query = query.limit(limit)
