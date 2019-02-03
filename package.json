@@ -19,5 +19,5 @@
   "repository": "https://github.com/emanuelmoraes-dev/alpha-restful.git",
   "author": "Emanuel Moraes",
   "license": "MIT",
-  "private": true
+  "private": false
 }
