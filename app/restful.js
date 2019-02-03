@@ -43,7 +43,11 @@ module.exports = class Restful {
             attr = attrSearch
         }
 
-        if (!descriptor[attr])
+        // if (!descriptor[attr] && targetSync && targetSync.sync && targetSync.sync[attr] 
+        //         && targetSync.sync[attr].syncronized && targetSync.sync[attr].name)
+        //     return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type, 
+        //                 syncronized: targetSync.sync[attr].syncronized, entitySyncronized: targetSync.sync[attr].name }
+        /*else */if (!descriptor[attr])
             return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
 
         type = descriptor[attr]
@@ -51,8 +55,10 @@ module.exports = class Restful {
         if (type instanceof Array)
             type = type[0]
 
-        if (targetSync.sync && targetSync.sync[attr])
+        if (targetSync && targetSync.sync && targetSync.sync[attr])
             targetSync = targetSync.sync[attr]
+        else
+            targetSync = null
 
         if (context)
             return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, type, `${context}.${attr}`, type)
@@ -77,7 +83,7 @@ module.exports = class Restful {
 
                 let rt = this.getAttrSearchValid(key, targetSync, descriptor)
 
-                if (!rt.targetSync.name && !rt.end)
+                if ((!rt.targetSync || !rt.targetSync.name) && !rt.end)
                     throw new IlegallArgumentError(`O atributo ${rt.remaining} não existe!`)
 
                 if (!rt.end) {
@@ -86,7 +92,14 @@ module.exports = class Restful {
                 }
                 
                 if (rt.end) {
-                    newFind[key] = convertType(rt.type, conditions[key])
+                    // if (rt.syncronized && rt.entitySyncronized) {
+                    //     let subEntity = this.entities[rt.entitySyncronized]
+                    //     newFind._id = {
+                    //         $in: 
+                    //     }
+                    // } else {
+                        newFind[key] = convertType(rt.type, conditions[key])
+                    //}
                 } else {
                     let subConditions = {}
                     subConditions[rt.remaining] = conditions[key]
