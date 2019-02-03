@@ -76,7 +76,7 @@ module.exports = class Restful {
         } else {
             newFind = {}
             for (let key in conditions) {
-                if (key === '$or' || key === '$and') {
+                if (['$or', '$and', '$in', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
                     newFind[key] = await this.query(conditions[key], targetSync, descriptor, select, false)
                     continue
                 }
@@ -92,14 +92,7 @@ module.exports = class Restful {
                 }
                 
                 if (rt.end) {
-                    // if (rt.syncronized && rt.entitySyncronized) {
-                    //     let subEntity = this.entities[rt.entitySyncronized]
-                    //     newFind._id = {
-                    //         $in: 
-                    //     }
-                    // } else {
-                        newFind[key] = convertType(rt.type, conditions[key])
-                    //}
+                    newFind[key] = convertType(rt.type, conditions[key])
                 } else {
                     let subConditions = {}
                     subConditions[rt.remaining] = conditions[key]
