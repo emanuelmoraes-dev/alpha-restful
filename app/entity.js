@@ -259,7 +259,7 @@ module.exports = class Entity {
                     query = query.skip(skip)
 
                 query = await query.exec()
-
+                query = copyEntity(query)
                 res._content_ = query
             }
         }
