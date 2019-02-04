@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const createError = require('http-errors')
+
 /**
  * Module dependencies.
  */
@@ -69,11 +71,29 @@ function onListening(resolve, server, debug) {
 	resolve()
 }
 
-module.exports = async function start(connector, applicationName) {
-
-	const debug = require('debug')(applicationName + ':server')
+module.exports = async function start(connector, applicationName, createErrorHandler=false) {
 
 	const app = connector.app
+
+	if (createErrorHandler) {
+		// catch 404 and forward to error handler
+		app.use(function (req, res, next) {
+			next(createError(404))
+		})
+
+		// error handler
+		app.use(function(err, req, res, next) {
+			err.status = err.status || 500
+			err.message = err.message || 'Um Erro Inesperado Ocorreu!'
+			err.messageDev = err.messageDev || err.message
+
+			console.error(err)
+			
+			res.status(err.status).send({ message: err.message, messageDev: err.messageDev })
+		})
+	}
+
+	const debug = require('debug')(applicationName + ':server')
 
 	await connector.connect()
 

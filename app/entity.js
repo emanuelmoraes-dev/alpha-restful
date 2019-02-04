@@ -1,5 +1,4 @@
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
-const { execAsync } = require('./util/async-utility')
 const { copyEntity, prepareEntity, patchUpdate } = require('./util/db-utility')
 
 module.exports = class Entity {
@@ -10,7 +9,7 @@ module.exports = class Entity {
         sync={},
         projections={},
         projectionDefault=null,
-        methods=['get', 'post', 'put', 'delete', 'patch'],
+        methods=[],
         ignoreFieldsRecursiveSubEntity=false,
         ignoreFieldsRecursive=false
     }={}) {
@@ -32,6 +31,8 @@ module.exports = class Entity {
     }
 
     applyRouters (app, restful) {
+        if (!app) return
+
         if (this.methods.indexOf('get')+1) {
             app.get(`/${this.resource}/:id`, this.findOneRouter(restful))
             app.get(`/${this.resource}`, this.getRouter(restful))
@@ -52,7 +53,7 @@ module.exports = class Entity {
 
     findOneRouter (restful) {
         let that = this
-        return execAsync(
+        return restful.execAsync(
             this.beforeGet.bind(this),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
@@ -71,7 +72,7 @@ module.exports = class Entity {
         if (this.methods.indexOf('get') === -1)
             return
 
-        return execAsync(
+        return restful.execAsync(
             this.beforeGet.bind(this),
             this.query(restful),
             this.afterGetFill(restful),
@@ -88,7 +89,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(
+        return restful.execAsync(
             this.beforePost.bind(this),
             async function (req, res, next) {
                 // req.body = prepareEntity(req.body, that.descriptor)
@@ -108,7 +109,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(
+        return restful.execAsync(
             this.beforePut.bind(this),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
@@ -119,7 +120,7 @@ module.exports = class Entity {
                         req.body,
                         {new: true},
                         (err, todo) => {
-                            if (err) return reject(internalError(err))
+                            if (err) return reject(internalError(err, restful))
                             res._content_ = todo
                             resolve()
                         }
@@ -138,13 +139,13 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(
+        return restful.execAsync(
             this.beforeDelete.bind(this),
             this.beforeDeleteSync(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
                     that.model.findByIdAndRemove(req.params.id, (err, todo) => {
-                        if (err) return reject(internalError(err))
+                        if (err) return reject(internalError(err, restful))
                         resolve()
                     })
                 })
@@ -161,7 +162,7 @@ module.exports = class Entity {
             return
 
         const that = this
-        return execAsync(
+        return restful.execAsync(
             this.beforePut.bind(this),
             async function (req, res, next) {
                 const id = req.params.id
@@ -171,8 +172,8 @@ module.exports = class Entity {
                 
                 content = copyEntity(content)
                 // req.body = prepareEntity(req.body, that.descriptor)
-                if ((req.query.__patchRecursive == 'true'  || restful.patchRecursive)
-                        && req.query.__patchRecursive != 'false')
+                if ((req.query[restful.patchRecursiveName] == 'true'  || restful.patchRecursive)
+                        && req.query[restful.patchRecursiveName] != 'false')
                     content = patchUpdate(content, req.body)
                 else
                     content = {
@@ -187,7 +188,7 @@ module.exports = class Entity {
                         content,
                         {new: true},
                         (err, todo) => {
-                            if (err) return reject(internalError(err))
+                            if (err) return reject(internalError(err, restful))
                             res._content_ = todo
                             resolve()
                         }
@@ -206,17 +207,25 @@ module.exports = class Entity {
         return async function (req, res, next) {
             let select = null
 
-            if (req.query.__select) {
-                select = req.query.__select
+            if (req.query[restful.selectName]) {
+                select = req.query[restful.selectName]
                 select = select.split(/[,./\\; -+_]+/g).join(' ')
             }
 
-            let limit = parseInt(req.query.__limit)
-            let skip = parseInt(req.query.__skip)
+            let limit = parseInt(req.query[restful.limiteName])
+            let skip = parseInt(req.query[restful.skipName])
+            let sort
+
+            if (req.query[restful.sortName])
+                sort = req.query[restful.sortName]
 
             let newFind = {}
             for (let key in req.query) {
-                if (['__selectCount', '__select', '__limit', '__skip'].indexOf(key)+1)
+                if ([
+                restful.selectCountName, restful.selectName, 
+                restful.limiteName, restful.skipName,
+                restful.sortName
+                ].indexOf(key)+1)
                     continue
                 if (key.endsWith('__regex')) {
                     let value = req.query[key]
@@ -233,7 +242,7 @@ module.exports = class Entity {
                 }
             }
 
-            if (req.query.__selectCount == 'true') {
+            if (req.query[restful.selectCountName] == 'true') {
                 let find = await restful.query(newFind, that, that.descriptor, false, false)
                 let count = that.model.countDocuments(find)
 
@@ -256,6 +265,9 @@ module.exports = class Entity {
                 if (!Number.isNaN(skip))
                     query = query.skip(skip)
 
+                if (sort)
+                    query = query.sort(sort)
+
                 if (select)
                     query = query.select(select)
 
@@ -266,7 +278,7 @@ module.exports = class Entity {
         }
     }
 
-    async findByIds (ids) {
+    async findByIds (ids, restful) {
         try {
             let data = []
             for (let id of ids) {
@@ -280,7 +292,7 @@ module.exports = class Entity {
             }
             return data
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, restful)
         }
     }
 
@@ -313,7 +325,7 @@ module.exports = class Entity {
                 else
                     res._content_ = content
             } catch (err) {
-                throw internalError(err)
+                throw internalError(err, restful)
             }
         }
     }
@@ -343,7 +355,7 @@ module.exports = class Entity {
     afterGetProjections(restful) {
         const that = this
         return async function (req, res, next) {
-            let projectionName = req.query.projection
+            let projectionName = req.query[restful.projectionName]
 
             if (!projectionName) {
                 if (!that.projectionDefault) return

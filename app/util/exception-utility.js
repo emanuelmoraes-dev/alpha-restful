@@ -1,8 +1,9 @@
 module.exports = {
-    internalError(err) {
+    internalError(err, restful) {
         if (!err.messageClient && (!err.status || err.status >= 500))
             return Object.assign(err, { status: err.status || 500, message: err.message, 
-                messageClient: 'Erro Interno! Por Favor, Contatar seu Suporte!' })
+                messageClient: restful && restful.messageClientInternalError || 
+                    'Erro Interno! Por Favor, Contatar seu Suporte!' })
         return err
     },
 

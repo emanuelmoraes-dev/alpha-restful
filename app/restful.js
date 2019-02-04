@@ -8,12 +8,28 @@ module.exports = class Restful {
         isLocale=true,
         locale='pt',
         entities={},
-        patchRecursive=true
+        patchRecursive=true,
+        patchRecursiveName='patchRecursive',
+        messageClientInternalError='Erro Interno! Por Favor, Contatar seu Suporte!',
+        projectionName='projection',
+        selectName='select',
+        selectCountName='selectCount',
+        limiteName='limit',
+        skipName='skip',
+        sortName='sort'
     }={}) {
         Object.assign(this, {
             isLocale, 
             locale,
-            patchRecursive
+            patchRecursive,
+            patchRecursiveName,
+            messageClientInternalError,
+            projectionName,
+            selectName,
+            selectCountName,
+            limiteName,
+            skipName,
+            sortName
         })
 
         this.entities = {}
@@ -194,7 +210,7 @@ module.exports = class Restful {
                 }
             }
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -224,7 +240,7 @@ module.exports = class Restful {
                     this.sync(options, `${nameSyncronized}.${field}`)
             }
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -235,7 +251,7 @@ module.exports = class Restful {
             this.entities[entity.name] = entity
             this.sync(entity, entity.name)
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -272,7 +288,7 @@ module.exports = class Restful {
 
             return data
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -357,7 +373,7 @@ module.exports = class Restful {
 
                     if (options.name) {
                         subEntity = this.entities[options.name]
-                        subEntities = await subEntity.findByIds(ids)
+                        subEntities = await subEntity.findByIds(ids, this)
                         subEntities = copyEntity(subEntities)
                     }
 
@@ -400,7 +416,7 @@ module.exports = class Restful {
 
             return data
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -434,7 +450,7 @@ module.exports = class Restful {
 
             return conditions
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -498,7 +514,7 @@ module.exports = class Restful {
                 }
             }
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
@@ -518,16 +534,56 @@ module.exports = class Restful {
                 }
             }
         } catch (err) {
-            throw internalError(err)
+            throw internalError(err, this)
         }
     }
 
     applyRouters (app) {
+        if (!app) return
+
         for (let entityName in this.entities) {
             let entity = this.entities[entityName]
             if (!entity.name)
                 throw new RuntimeError(`Entidade ${entityName} não existe!`)
             entity.applyRouters(app, this)
+        }
+    }
+
+    execAsync () {
+        try {
+            let fsAsync, autoSendStatus
+    
+            fsAsync = Array.prototype.slice.call(arguments)
+    
+            if (typeof fsAsync[0] === 'boolean' || typeof fsAsync[0] === 'number') {
+                fsAsync = fsAsync.slice(1)
+                autoSendStatus = fsAsync[0]
+            } else if (typeof fsAsync.last() === 'boolean' || typeof fsAsync.last() === 'number') {
+                fsAsync = fsAsync.slice(0, fsAsync.length - 1)
+                autoSendStatus = fsAsync.last()
+            } else {
+                autoSendStatus = false
+            }
+    
+            return fsAsync.map((fAsync, index) => function (req, res, next) {
+                Promise.resolve(fAsync(req, res, next))
+                    .then(() => {
+                        if (index == fsAsync.length - 1) {
+                            if (autoSendStatus && typeof autoSendStatus === 'number')
+                                res.status(autoSendStatus).send(res._content_)
+                            else if (autoSendStatus)
+                                res.status(200).send(res._content_)
+                        }
+                        else {
+                            next()
+                        }
+                    })
+                    .catch(err => { 
+                        next(internalError(err, this))
+                    })
+            })
+        } catch (err) {
+            throw internalError(err, this)
         }
     }
 }
