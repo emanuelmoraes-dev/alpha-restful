@@ -20,7 +20,7 @@ restful.add(new Entity({
         info: {
             fill: true,
             sync: {
-                peoples: { name: 'People', fill: true },
+                peoples: { name: 'People', fill: true, jsonIgnoreProperties: ['house'] },
                 rent: 'Rent'
             }
         }

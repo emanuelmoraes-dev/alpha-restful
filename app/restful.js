@@ -276,8 +276,9 @@ module.exports = class Restful {
         }
     }
 
-    async fill (data, sync, id=null, rec=true, ignoreFillProperties=[]) {
+    async fill (data, sync, id=null, rec=true, ignoreFillProperties=[], jsonIgnoreProperties=[]) {
         let newIgnoreFillProperties = [...ignoreFillProperties]
+        let newJsonIgnoreProperties = [...jsonIgnoreProperties]
         try {
             if (!rec || !data || !sync) return data
             if (typeof rec === 'number' && rec > 0) rec--
@@ -321,6 +322,11 @@ module.exports = class Restful {
                     newIgnoreFillProperties.push(...options.ignoreFillProperties)
                 else if (options.ignoreFillProperties && typeof options.ignoreFillProperties === 'string')
                     newIgnoreFillProperties.push(options.ignoreFillProperties)
+
+                if (options.jsonIgnoreProperties && options.jsonIgnoreProperties instanceof Array)
+                    newJsonIgnoreProperties.push(...options.jsonIgnoreProperties)
+                else if (options.jsonIgnoreProperties && typeof options.jsonIgnoreProperties === 'string')
+                    newJsonIgnoreProperties.push(options.jsonIgnoreProperties)
                 
                 let value = data[attr]
                 
@@ -338,12 +344,13 @@ module.exports = class Restful {
 
                 options.rec = options.rec || 0
 
-                if (!options.jsonIgnore && options.fill !== false && 
-                        (options.fill ||
-                        options.rec > 0 && rec === true || 
-                        options.rec < 0 && rec === true ||
-                        typeof(rec) === 'number' && rec > 0 || 
-                        typeof(rec) === 'number' && rec < 0)) {
+                if (!options.jsonIgnore && jsonIgnoreProperties.indexOf(attr) === -1 &&
+                options.fill !== false && 
+                (options.fill ||
+                options.rec > 0 && rec === true || 
+                options.rec < 0 && rec === true ||
+                typeof(rec) === 'number' && rec > 0 || 
+                typeof(rec) === 'number' && rec < 0)) {
 
                     let subEntities = []
                     let subEntity = null
@@ -367,11 +374,11 @@ module.exports = class Restful {
                         recursive = recursive || 1
                     
                     for (let [se, index] of enumerate(subEntities))
-                        subEntities[index] = await this.fill(se, subEntity.sync, se._id, recursive, newIgnoreFillProperties)
+                        subEntities[index] = await this.fill(se, subEntity.sync, se._id, recursive, newIgnoreFillProperties, newJsonIgnoreProperties)
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
-                            value[index] = await this.fill(v, options.sync, id, recursive, newIgnoreFillProperties)
+                            value[index] = await this.fill(v, options.sync, id, recursive, newIgnoreFillProperties, newJsonIgnoreProperties)
 
                     for (let [v, index] of enumerate(value)) {
                         value[index] = {
@@ -386,6 +393,9 @@ module.exports = class Restful {
                     value = value[0]
 
                 data[attr] = value
+
+                if (jsonIgnoreProperties.indexOf(attr)+1)
+                    delete data[attr]
             }
 
             return data
