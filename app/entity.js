@@ -225,7 +225,7 @@ module.exports = class Entity {
                     key = key.split('__regex')[0]
                     let regexp = value.split('/')
                     regexp = new RegExp(regexp[1], regexp[2])
-                    newFind[attr] = regexp
+                    newFind[key] = regexp
                 } else if (key.match(/__/)) {
                     let keyArray = key.split(/__/g)
                     newFind[keyArray[0]] = {}
