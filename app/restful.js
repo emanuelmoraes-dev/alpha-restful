@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { copyEntity, convertType } = require('./util/db-utility')
+const { getAttr, extractValuesByArray } = require('./util/utility')
 
 module.exports = class Restful {
     constructor ({
@@ -28,10 +29,10 @@ module.exports = class Restful {
             targetSync = { name: targetSync }
 
         if (!descriptor || typeof descriptor !== 'object')
-            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
+            return { targetSync, remaining: attrSearch, attrSearch: context, end: !attrSearch, type }
 
         if (!attrSearch)
-            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
+            return { targetSync, remaining: attrSearch, attrSearch: context, end: !attrSearch, type }
 
         let attr, attrSearchArray
 
@@ -43,12 +44,12 @@ module.exports = class Restful {
             attr = attrSearch
         }
 
-        // if (!descriptor[attr] && targetSync && targetSync.sync && targetSync.sync[attr] 
-        //         && targetSync.sync[attr].syncronized && targetSync.sync[attr].name)
-        //     return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type, 
-        //                 syncronized: targetSync.sync[attr].syncronized, entitySyncronized: targetSync.sync[attr].name }
-        /*else */if (!descriptor[attr])
-            return { targetSync, remaining: attrSearch, attrSearch: context, descriptor, end: !attrSearch, type }
+        if (!descriptor[attr] && targetSync && targetSync.sync && targetSync.sync[attr] 
+                && targetSync.sync[attr].syncronized)
+            return { targetSync: targetSync.sync[attr], remaining: attrSearchArray.slice(1).join('.'), end: !attrSearch, type, 
+                        syncronized: targetSync.sync[attr].syncronized }
+        else if (!descriptor[attr])
+            return { targetSync, remaining: attrSearch, attrSearch: context, end: !attrSearch, type }
 
         type = descriptor[attr]
 
@@ -92,14 +93,54 @@ module.exports = class Restful {
                 }
                 
                 if (rt.end) {
+                    if (rt.syncronized)
+                        throw new Error(`Condição de busca ${key} inválida!`)
                     newFind[key] = convertType(rt.type, conditions[key])
                 } else {
-                    let subConditions = {}
-                    subConditions[rt.remaining] = conditions[key]
-                    newFind[`${rt.attrSearch}.id`] = {
-                        $in: await this.query(subConditions, rt.targetSync, rt.descriptor, 'id', true)
+                    if (rt.syncronized) {
+                        if (rt.syncronized instanceof Array)
+                            rt.syncronized = rt.syncronized[0]
+
+                        if (!rt.syncronized)
+                            throw new Error(`O atributo 'syncronized' do 'sync' da entidade ${targetSync.name} não deve ser um array vazio!`)
+
+                        let subConditions = {}
+                        subConditions[rt.remaining] = conditions[key]
+
+                        if (!newFind._id)
+                            newFind._id = {}
+
+                        let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, false, true)
+                        subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
+                        subQuery = extractValuesByArray(subQuery, true)
+
+                        if (!newFind._id.$in) {
+                            newFind._id.$in = subQuery
+                        } else {
+                            newFind._id.$in = {
+                                ...newFind._id.$in,
+                                ...subQuery
+                            }
+                        }
+                    } else {
+                        let subConditions = {}
+                        subConditions[rt.remaining] = conditions[key]
+
+                        if (!newFind[`${rt.attrSearch}.id`])
+                            newFind[`${rt.attrSearch}.id`] = {}
+
+                        let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, '_id', true)
+                        subQuery = subQuery.map(e => e._id)
+
+                        if (!newFind[`${rt.attrSearch}.id`].$in) {
+                            newFind[`${rt.attrSearch}.id`].$in = subQuery
+                        } else {
+                            newFind[`${rt.attrSearch}.id`].$in = [
+                                ...newFind[`${rt.attrSearch}.id`].$in,
+                                ...subQuery
+                            ]
+                        }
                     }
-                    newFind[`${rt.attrSearch}.id`].$in = newFind[`${rt.attrSearch}.id`].$in.map(e => e._id)
                 }
             }
 
