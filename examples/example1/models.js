@@ -45,7 +45,7 @@ restful.add(new Entity({
     },
     sync: {
         age: {
-            jsonIgnore: true
+            jsonIgnore: false
         },
         house: {
             name: 'House',

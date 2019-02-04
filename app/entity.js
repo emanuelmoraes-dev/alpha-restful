@@ -235,7 +235,7 @@ module.exports = class Entity {
 
             if (req.query.__selectCount == 'true') {
                 let find = await restful.query(newFind, that, that.descriptor, false, false)
-                let count = that.model.count(find)
+                let count = that.model.countDocuments(find)
 
                 if (!Number.isNaN(limit))
                     count = count.limit(limit)
