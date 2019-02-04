@@ -209,17 +209,15 @@ module.exports = class Entity {
             if (req.query.__select) {
                 select = req.query.__select
                 select = select.split(/[,./\\; -+_]+/g).join(' ')
-                delete req.query.__select
             }
 
             let limit = parseInt(req.query.__limit)
             let skip = parseInt(req.query.__skip)
 
-            delete req.query.__limit
-            delete req.query.__skip
-
             let newFind = {}
             for (let key in req.query) {
+                if (['__selectCount', '__select', '__limit', '__skip'].indexOf(key)+1)
+                    continue
                 if (key.endsWith('__regex')) {
                     let value = req.query[key]
                     key = key.split('__regex')[0]
@@ -237,7 +235,7 @@ module.exports = class Entity {
 
             if (req.query.__selectCount == 'true') {
                 let find = await restful.query(newFind, that, that.descriptor, false, false)
-                let count = await that.model.count(find)
+                let count = that.model.count(find)
 
                 if (!Number.isNaN(limit))
                     count = count.limit(limit)
