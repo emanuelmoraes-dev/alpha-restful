@@ -296,37 +296,39 @@ module.exports = class Entity {
         }
     }
 
+    async fill (content, restful) {
+        try {
+            let isOriginalArray = true
+
+            if (!content)
+                return content
+
+            if (!(content instanceof Array)) {
+                isOriginalArray = false
+                content = [content]
+            }
+
+            for (let { value, index } of enumerate(content)) {
+                if (!value)
+                    continue
+
+                content[index] = await restful.fill(value, this.sync, value._id)
+                content[index] = restful.ignoreFields(value, this.sync, 
+                    this.ignoreFieldsRecursive, this.ignoreFieldsRecursiveSubEntity)
+            }
+
+            if (!isOriginalArray)
+                return content[0]
+            return content
+        } catch (err) {
+            throw internalError(err, restful)
+        }
+    }
+
     afterGetFill (restful) {
         const that = this
         return async function (req, res, next) {
-            try {
-                let content = res._content_
-                let isOriginalArray = true
-
-                if (!content)
-                    return
-
-                if (!(content instanceof Array)) {
-                    isOriginalArray = false
-                    content = [content]
-                }
-
-                for (let { value, index } of enumerate(content)) {
-                    if (!value)
-                        return
-
-                    content[index] = await restful.fill(value, that.sync, value._id)
-                    content[index] = restful.ignoreFields(value, that.sync, 
-                        that.ignoreFieldsRecursive, that.ignoreFieldsRecursiveSubEntity)
-                }
-
-                if (!isOriginalArray)
-                    res._content_ = content[0]
-                else
-                    res._content_ = content
-            } catch (err) {
-                throw internalError(err, restful)
-            }
+            res._content_ = await that.fill(res._content_, restful)
         }
     }
 
@@ -352,22 +354,17 @@ module.exports = class Entity {
         }
     }
 
-    afterGetProjections(restful) {
-        const that = this
-        return async function (req, res, next) {
-            let projectionName = req.query[restful.projectionName]
-
+    async applyProjections (content, projectionName, restful) {
+        try {
             if (!projectionName) {
-                if (!that.projectionDefault) return
-                projectionName = that.projectionDefault
+                if (!this.projectionDefault) return content
+                projectionName = this.projectionDefault
             }
             
-            let projection = that.projections[projectionName]
+            let projection = this.projections[projectionName]
 
             if (!projection)
                 throw new IlegallArgumentError(`Projeção ${projectionName} não encontrada`)
-            
-            let content = res._content_
 
             if (content instanceof Array) {
                 for (let [entity, i] of enumerate(content)) {
@@ -379,7 +376,16 @@ module.exports = class Entity {
                 content = await this.parseFromProjection(projection, content)
             }
 
-            res._content_ = content
+            return content
+        } catch (err) {
+            throw internalError(err, restful)
+        }
+    }
+
+    afterGetProjections(restful) {
+        const that = this
+        return async function (req, res, next) {
+            res._content_ = await that.applyProjections(res._content_, req.query[restful.projectionName], restful)
         }
     }
 
