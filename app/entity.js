@@ -234,9 +234,13 @@ module.exports = class Entity {
                     regexp = new RegExp(regexp[1], regexp[2])
                     newFind[key] = regexp
                 } else if (key.match(/__/)) {
-                    let keyArray = key.split(/__/g)
-                    newFind[keyArray[0]] = {}
-                    newFind[keyArray[0]][keyArray[1]] = req.query[key]
+                    let keyArray = key.split(/__/)
+                    if (['$or', '$and', '$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
+                        newFind[keyArray[0]] = {}
+                        newFind[keyArray[0]][keyArray[1]] = req.query[key]
+                    } else {
+                        newFind[key] = req.query[key]
+                    }
                 } else {
                     newFind[key] = req.query[key]
                 }

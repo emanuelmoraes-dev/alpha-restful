@@ -93,7 +93,7 @@ module.exports = class Restful {
         } else {
             newFind = {}
             for (let key in conditions) {
-                if (['$or', '$and', '$in', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
+                if (['$or', '$and', '$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
                     newFind[key] = await this.query(conditions[key], targetSync, descriptor, select, false)
                     continue
                 }
@@ -144,6 +144,14 @@ module.exports = class Restful {
 
                         if (!newFind[`${rt.attrSearch}.id`])
                             newFind[`${rt.attrSearch}.id`] = {}
+
+                        let attr = rt.remaining
+                        if (rt.remaining.match(/\./g))
+                            attr = rt.remaining.split('.')[0]
+                            
+                        if (rt.targetSync && rt.targetSync.sync && !rt.targetSync.sync[attr] &&
+                        rt.descriptor && !rt.descriptor[attr])
+                            throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.targetSync.name}!`)
 
                         let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, '_id', true)
                         subQuery = subQuery.map(e => e._id)
@@ -399,8 +407,7 @@ module.exports = class Restful {
                     for (let [v, index] of enumerate(value)) {
                         value[index] = {
                             ...(subEntities && subEntities[index] || {}),
-                            ...v,
-                            $init: undefined
+                            ...v
                         }
                     }
                 }

@@ -84,10 +84,11 @@ module.exports = async function start(connector, applicationName, createErrorHan
 		// error handler
 		app.use(function(err, req, res, next) {
 			err.status = err.status || 500
-			err.message = err.message || 'Um Erro Inesperado Ocorreu!'
-			err.messageDev = err.messageDev || err.message
 
 			console.error(err)
+			
+			err.message = err.messageClient || 'Um Erro Inesperado Ocorreu!'
+			err.messageDev = err.messageDev || err.message
 			
 			res.status(err.status).send({ message: err.message, messageDev: err.messageDev })
 		})
