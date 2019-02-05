@@ -57,7 +57,7 @@ module.exports = class Entity {
             this.beforeGet.bind(this),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
-                res._content_ = copyEntity(res._content_)
+                // res._content_ = copyEntity(res._content_)
             }, 
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
@@ -272,7 +272,7 @@ module.exports = class Entity {
                     query = query.select(select)
 
                 query = await query.exec()
-                query = copyEntity(query)
+                // query = copyEntity(query)
                 res._content_ = query
             }
         }
@@ -286,7 +286,7 @@ module.exports = class Entity {
                     _id: id
                 }).exec()
 
-                d = copyEntity(d)
+                // d = copyEntity(d)
 
                 if (d) data.push(d)
             }
@@ -312,6 +312,7 @@ module.exports = class Entity {
                 if (!value)
                     continue
 
+                value = copyEntity(value)
                 content[index] = await restful.fill(value, this.sync, value._id)
                 content[index] = restful.ignoreFields(value, this.sync, 
                     this.ignoreFieldsRecursive, this.ignoreFieldsRecursiveSubEntity)

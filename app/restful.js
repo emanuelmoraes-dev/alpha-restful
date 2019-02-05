@@ -327,7 +327,7 @@ module.exports = class Restful {
                         find[`${attrSyncronized}.id`] = id
                         data[attr] = await subEntity.model.findOne(find).select('_id').exec()
                         data[attr] = {
-                            id: copyEntity(data[attr])._id
+                            id: data[attr]._id
                         }
                     }
                 } else if (!data[attr]) {
