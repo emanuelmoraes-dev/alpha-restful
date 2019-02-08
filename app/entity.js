@@ -219,30 +219,47 @@ module.exports = class Entity {
             if (req.query[restful.sortName])
                 sort = req.query[restful.sortName]
 
-            let newFind = {}
+            let newFind = { $and: [] }
+
             for (let key in req.query) {
                 if ([
                 restful.selectCountName, restful.selectName, 
                 restful.limiteName, restful.skipName,
                 restful.sortName
-                ].indexOf(key)+1)
-                    continue
+                ].indexOf(key)+1) continue
+
                 if (key.endsWith('__regex')) {
                     let value = req.query[key]
                     key = key.split('__regex')[0]
                     let regexp = value.split('/')
                     regexp = new RegExp(regexp[1], regexp[2])
-                    newFind[key] = regexp
+
+                    let condition = {}
+                    condition[key] = regexp
+
+                    newFind.$and.push(condition)
+
                 } else if (key.match(/__/)) {
                     let keyArray = key.split(/__/)
-                    if (['$or', '$and', '$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
-                        newFind[keyArray[0]] = {}
-                        newFind[keyArray[0]][keyArray[1]] = req.query[key]
+                    if (['$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
+
+                        let condition = {}
+                        condition[keyArray[0]] = {}
+                        condition[keyArray[0]][keyArray[1]] = req.query[key]
+
+                        newFind.$and.push(condition)
+
                     } else {
-                        newFind[key] = req.query[key]
+                        let condition = {}
+                        condition[key] = req.query[key]
+
+                        newFind.$and.push(condition)
                     }
                 } else {
-                    newFind[key] = req.query[key]
+                    let condition = {}
+                    condition[key] = req.query[key]
+
+                    newFind.$and.push(condition)
                 }
             }
 

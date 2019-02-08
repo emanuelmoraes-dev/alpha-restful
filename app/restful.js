@@ -88,8 +88,9 @@ module.exports = class Restful {
 
         if (conditions instanceof Array) {
             newFind=[]
-            for (let [value, index] of enumerate(conditions))
+            for (let [value, index] of enumerate(conditions)) {
                 newFind[index] = await this.query(value, targetSync, descriptor, select, false)
+            }
         } else {
             newFind = {}
             for (let key in conditions) {
@@ -167,22 +168,22 @@ module.exports = class Restful {
                     }
                 }
             }
-
-            if (!internalSearch)
-                return newFind
-
-            if (typeof targetSync === 'string')
-                targetSync = { name: targetSync }
-
-            let entity = this.entities[targetSync.name]
-
-            let find = entity.model.find(newFind)
-
-            if (select)
-                find = find.select(select)
-
-            return copyEntity(await find.exec())
         }
+
+        if (!internalSearch)
+            return newFind
+
+        if (typeof targetSync === 'string')
+            targetSync = { name: targetSync }
+
+        let entity = this.entities[targetSync.name]
+
+        let find = entity.model.find(newFind)
+
+        if (select)
+            find = find.select(select)
+
+        return copyEntity(await find.exec())
     }
 
     syncronized (entityName, target, field, source, nameSyncronized) {
