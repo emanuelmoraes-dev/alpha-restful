@@ -83,19 +83,27 @@ module.exports = class Restful {
         return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), targetSync, type, attr, type)
     }
 
-    async query (conditions, targetSync, descriptor, select, internalSearch=true) {
+    async query (conditions, targetSync, descriptor, { 
+        select=false, skip=null, limit=null, 
+        sort=null, internalSearch=true,
+        selectCount=false
+    } = {}) {
         let newFind
 
         if (conditions instanceof Array) {
             newFind=[]
             for (let [value, index] of enumerate(conditions)) {
-                newFind[index] = await this.query(value, targetSync, descriptor, select, false)
+                newFind[index] = await this.query(value, targetSync, descriptor, {
+                    select, skip, limit, sort, internalSearch: false, selectCount
+                })
             }
         } else {
             newFind = {}
             for (let key in conditions) {
                 if (['$or', '$and', '$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
-                    newFind[key] = await this.query(conditions[key], targetSync, descriptor, select, false)
+                    newFind[key] = await this.query(conditions[key], targetSync, descriptor, {
+                        select, skip, limit, sort, internalSearch: false, selectCount
+                    })
                     continue
                 }
 
@@ -127,7 +135,9 @@ module.exports = class Restful {
                         if (!newFind._id)
                             newFind._id = {}
 
-                        let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, false, true)
+                        let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, {
+                            select, skip, limit, sort, internalSearch: true, selectCount
+                        })
                         subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
                         subQuery = extractValuesByArray(subQuery, true)
 
@@ -154,7 +164,9 @@ module.exports = class Restful {
                         rt.descriptor && !rt.descriptor[attr])
                             throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.targetSync.name}!`)
 
-                        let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, '_id', true)
+                        let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, {
+                            select: '_id', skip, limit, sort, internalSearch: true, selectCount
+                        })
                         subQuery = subQuery.map(e => e._id)
 
                         if (!newFind[`${rt.attrSearch}.id`].$in) {
@@ -177,13 +189,39 @@ module.exports = class Restful {
             targetSync = { name: targetSync }
 
         let entity = this.entities[targetSync.name]
+        let find, data
 
-        let find = entity.model.find(newFind)
+        if (selectCount === 'true' || selectCount === true) {
+            find = entity.model.countDocuments(newFind)
 
-        if (select)
-            find = find.select(select)
+            if (!Number.isNaN(limit))
+                find = find.limit(limit)
+            
+            if (!Number.isNaN(skip))
+                find = find.skip(skip)
 
-        return copyEntity(await find.exec())
+            data = {
+                count: await find.exec()
+            }
+        } else {
+            find = entity.model.find(newFind)
+
+            if (!Number.isNaN(limit))
+                find = find.limit(limit)
+            
+            if (!Number.isNaN(skip))
+                find = find.skip(skip)
+
+            if (sort)
+                find = find.sort(sort)
+
+            if (select)
+                find = find.select(select)
+
+            data = copyEntity(await find.exec())
+        }
+
+        return data
     }
 
     syncronized (entityName, target, field, source, nameSyncronized) {

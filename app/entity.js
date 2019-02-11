@@ -264,37 +264,13 @@ module.exports = class Entity {
             }
 
             if (req.query[restful.selectCountName] == 'true') {
-                let find = await restful.query(newFind, that, that.descriptor, false, false)
-                let count = that.model.countDocuments(find)
-
-                if (!Number.isNaN(limit))
-                    count = count.limit(limit)
-                
-                if (!Number.isNaN(skip))
-                    count = count.skip(skip)
-
-                count = await count.exec()
-
-                res._content_ = { count }
+                res._content_ = await restful.query(newFind, that, that.descriptor, { 
+                    limit, skip, selectCount: true, internalSearch: true
+                })
             } else {
-                let find = await restful.query(newFind, that, that.descriptor, false, false)
-                let query = that.model.find(find)
-
-                if (!Number.isNaN(limit))
-                    query = query.limit(limit)
-                
-                if (!Number.isNaN(skip))
-                    query = query.skip(skip)
-
-                if (sort)
-                    query = query.sort(sort)
-
-                if (select)
-                    query = query.select(select)
-
-                query = await query.exec()
-                // query = copyEntity(query)
-                res._content_ = query
+                res._content_ = await restful.query(newFind, that, that.descriptor, {
+                    limit, skip, sort, select, internalSearch: true
+                })
             }
         }
     }
