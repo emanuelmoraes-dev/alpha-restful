@@ -56,11 +56,11 @@ restful.add(new Entity({
         age: {
             jsonIgnore: false
         },
-        houses: [{
+        houses: {
             name: 'House',
             fill: true,
             ignoreFillProperties: ['peoples'],
             syncronized: ['info.peoples']
-        }]
+        }
     }
 }))

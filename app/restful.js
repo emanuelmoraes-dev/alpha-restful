@@ -60,14 +60,18 @@ module.exports = class Restful {
             attr = attrSearch
         }
 
-        if (!descriptor[attr] && targetSync && targetSync.sync && targetSync.sync[attr] 
-                && targetSync.sync[attr].syncronized)
-            return { targetSync: targetSync.sync[attr], remaining: attrSearchArray.slice(1).join('.'), end: !attrSearch, type, 
-                        syncronized: targetSync.sync[attr].syncronized }
-        else if (!descriptor[attr])
-            return { targetSync, remaining: attrSearch, attrSearch: context, end: !attrSearch, type }
-
-        type = descriptor[attr]
+        if (attr != '_id') {
+            if (!descriptor[attr] && targetSync && targetSync.sync && targetSync.sync[attr] 
+                    && targetSync.sync[attr].syncronized)
+                return { targetSync: targetSync.sync[attr], remaining: attrSearchArray.slice(1).join('.'), end: !attrSearch, type, 
+                            syncronized: targetSync.sync[attr].syncronized }
+            else if (!descriptor[attr])
+                return { targetSync, remaining: attrSearch, attrSearch: context, end: !attrSearch, type }
+            
+            type = descriptor[attr]
+        } else {
+            type = String
+        }
 
         if (type instanceof Array)
             type = type[0]
@@ -94,16 +98,28 @@ module.exports = class Restful {
             newFind=[]
             for (let [value, index] of enumerate(conditions)) {
                 newFind[index] = await this.query(value, targetSync, descriptor, {
-                    select, skip, limit, sort, internalSearch: false, selectCount
+                    internalSearch: false, selectCount: false
                 })
             }
         } else {
             newFind = {}
             for (let key in conditions) {
-                if (['$or', '$and', '$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
+                if (['$or', '$and', '$in', '$nin'].indexOf(key)+1) {
                     newFind[key] = await this.query(conditions[key], targetSync, descriptor, {
-                        select, skip, limit, sort, internalSearch: false, selectCount
+                        internalSearch: false, selectCount: false
                     })
+
+                    if (key === '$and' && (!(newFind[key] instanceof Array) || 
+                            newFind[key].indexOf(null)+1 || !newFind[key].length)) {
+                        newFind = null
+                        break
+                    } else if (newFind[key] instanceof Array) {
+                        newFind[key] = newFind[key].filter(c => c !== null)
+                    }
+
+                    continue
+                } else if (['$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
+                    newFind[key] = conditions[key]
                     continue
                 }
 
@@ -132,29 +148,32 @@ module.exports = class Restful {
                         let subConditions = {}
                         subConditions[rt.remaining] = conditions[key]
 
-                        if (!newFind._id)
-                            newFind._id = {}
-
                         let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, {
-                            select, skip, limit, sort, internalSearch: true, selectCount
+                            select: false, internalSearch: true, selectCount: false
                         })
+
                         subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
                         subQuery = extractValuesByArray(subQuery, true)
+
+                        if (!(subQuery instanceof Array) || !subQuery.length) {
+                            newFind = null
+                            break
+                        }
+
+                        if (!newFind._id)
+                            newFind._id = {}
 
                         if (!newFind._id.$in) {
                             newFind._id.$in = subQuery
                         } else {
-                            newFind._id.$in = {
+                            newFind._id.$in = [
                                 ...newFind._id.$in,
                                 ...subQuery
-                            }
+                            ]
                         }
                     } else {
                         let subConditions = {}
                         subConditions[rt.remaining] = conditions[key]
-
-                        if (!newFind[`${rt.attrSearch}.id`])
-                            newFind[`${rt.attrSearch}.id`] = {}
 
                         let attr = rt.remaining
                         if (rt.remaining.match(/\./g))
@@ -165,9 +184,17 @@ module.exports = class Restful {
                             throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.targetSync.name}!`)
 
                         let subQuery = await this.query(subConditions, rt.targetSync, rt.descriptor, {
-                            select: '_id', skip, limit, sort, internalSearch: true, selectCount
+                            select: '_id', internalSearch: true, selectCount: false
                         })
                         subQuery = subQuery.map(e => e._id)
+
+                        if (!(subQuery instanceof Array) || !subQuery.length) {
+                            newFind = null
+                            break
+                        }
+
+                        if (!newFind[`${rt.attrSearch}.id`])
+                            newFind[`${rt.attrSearch}.id`] = {}
 
                         if (!newFind[`${rt.attrSearch}.id`].$in) {
                             newFind[`${rt.attrSearch}.id`].$in = subQuery
@@ -184,6 +211,9 @@ module.exports = class Restful {
 
         if (!internalSearch)
             return newFind
+
+        if (newFind === null)
+            return []
 
         if (typeof targetSync === 'string')
             targetSync = { name: targetSync }

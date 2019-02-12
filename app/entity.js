@@ -263,6 +263,9 @@ module.exports = class Entity {
                 }
             }
 
+            if (!newFind.$and || !(newFind.$and instanceof Array) || !newFind.$and.length)
+                delete newFind.$and
+
             if (req.query[restful.selectCountName] == 'true') {
                 res._content_ = await restful.query(newFind, that, that.descriptor, { 
                     limit, skip, selectCount: true, internalSearch: true
