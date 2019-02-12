@@ -259,7 +259,7 @@ module.exports = class Restful {
         return data
     }
 
-    syncronized (entityName, target, field, source, nameSyncronized) {
+    applySyncronized (entityName, target, field, source, nameSyncronized) {
         try {
             if (!target.syncronized)
                 target.syncronized = {}
@@ -272,7 +272,7 @@ module.exports = class Restful {
 
                 nameSyncronized = nameSyncronized.split('.').slice(1).join('.')
 
-                this.syncronized(entityName, target.syncronized[newNameSyncronized], field, source, nameSyncronized)
+                this.applySyncronized(entityName, target.syncronized[newNameSyncronized], field, source, nameSyncronized)
             } else {
                 if (!target.syncronized[nameSyncronized])
                     target.syncronized[nameSyncronized] = { attrs: [], descriptors: [] }
@@ -296,7 +296,7 @@ module.exports = class Restful {
         }
     }
 
-    sync (source, nameSyncronized) {
+    applySync (source, nameSyncronized) {
         try {
             for (let field in source.sync) {
                 if (field === 'sync') continue
@@ -315,11 +315,11 @@ module.exports = class Restful {
                         this.entities[entityName] = subEntity
                     }
 
-                    this.syncronized(entityName, subEntity, field, source, nameSyncronized)
+                    this.applySyncronized(entityName, subEntity, field, source, nameSyncronized)
                 }
 
                 if (options.sync)
-                    this.sync(options, `${nameSyncronized}.${field}`)
+                    this.applySync(options, `${nameSyncronized}.${field}`)
             }
         } catch (err) {
             throw internalError(err, this)
@@ -331,7 +331,7 @@ module.exports = class Restful {
             if (this.entities[entity.name])
                 Object.assign(entity, this.entities[entity.name])
             this.entities[entity.name] = entity
-            this.sync(entity, entity.name)
+            this.applySync(entity, entity.name)
         } catch (err) {
             throw internalError(err, this)
         }
@@ -474,9 +474,12 @@ module.exports = class Restful {
                     if (options.fill)
                         recursive = recursive || 1
 
-                    let syncSubEntity = subEntity.sync
+                    let syncSubEntity
 
-                    if (syncs && syncs[subEntity.name])
+                    if (subEntity && subEntity.sync)
+                        syncSubEntity = subEntity.sync
+
+                    if (subEntity && subEntity.name && syncs && syncs[subEntity.name])
                         syncSubEntity = syncs[subEntity.name]
                     
                     for (let [se, index] of enumerate(subEntities))
