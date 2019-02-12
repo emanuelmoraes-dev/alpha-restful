@@ -374,7 +374,10 @@ module.exports = class Restful {
         }
     }
 
-    async fill (data, sync, id=null, rec=true, ignoreFillProperties=[], jsonIgnoreProperties=[]) {
+    async fill (data, sync, id=null, rec=true, { 
+        ignoreFillProperties=[], jsonIgnoreProperties=[],
+        syncs={}
+    }={}) {
         let newIgnoreFillProperties = [...ignoreFillProperties]
         let newJsonIgnoreProperties = [...jsonIgnoreProperties]
         try {
@@ -470,13 +473,26 @@ module.exports = class Restful {
                         
                     if (options.fill)
                         recursive = recursive || 1
+
+                    let syncSubEntity = subEntity.sync
+
+                    if (syncs && syncs[subEntity.name])
+                        syncSubEntity = syncs[subEntity.name]
                     
                     for (let [se, index] of enumerate(subEntities))
-                        subEntities[index] = await this.fill(se, subEntity.sync, se._id, recursive, newIgnoreFillProperties, newJsonIgnoreProperties)
+                        subEntities[index] = await this.fill(se, syncSubEntity, se._id, recursive, {
+                            ignoreFillProperties: newIgnoreFillProperties, 
+                            jsonIgnoreProperties: newJsonIgnoreProperties ,
+                            syncs
+                        })
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
-                            value[index] = await this.fill(v, options.sync, id, recursive, newIgnoreFillProperties, newJsonIgnoreProperties)
+                            value[index] = await this.fill(v, options.sync, id, recursive, {
+                                ignoreFillProperties: newIgnoreFillProperties, 
+                                jsonIgnoreProperties: newJsonIgnoreProperties ,
+                                syncs
+                            })
 
                     for (let [v, index] of enumerate(value)) {
                         value[index] = {
