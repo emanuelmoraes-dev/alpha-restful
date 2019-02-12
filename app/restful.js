@@ -113,8 +113,13 @@ module.exports = class Restful {
                             newFind[key].indexOf(null)+1 || !newFind[key].length)) {
                         newFind = null
                         break
-                    } else if (newFind[key] instanceof Array) {
+                    } else if (key !== '$and' && newFind[key] instanceof Array &&
+                            newFind[key].length) {
                         newFind[key] = newFind[key].filter(c => c !== null)
+                        if (!newFind[key].length) {
+                            newFind = null
+                            break
+                        }
                     }
 
                     continue
