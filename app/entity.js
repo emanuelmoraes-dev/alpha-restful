@@ -12,7 +12,8 @@ module.exports = class Entity {
         methods=[],
         ignoreFieldsRecursiveSubEntity=false,
         ignoreFieldsRecursive=false,
-        removeInvalidRelationships=true
+        removeInvalidRelationships=true,
+        filteredSearch=true
     }={}) {
         Object.assign(this, {
             name,
@@ -24,7 +25,8 @@ module.exports = class Entity {
             methods,
             ignoreFieldsRecursiveSubEntity,
             ignoreFieldsRecursive,
-            removeInvalidRelationships
+            removeInvalidRelationships,
+            filteredSearch
         })
 
         this.syncronized = {}
@@ -223,45 +225,47 @@ module.exports = class Entity {
 
             let newFind = { $and: [] }
 
-            for (let key in req.query) {
-                if ([
-                restful.selectCountName, restful.selectName, 
-                restful.limiteName, restful.skipName,
-                restful.sortName
-                ].indexOf(key)+1) continue
+            if (that.filteredSearch) {
+                for (let key in req.query) {
+                    if ([
+                    restful.selectCountName, restful.selectName, 
+                    restful.limiteName, restful.skipName,
+                    restful.sortName
+                    ].indexOf(key)+1) continue
 
-                if (key.endsWith('__regex')) {
-                    let value = req.query[key]
-                    key = key.split('__regex')[0]
-                    let regexp = value.split('/')
-                    regexp = new RegExp(regexp[1], regexp[2])
-
-                    let condition = {}
-                    condition[key] = regexp
-
-                    newFind.$and.push(condition)
-
-                } else if (key.match(/__/)) {
-                    let keyArray = key.split(/__/)
-                    if (['$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
+                    if (key.endsWith('__regex')) {
+                        let value = req.query[key]
+                        key = key.split('__regex')[0]
+                        let regexp = value.split('/')
+                        regexp = new RegExp(regexp[1], regexp[2])
 
                         let condition = {}
-                        condition[keyArray[0]] = {}
-                        condition[keyArray[0]][keyArray[1]] = req.query[key]
+                        condition[key] = regexp
 
                         newFind.$and.push(condition)
 
+                    } else if (key.match(/__/)) {
+                        let keyArray = key.split(/__/)
+                        if (['$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
+
+                            let condition = {}
+                            condition[keyArray[0]] = {}
+                            condition[keyArray[0]][keyArray[1]] = req.query[key]
+
+                            newFind.$and.push(condition)
+
+                        } else {
+                            let condition = {}
+                            condition[key] = req.query[key]
+
+                            newFind.$and.push(condition)
+                        }
                     } else {
                         let condition = {}
                         condition[key] = req.query[key]
 
                         newFind.$and.push(condition)
                     }
-                } else {
-                    let condition = {}
-                    condition[key] = req.query[key]
-
-                    newFind.$and.push(condition)
                 }
             }
 
