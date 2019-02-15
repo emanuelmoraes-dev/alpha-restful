@@ -11,7 +11,8 @@ module.exports = class Entity {
         projectionDefault=null,
         methods=[],
         ignoreFieldsRecursiveSubEntity=false,
-        ignoreFieldsRecursive=false
+        ignoreFieldsRecursive=false,
+        removeInvalidRelationships=true
     }={}) {
         Object.assign(this, {
             name,
@@ -22,7 +23,8 @@ module.exports = class Entity {
             projectionDefault,
             methods,
             ignoreFieldsRecursiveSubEntity,
-            ignoreFieldsRecursive
+            ignoreFieldsRecursive,
+            removeInvalidRelationships
         })
 
         this.syncronized = {}
@@ -393,7 +395,8 @@ module.exports = class Entity {
     beforeDeleteSync (restful) {
         const that = this
         return async function (req, res, next) {
-            await restful.deleteSync(req.params.id, that.name, that.syncronized)
+            if (that.removeInvalidRelationships)
+                await restful.deleteSync(req.params.id, that.name, that.syncronized)
         }
     }
 
@@ -401,6 +404,10 @@ module.exports = class Entity {
 
         for (let descriptor of options.descriptors) {
             let field = descriptor.field
+            let ignoreInvalidRelationships = descriptor.ignoreInvalidRelationships
+
+            if (ignoreInvalidRelationships)
+                continue
 
             if (target[field] === undefined || target[field] === null)
                 continue
