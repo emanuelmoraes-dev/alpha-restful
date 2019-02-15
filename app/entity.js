@@ -34,6 +34,28 @@ module.exports = class Entity {
         this.model = null
     }
 
+    prepareRouter(fn) {
+        return async function (req, res, next) {
+            return await new Promise((resolve, reject) => {
+
+                next = function () {
+                    let arg = arguments[0]
+
+                    if (arg)
+                        reject(arg)
+                    else
+                        resolve()
+                }
+
+                let rt = fn(req, res, next)
+
+                if (rt && typeof rt.then === 'function') {
+                    rt.then(() => resolve()).catch(err => reject(err))
+                }
+            })
+        }
+    }
+
     applyRouters (app, restful) {
         if (!app) return
 
@@ -58,14 +80,14 @@ module.exports = class Entity {
     findOneRouter (restful) {
         let that = this
         return restful.execAsync(
-            this.beforeGet.bind(this),
+            this.prepareRouter(this.beforeGet.bind(this)),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
                 // res._content_ = copyEntity(res._content_)
             }, 
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
-            this.afterGet.bind(this),
+            this.prepareRouter(this.afterGet.bind(this)),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -77,11 +99,11 @@ module.exports = class Entity {
             return
 
         return restful.execAsync(
-            this.beforeGet.bind(this),
+            this.prepareRouter(this.beforeGet.bind(this)),
             this.query(restful),
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
-            this.afterGet.bind(this),
+            this.prepareRouter(this.afterGet.bind(this)),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -94,14 +116,14 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.beforePost.bind(this),
+            this.prepareRouter(this.beforePost.bind(this)),
             async function (req, res, next) {
                 // req.body = prepareEntity(req.body, that.descriptor)
                 const entity = new that.model(req.body)
                 await entity.save()
                 res._content_ = entity
             },
-            this.beforePost.bind(this),
+            this.prepareRouter(this.afterPost.bind(this)),
             async function (req, res, next) {
                 res.status(201).send(res._content_)
             }
@@ -114,7 +136,7 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.beforePut.bind(this),
+            this.prepareRouter(this.beforePut.bind(this)),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
                     // req.body = prepareEntity(req.body, that.descriptor)
@@ -131,7 +153,7 @@ module.exports = class Entity {
                     )
                 })
             },
-            this.afterPut.bind(this),
+            this.prepareRouter(this.afterPut.bind(this)),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -144,7 +166,7 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.beforeDelete.bind(this),
+            this.prepareRouter(this.beforeDelete.bind(this)),
             this.beforeDeleteSync(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
@@ -154,7 +176,7 @@ module.exports = class Entity {
                     })
                 })
             },
-            this.afterDelete.bind(this),
+            this.prepareRouter(this.afterDelete.bind(this)),
             async function (req, res, next) {
                 res.status(204).end()
             }
@@ -167,7 +189,7 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.beforePut.bind(this),
+            this.prepareRouter(this.afterPatch.bind(this)),
             async function (req, res, next) {
                 const id = req.params.id
                 req.body._id = id
@@ -199,7 +221,7 @@ module.exports = class Entity {
                     )
                 })
             },
-            this.afterPut.bind(this),
+            this.prepareRouter(this.afterPatch.bind(this)),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
