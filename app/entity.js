@@ -29,6 +29,9 @@ module.exports = class Entity {
             filteredSearch
         })
 
+        if (this.resource && this.resource[0] === '/')
+            this.resource = this.resource.substring(1)
+
         this.syncronized = {}
         this.schema = null
         this.model = null
