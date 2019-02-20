@@ -109,7 +109,7 @@ module.exports = class Restful {
         } else {
             newFind = {}
             for (let key in conditions) {
-                if (['select', 'sort', 'limit', 'skip', 'sort'].indexOf(key)+1) continue
+                if (['select', 'sort', 'limit', 'skip'].indexOf(key)+1) continue
                 if (['$or', '$and', '$in', '$nin'].indexOf(key)+1) {
                     newFind[key] = await this.query(conditions[key], target, descriptor, {
                         internalSearch: false, selectCount: false
@@ -259,10 +259,10 @@ module.exports = class Restful {
         if (selectCount === 'true' || selectCount === true) {
             find = entity.model.countDocuments(newFind)
 
-            if (!Number.isNaN(limit))
+            if (limit === 0 || limit)
                 find = find.limit(limit)
             
-            if (!Number.isNaN(skip))
+            if (skip === 0 || skip)
                 find = find.skip(skip)
 
             data = {
@@ -271,10 +271,10 @@ module.exports = class Restful {
         } else {
             find = entity.model.find(newFind)
 
-            if (!Number.isNaN(limit))
+            if (limit === 0 || limit)
                 find = find.limit(limit)
             
-            if (!Number.isNaN(skip))
+            if (skip === 0 || skip)
                 find = find.skip(skip)
 
             if (sort)
