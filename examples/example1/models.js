@@ -77,9 +77,13 @@ restful.add(new Entity({
             name: 'People',
             virtual: true,
             fill: true,
-            find: {
-                age: { $gt: 30 }
-            }
+            // selectCount: true,
+            // select: 'name',
+            // limit: 2,
+            // skip: 1,
+            // find: {
+                // age: { $gt: 20 }
+            //}
         }
     }
 }))

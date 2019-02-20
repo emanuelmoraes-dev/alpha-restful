@@ -184,8 +184,7 @@ module.exports = class Restful {
                         }
                     } else if (rt.virtual) {
 
-                        if (!rt.find)
-                            throw new Error(`Opção 'find' obrigatório para atributos virtuais`)
+                        rt.find = rt.find || {}
 
                         let subConditions = {}
                         subConditions[rt.remaining] = conditions[key]
@@ -538,12 +537,14 @@ module.exports = class Restful {
                     if (subEntity && subEntity.name && syncs && syncs[subEntity.name])
                         syncSubEntity = syncs[subEntity.name]
                     
-                    for (let [se, index] of enumerate(subEntities))
-                        subEntities[index] = await this.fill(se, syncSubEntity, se._id, recursive, {
-                            ignoreFillProperties: newIgnoreFillProperties, 
-                            jsonIgnoreProperties: newJsonIgnoreProperties ,
-                            syncs
-                        })
+                    if (options.selectCount !== true && options.selectCount !== 'true' || !options.virtual) {
+                        for (let [se, index] of enumerate(subEntities))
+                            subEntities[index] = await this.fill(se, syncSubEntity, se._id, recursive, {
+                                ignoreFillProperties: newIgnoreFillProperties, 
+                                jsonIgnoreProperties: newJsonIgnoreProperties ,
+                                syncs
+                            })
+                    }
 
                     if (!options.virtual) {
                         for (let [v, index] of enumerate(value))
