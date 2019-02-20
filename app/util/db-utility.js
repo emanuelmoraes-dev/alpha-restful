@@ -52,12 +52,9 @@ module.exports = exports = {
     },
     patchUpdate (target, source) {
         if (!target) return source
+        if (source instanceof Array) return source
 
-        if (source instanceof Array) {
-            for (let [value, index] of enumerate(source)) {
-                target[index] = exports.patchUpdate(target[index], value)
-            }
-        } else if (source && typeof source === 'object' && !(source instanceof Date)) {
+        if (source && typeof source === 'object' && !(source instanceof Date)) {
             for (let key in source) {
                 let value = source[key]
                 target[key] = exports.patchUpdate(target[key], value)

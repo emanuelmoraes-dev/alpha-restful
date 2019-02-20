@@ -12,8 +12,10 @@ module.exports = class Entity {
         methods=[],
         ignoreFieldsRecursiveSubEntity=false,
         ignoreFieldsRecursive=false,
-        removeInvalidRelationships=true,
-        filteredSearch=true
+        removeSync=true,
+        querySync=true,
+        fillSync=true,
+        verifyRelationshipSync=false
     }={}) {
         Object.assign(this, {
             name,
@@ -25,8 +27,10 @@ module.exports = class Entity {
             methods,
             ignoreFieldsRecursiveSubEntity,
             ignoreFieldsRecursive,
-            removeInvalidRelationships,
-            filteredSearch
+            removeSync,
+            querySync,
+            fillSync,
+            verifyRelationshipSync
         })
 
         if (this.resource && this.resource[0] === '/')
@@ -37,8 +41,22 @@ module.exports = class Entity {
         this.model = null
     }
 
-    prepareRouter(fn) {
+    getRouteHandler(handlerName, parseEntity) {
+        const that = this
+
+        if (['beforeQuery', 'afterQuery', 'beforeCreate', 'afterCreate', 
+        'beforeRemove', 'afterRemove', 'beforeEdit', 'afterEdit'].indexOf(handlerName) == -1)
+            throw new Error(`Handler ${handlerName} Inválido!`)
+
         return async function (req, res, next) {
+
+            let handler
+
+            if (parseEntity)
+                handler = that[handlerName].bind(that, res._content_)
+            else
+                handler = that[handlerName].bind(that)
+
             return await new Promise((resolve, reject) => {
 
                 next = function () {
@@ -50,7 +68,7 @@ module.exports = class Entity {
                         resolve()
                 }
 
-                let rt = fn(req, res, next)
+                let rt = handler(req, res, next)
 
                 if (rt && typeof rt.then === 'function') {
                     rt.then(() => resolve()).catch(err => reject(err))
@@ -83,16 +101,19 @@ module.exports = class Entity {
     findOneRouter (restful) {
         let that = this
         return restful.execAsync(
-            this.prepareRouter(this.beforeGet.bind(this)),
+            this.getRouteHandler('beforeQuery', false),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
                 // res._content_ = copyEntity(res._content_)
             }, 
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
-            this.prepareRouter(this.afterGet.bind(this)),
+            this.getRouteHandler('afterQuery', true),
             async function (req, res, next) {
-                res.status(200).send(res._content_)
+                if (res._content_)
+                    res.status(200).send(res._content_)
+                else
+                    throw new IlegallArgumentError(`Entidade com id ${req.params.id} inexistente!`)
             }
         )
     }
@@ -102,11 +123,11 @@ module.exports = class Entity {
             return
 
         return restful.execAsync(
-            this.prepareRouter(this.beforeGet.bind(this)),
-            this.query(restful),
+            this.getRouteHandler('beforeQuery', false),
+            this.getQuery(restful),
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
-            this.prepareRouter(this.afterGet.bind(this)),
+            this.getRouteHandler('afterQuery', true),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -119,14 +140,15 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.prepareRouter(this.beforePost.bind(this)),
             async function (req, res, next) {
                 // req.body = prepareEntity(req.body, that.descriptor)
-                const entity = new that.model(req.body)
-                await entity.save()
-                res._content_ = entity
+                res._content_ = new that.model(req.body)
             },
-            this.prepareRouter(this.afterPost.bind(this)),
+            this.getRouteHandler('beforeCreate', true),
+            async function (req, res, next) {
+                await res._content_.save()
+            },
+            this.getRouteHandler('afterCreate', true),
             async function (req, res, next) {
                 res.status(201).send(res._content_)
             }
@@ -139,14 +161,21 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.prepareRouter(this.beforePut.bind(this)),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
                     // req.body = prepareEntity(req.body, that.descriptor)
                     req.body._id = req.params.id
+                    res._content_ = req.body
+                    resolve()
+                })
+            },
+            this.getRouteHandler('beforeEdit', true),
+            this.beforeCreateAndEditVerifyRelationship(restful),
+            async function (req, res, next) {
+                return await new Promise((resolve, reject) => {
                     that.model.findByIdAndUpdate(
                         req.params.id,
-                        req.body,
+                        res._content_,
                         {new: true},
                         (err, todo) => {
                             if (err) return reject(internalError(err, restful))
@@ -156,7 +185,7 @@ module.exports = class Entity {
                     )
                 })
             },
-            this.prepareRouter(this.afterPut.bind(this)),
+            this.getRouteHandler('afterEdit', true),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -169,17 +198,15 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.prepareRouter(this.beforeDelete.bind(this)),
+            async function (req, res, next) {
+                res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
+            },
+            this.getRouteHandler('beforeRemove', true),
             this.beforeDeleteSync(restful),
             async function (req, res, next) {
-                return await new Promise((resolve, reject) => {
-                    that.model.findByIdAndRemove(req.params.id, (err, todo) => {
-                        if (err) return reject(internalError(err, restful))
-                        resolve()
-                    })
-                })
+                await res._content_.remove()
             },
-            this.prepareRouter(this.afterDelete.bind(this)),
+            this.getRouteHandler('afterRemove', true),
             async function (req, res, next) {
                 res.status(204).end()
             }
@@ -192,7 +219,6 @@ module.exports = class Entity {
 
         const that = this
         return restful.execAsync(
-            this.prepareRouter(this.afterPatch.bind(this)),
             async function (req, res, next) {
                 const id = req.params.id
                 req.body._id = id
@@ -210,11 +236,15 @@ module.exports = class Entity {
                         ...req.body
                     }
 
+                res._content_ = content
+            },
+            this.getRouteHandler('beforeEdit', true),
+            this.beforeCreateAndEditVerifyRelationship(restful),
+            async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
-                    
                     that.model.findByIdAndUpdate(
-                        id,
-                        content,
+                        req.params.id,
+                        res._content_,
                         {new: true},
                         (err, todo) => {
                             if (err) return reject(internalError(err, restful))
@@ -224,88 +254,112 @@ module.exports = class Entity {
                     )
                 })
             },
-            this.prepareRouter(this.afterPatch.bind(this)),
+            this.getRouteHandler('afterEdit', true),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
         )
     }
 
-    query (restful) {
-        const that = this
-        return async function (req, res, next) {
-            let select = null
+    async query (find, restful) {
+        let select = null
 
-            if (req.query[restful.selectName]) {
-                select = req.query[restful.selectName]
-                select = select.split(/[,./\\; -+_]+/g).join(' ')
-            }
+        if (find[restful.selectName]) {
+            select = find[restful.selectName]
+            select = select.split(/[,./\\; -+_]+/g).join(' ')
+        }
 
-            let limit = parseInt(req.query[restful.limiteName])
-            let skip = parseInt(req.query[restful.skipName])
-            let sort
+        let limit = parseInt(find[restful.limiteName])
+        let skip = parseInt(find[restful.skipName])
+        let sort
 
-            if (req.query[restful.sortName])
-                sort = req.query[restful.sortName]
+        if (find[restful.sortName])
+            sort = find[restful.sortName]
 
-            let newFind = { $and: [] }
+        let newFind = { $and: [] }
 
-            if (that.filteredSearch) {
-                for (let key in req.query) {
-                    if ([
-                    restful.selectCountName, restful.selectName, 
-                    restful.limiteName, restful.skipName,
-                    restful.sortName
-                    ].indexOf(key)+1) continue
+        if (this.querySync) {
+            for (let key in find) {
+                if ([
+                restful.selectCountName, restful.selectName, 
+                restful.limiteName, restful.skipName,
+                restful.sortName
+                ].indexOf(key)+1) continue
 
-                    if (key.endsWith('__regex')) {
-                        let value = req.query[key]
-                        key = key.split('__regex')[0]
-                        let regexp = value.split('/')
-                        regexp = new RegExp(regexp[1], regexp[2])
+                if (key.endsWith('__regex')) {
+                    let value = find[key]
+                    key = key.split('__regex')[0]
+                    let regexp = value.split('/')
+                    regexp = new RegExp(regexp[1], regexp[2])
+
+                    let condition = {}
+                    condition[key] = regexp
+
+                    newFind.$and.push(condition)
+
+                } else if (key.match(/__/)) {
+                    let keyArray = key.split(/__/)
+                    if (['$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
 
                         let condition = {}
-                        condition[key] = regexp
+                        condition[keyArray[0]] = {}
+                        condition[keyArray[0]][keyArray[1]] = find[key]
 
                         newFind.$and.push(condition)
 
-                    } else if (key.match(/__/)) {
-                        let keyArray = key.split(/__/)
-                        if (['$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
-
-                            let condition = {}
-                            condition[keyArray[0]] = {}
-                            condition[keyArray[0]][keyArray[1]] = req.query[key]
-
-                            newFind.$and.push(condition)
-
-                        } else {
-                            let condition = {}
-                            condition[key] = req.query[key]
-
-                            newFind.$and.push(condition)
-                        }
                     } else {
                         let condition = {}
-                        condition[key] = req.query[key]
+                        condition[key] = find[key]
 
                         newFind.$and.push(condition)
                     }
+                } else {
+                    let condition = {}
+                    condition[key] = find[key]
+
+                    newFind.$and.push(condition)
                 }
             }
+        }
 
-            if (!newFind.$and || !(newFind.$and instanceof Array) || !newFind.$and.length)
-                delete newFind.$and
+        if (!newFind.$and || !(newFind.$and instanceof Array) || !newFind.$and.length)
+            delete newFind.$and
 
-            if (req.query[restful.selectCountName] == 'true') {
-                res._content_ = await restful.query(newFind, that, that.descriptor, { 
-                    limit, skip, selectCount: true, internalSearch: true
-                })
-            } else {
-                res._content_ = await restful.query(newFind, that, that.descriptor, {
-                    limit, skip, sort, select, internalSearch: true
-                })
+        if (find[restful.selectCountName] == 'true') {
+            return await restful.query(newFind, this, this.descriptor, { 
+                limit, skip, selectCount: true, internalSearch: true
+            })
+        } else {
+            return await restful.query(newFind, this, this.descriptor, {
+                limit, skip, sort, select, internalSearch: true
+            })
+        }
+    }
+
+    getQuery (restful) {
+        const that = this
+        return async function (req, res, next) {
+            res._content_ = await that.query(req.query, restful)
+        }
+    }
+
+    async existsInvalidIds (ids, restful) {
+        try {
+            for (let id of ids) {
+
+                if (!id)
+                    throw new IlegallArgumentError(`Erro! id vazio.`)
+
+                let count = await this.model.countDocuments({
+                    _id: id
+                }).exec()
+                
+                if (!count)
+                    return id
             }
+            return false
+        } catch (err) {
+            throw internalError(err, restful)
         }
     }
 
@@ -360,7 +414,8 @@ module.exports = class Entity {
     afterGetFill (restful) {
         const that = this
         return async function (req, res, next) {
-            res._content_ = await that.fill(res._content_, restful)
+            if (that.fillSync)
+                res._content_ = await that.fill(res._content_, restful)
         }
     }
 
@@ -424,7 +479,7 @@ module.exports = class Entity {
     beforeDeleteSync (restful) {
         const that = this
         return async function (req, res, next) {
-            if (that.removeInvalidRelationships)
+            if (that.removeSync)
                 await restful.deleteSync(req.params.id, that.name, that.syncronized)
         }
     }
@@ -457,18 +512,43 @@ module.exports = class Entity {
         return target
     }
 
-    async beforeGet (req, res, next){}
-    async afterGet (req, res, next){}
+    async verifyRelationship (content, restful) {
+        try {
+            if (!content)
+                return
 
-    async beforePost (req, res, next){}
-    async afterPost (req, res, next){}
+            if (!(content instanceof Array))
+                content = [content]
 
-    async beforePut (req, res, next){}
-    async afterPut (req, res, next){}
+            for (let { value, index } of enumerate(content)) {
+                if (!value)
+                    continue
 
-    async beforeDelete (req, res, next){}
-    async afterDelete (req, res, next){}
+                // value = copyEntity(value)
+                await restful.verifyRelationship(value, this.sync)
+            }
+        } catch (err) {
+            throw internalError(err, restful)
+        }
+    }
 
-    async beforePatch (req, res, next){}
-    async afterPatch (req, res, next){}
+    beforeCreateAndEditVerifyRelationship (restful) {
+        const that = this
+        return async function (req, res, next) {
+            if (that.verifyRelationshipSync)
+                await that.verifyRelationship(res._content_, restful)
+        }
+    }
+
+    async beforeQuery (req, res, next){}
+    async afterQuery (entity, req, res, next){}
+
+    async beforeCreate (entity, req, res, next){}
+    async afterCreate (entity, req, res, next){}
+
+    async beforeRemove (entity, req, res, next){}
+    async afterRemove (entity, req, res, next){}
+
+    async beforeEdit (entity, req, res, next){}
+    async afterEdit (entity, req, res, next){}
 }

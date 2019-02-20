@@ -64,3 +64,22 @@ restful.add(new Entity({
         }
     }
 }))
+
+restful.add(new Entity({
+    name: 'Family',
+    resource: '/families',
+    methods: ['get', 'post', 'put', 'delete', 'patch'],
+    descriptor: {
+        name: String
+    },
+    sync: {
+        peoples: {
+            name: 'People',
+            virtual: true,
+            fill: true,
+            find: {
+                age: { $gt: 30 }
+            }
+        }
+    }
+}))
