@@ -15,7 +15,10 @@ module.exports = class Entity {
         removeSync=true,
         querySync=true,
         fillSync=true,
-        verifyRelationshipSync=false
+        verifyIdsSync=false,
+        verifyRelationshipSync=true,
+        deleteCascadeSync=true,
+        requiredSync=true
     }={}) {
         Object.assign(this, {
             name,
@@ -30,7 +33,10 @@ module.exports = class Entity {
             removeSync,
             querySync,
             fillSync,
-            verifyRelationshipSync
+            verifyIdsSync,
+            verifyRelationshipSync,
+            deleteCascadeSync,
+            requiredSync
         })
 
         if (this.resource && this.resource[0] === '/')
@@ -170,7 +176,7 @@ module.exports = class Entity {
                 })
             },
             this.getRouteHandler('beforeEdit', true),
-            this.beforeCreateAndEditVerifyRelationship(restful),
+            this.beforeCreateAndEditVerifyIds(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
                     that.model.findByIdAndUpdate(
@@ -239,7 +245,7 @@ module.exports = class Entity {
                 res._content_ = content
             },
             this.getRouteHandler('beforeEdit', true),
-            this.beforeCreateAndEditVerifyRelationship(restful),
+            this.beforeCreateAndEditVerifyIds(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
                     that.model.findByIdAndUpdate(
@@ -487,6 +493,10 @@ module.exports = class Entity {
     deleteCascadeAttrs (subEntityId, options, target) {
 
         for (let descriptor of options.descriptors) {
+
+            if (descriptor.ignoreVerifyRelationship)
+                continue
+
             let field = descriptor.field
             let ignoreInvalidRelationships = descriptor.ignoreInvalidRelationships
 
@@ -512,7 +522,7 @@ module.exports = class Entity {
         return target
     }
 
-    async verifyRelationship (content, restful) {
+    async verifyIds (content, restful) {
         try {
             if (!content)
                 return
@@ -525,18 +535,18 @@ module.exports = class Entity {
                     continue
 
                 // value = copyEntity(value)
-                await restful.verifyRelationship(value, this.sync)
+                await restful.verifyIds(value, this.sync)
             }
         } catch (err) {
             throw internalError(err, restful)
         }
     }
 
-    beforeCreateAndEditVerifyRelationship (restful) {
+    beforeCreateAndEditVerifyIds (restful) {
         const that = this
         return async function (req, res, next) {
-            if (that.verifyRelationshipSync)
-                await that.verifyRelationship(res._content_, restful)
+            if (that.verifyIdsSync)
+                await that.verifyIds(res._content_, restful)
         }
     }
 

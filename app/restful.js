@@ -622,60 +622,69 @@ module.exports = class Restful {
 
     async deleteSync (id, name, syncronized) {
         try {
+            const entity = this.entities[name]
+
             if (!id || !syncronized) return
 
-            for (let entityName in syncronized) {
-                let options = syncronized[entityName]
-                let subEntity = this.entities[entityName]
+            if (entity.requiredSync) {
+                for (let entityName in syncronized) {
+                    let options = syncronized[entityName]
+                    let subEntity = this.entities[entityName]
 
-                let count = 0
+                    let count = 0
 
-                let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.required)
+                    let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.required)
 
-                if (conditions.length) {
-                    count = await subEntity.model.count({
-                        $or: conditions
-                    }).exec()
-                }
-                
-                if (count)
-                    throw new IlegallArgumentError(`A entidade ${name} não pode ser removida pois está vinculada com a entidade ${entityName}!`)
-            }
-
-            for (let entityName in syncronized) {
-                let options = syncronized[entityName]
-                let subEntity = this.entities[entityName]
-
-                let entities = []
-
-                let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.deleteCascade)
-
-                if (conditions.length) {
-                    entities = await subEntity.model.find({
-                        $or: conditions
-                    }).exec()
-                }
-
-                for (let entity of entities)
-                    await subEntity.model.findByIdAndRemove(`${entity.id}`).exec()
-            }
-
-            for (let entityName in syncronized) {
-                let options = syncronized[entityName]
-                let subEntity = this.entities[entityName]
-                
-                let conditions = this.getConditionsBySyncronizedEntity(id, options)
-                
-                if (conditions.length) {
-                    let entities = await subEntity.model.find({
-                        $or: conditions
-                    }).exec()
+                    if (conditions.length) {
+                        count = await subEntity.model.count({
+                            $or: conditions
+                        }).exec()
+                    }
                     
-                    entities = copyEntity(entities)
+                    if (count)
+                        throw new IlegallArgumentError(`A entidade ${name} não pode ser removida pois está vinculada com a entidade ${entityName}!`)
+                }
+            }
 
-                    for (let entity of entities) {
-                        entity = subEntity.deleteCascadeAttrs(id, options, entity)
-                        await subEntity.model.findByIdAndUpdate(entity._id, entity, { new: true }).exec()
+            if (entity.deleteCascadeSync) {
+                for (let entityName in syncronized) {
+                    let options = syncronized[entityName]
+                    let subEntity = this.entities[entityName]
+
+                    let entities = []
+
+                    let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.deleteCascade)
+
+                    if (conditions.length) {
+                        entities = await subEntity.model.find({
+                            $or: conditions
+                        }).exec()
+                    }
+
+                    for (let entity of entities)
+                        await subEntity.model.findByIdAndRemove(`${entity.id}`).exec()
+                }
+            }
+
+            if (entity.verifyRelationshipSync) {
+                for (let entityName in syncronized) {
+                    let options = syncronized[entityName]
+                    let subEntity = this.entities[entityName]
+                    
+                    let conditions = this.getConditionsBySyncronizedEntity(id, options)
+                    
+                    if (conditions.length) {
+                        let entities = await subEntity.model.find({
+                            $or: conditions
+                        }).exec()
+                        
+                        entities = copyEntity(entities)
+
+                        
+                        for (let entity of entities) {
+                            entity = subEntity.deleteCascadeAttrs(id, options, entity)
+                            await subEntity.model.findByIdAndUpdate(entity._id, entity, { new: true }).exec()
+                        }
                     }
                 }
             }
@@ -684,13 +693,13 @@ module.exports = class Restful {
         }
     }
 
-    async verifyRelationship (data, sync, verifyRelationshipRec=true, {
-        ignoreVerifyRelationshipProperties=[]
+    async verifyIds (data, sync, verifyIdsRec=true, {
+        ignoreVerifyIdsProperties=[]
     }={}) {
-        let newIgnoreVerifyRelationshipProperties = [...ignoreVerifyRelationshipProperties]
+        let newIgnoreVerifyIdsProperties = [...ignoreVerifyIdsProperties]
         try {
-            if (!verifyRelationshipRec || !data || !sync) return
-            if (typeof verifyRelationshipRec === 'number' && verifyRelationshipRec > 0) verifyRelationshipRec--
+            if (!verifyIdsRec || !data || !sync) return
+            if (typeof verifyIdsRec === 'number' && verifyIdsRec > 0) verifyIdsRec--
 
             if (typeof sync === 'function')
                 sync = sync(data)
@@ -699,7 +708,7 @@ module.exports = class Restful {
 
             for (let attr in sync) {
                 if (attr === 'sync') continue
-                if (ignoreVerifyRelationshipProperties.indexOf(attr)+1) continue
+                if (ignoreVerifyIdsProperties.indexOf(attr)+1) continue
 
                 let options = sync[attr]
 
@@ -709,10 +718,10 @@ module.exports = class Restful {
                 if (!data[attr])
                     continue
 
-                if (options.ignoreVerifyRelationshipProperties && options.ignoreVerifyRelationshipProperties instanceof Array)
-                    newIgnoreVerifyRelationshipProperties.push(...options.ignoreVerifyRelationshipProperties)
-                else if (options.ignoreVerifyRelationshipProperties && typeof options.ignoreVerifyRelationshipProperties === 'string')
-                    newIgnoreVerifyRelationshipProperties.push(options.ignoreVerifyRelationshipProperties)
+                if (options.ignoreVerifyIdsProperties && options.ignoreVerifyIdsProperties instanceof Array)
+                    newIgnoreVerifyIdsProperties.push(...options.ignoreVerifyIdsProperties)
+                else if (options.ignoreVerifyIdsProperties && typeof options.ignoreVerifyIdsProperties === 'string')
+                    newIgnoreVerifyIdsProperties.push(options.ignoreVerifyIdsProperties)
                 
                 let value = data[attr]
                 
@@ -727,14 +736,14 @@ module.exports = class Restful {
 
                 let ids = value.map(v => v.id)
 
-                options.verifyRelationshipRec = options.verifyRelationshipRec || 0
+                options.verifyIdsRec = options.verifyIdsRec || 0
 
-                if (options.verifyRelationship !== false && 
-                (options.verifyRelationship ||
-                options.verifyRelationshipRec > 0 && verifyRelationshipRec === true || 
-                options.verifyRelationshipRec < 0 && verifyRelationshipRec === true ||
-                typeof(verifyRelationshipRec) === 'number' && verifyRelationshipRec > 0 || 
-                typeof(verifyRelationshipRec) === 'number' && verifyRelationshipRec < 0)) {
+                if (options.verifyIds !== false && 
+                (options.verifyIds ||
+                options.verifyIdsRec > 0 && verifyIdsRec === true || 
+                options.verifyIdsRec < 0 && verifyIdsRec === true ||
+                typeof(verifyIdsRec) === 'number' && verifyIdsRec > 0 || 
+                typeof(verifyIdsRec) === 'number' && verifyIdsRec < 0)) {
 
                     let subEntity = null
 
@@ -746,22 +755,22 @@ module.exports = class Restful {
                             throw new IlegallArgumentError(`O id ${invalid} não está registrado na entidade ${options.name}`)
                     }
 
-                    let recursive = verifyRelationshipRec
+                    let recursive = verifyIdsRec
                     
-                    if (verifyRelationshipRec === true && options.verifyRelationshipRec > 0)
-                        recursive = options.verifyRelationshipRec-1
-                    else if (verifyRelationshipRec === true && options.verifyRelationshipRec < 0)
-                        recursive = options.verifyRelationshipRec
-                    else if (verifyRelationshipRec === true)
+                    if (verifyIdsRec === true && options.verifyIdsRec > 0)
+                        recursive = options.verifyIdsRec-1
+                    else if (verifyIdsRec === true && options.verifyIdsRec < 0)
+                        recursive = options.verifyIdsRec
+                    else if (verifyIdsRec === true)
                         recursive = false
                         
-                    if (options.verifyRelationship)
+                    if (options.verifyIds)
                         recursive = recursive || 1
 
                     for (let [v, index] of enumerate(value))
                         if (options.sync)
-                            await this.verifyRelationship(v, options.sync, recursive, {
-                                ignoreVerifyRelationshipProperties: newIgnoreVerifyRelationshipProperties
+                            await this.verifyIds(v, options.sync, recursive, {
+                                ignoreVerifyIdsProperties: newIgnoreVerifyIdsProperties
                             })
                 }
             }
