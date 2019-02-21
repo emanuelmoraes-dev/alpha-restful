@@ -498,10 +498,6 @@ module.exports = class Entity {
                 continue
 
             let field = descriptor.field
-            let ignoreInvalidRelationships = descriptor.ignoreInvalidRelationships
-
-            if (ignoreInvalidRelationships)
-                continue
 
             if (target[field] === undefined || target[field] === null)
                 continue
