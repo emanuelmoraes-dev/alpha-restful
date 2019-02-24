@@ -511,7 +511,10 @@ module.exports = class Restful {
                             sort: options.sort
                         })
 
-                        subEntities = copyEntity(subEntities)
+                        if (options.selectCount !== true && options.selectCount !== 'true')
+                            subEntities = copyEntity(subEntities)
+                        else
+                            subEntities = [subEntities.count]
                     } else if (options.name && options.fill !== false) {
                         subEntity = this.entities[options.name]
                         subEntities = await subEntity.findByIds(ids, this)
@@ -572,7 +575,9 @@ module.exports = class Restful {
 
                         data[attr] = value
                     } else {
-                        if (!options.singleResult)
+                        if (options.selectCount === true || options.selectCount === 'true')
+                            data[attr] = subEntities[0]
+                        else if (!options.singleResult)
                             data[attr] = subEntities
                         else if (subEntities.length)
                             data[attr] = subEntities[0]
