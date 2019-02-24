@@ -641,9 +641,13 @@ module.exports = class Restful {
                     let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.required)
 
                     if (conditions.length) {
-                        count = await subEntity.model.count({
+                        count = await this.query({
                             $or: conditions
-                        }).exec()
+                        }, subEntity, subEntity.descriptor, { 
+                            selectCount: true 
+                        })
+
+                        count = count.count
                     }
                     
                     if (count)
@@ -661,9 +665,9 @@ module.exports = class Restful {
                     let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.deleteCascade)
 
                     if (conditions.length) {
-                        entities = await subEntity.model.find({
+                        entities = await this.query({
                             $or: conditions
-                        }).exec()
+                        }, subEntity, subEntity.descriptor)
                     }
 
                     for (let entity of entities)
@@ -679,13 +683,12 @@ module.exports = class Restful {
                     let conditions = this.getConditionsBySyncronizedEntity(id, options)
                     
                     if (conditions.length) {
-                        let entities = await subEntity.model.find({
+                        let entities = await this.query({
                             $or: conditions
-                        }).exec()
+                        }, subEntity, subEntity.descriptor)
                         
                         entities = copyEntity(entities)
 
-                        
                         for (let entity of entities) {
                             entity = subEntity.deleteCascadeAttrs(id, options, entity)
                             await subEntity.model.findByIdAndUpdate(entity._id, entity, { new: true }).exec()
