@@ -305,11 +305,21 @@ module.exports = class Entity {
 
                 } else if (key.match(/__/)) {
                     let keyArray = key.split(/__/)
-                    if (['$in', '$nin', '$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
+                    if (['$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(keyArray[1])+1) {
 
                         let condition = {}
                         condition[keyArray[0]] = {}
                         condition[keyArray[0]][keyArray[1]] = find[key]
+
+                        newFind.$and.push(condition)
+
+                    } else if (['$in', '$nin'].indexOf(keyArray[1])+1) {
+                        
+                        let value = find[key].split(',')
+
+                        let condition = {}
+                        condition[keyArray[0]] = {}
+                        condition[keyArray[0]][keyArray[1]] = value
 
                         newFind.$and.push(condition)
 
