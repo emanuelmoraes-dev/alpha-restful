@@ -581,7 +581,7 @@ module.exports = class Restful {
                     }
                 }
 
-                if (jsonIgnoreProperties.indexOf(attr)+1)
+                if (jsonIgnoreProperties.indexOf(attr)+1 || options.jsonIgnore)
                     delete data[attr]
             }
 
