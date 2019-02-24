@@ -397,7 +397,10 @@ module.exports = class Entity {
         }
     }
 
-    async fill (content, restful) {
+    async fill (content, restful, { 
+        ignoreFillProperties=[], jsonIgnoreProperties=[],
+        syncs={}
+    }={}) {
         try {
             let isOriginalArray = true
 
@@ -414,7 +417,10 @@ module.exports = class Entity {
                     continue
 
                 value = copyEntity(value)
-                content[index] = await restful.fill(value, this.sync, value._id)
+                content[index] = await restful.fill(value, this.sync, value._id, {
+                    ignoreFillProperties, jsonIgnoreProperties,
+                    syncs
+                })
                 content[index] = restful.ignoreFields(value, this.sync, 
                     this.ignoreFieldsRecursive, this.ignoreFieldsRecursiveSubEntity)
             }
