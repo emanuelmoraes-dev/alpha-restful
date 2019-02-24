@@ -93,7 +93,7 @@ module.exports = class Restful {
     }
 
     async query (conditions, target, descriptor, { 
-        select=false, skip=null, limit=null, 
+        select=null, skip=null, limit=null, 
         sort=null, internalSearch=true,
         selectCount=false
     } = {}) {
