@@ -486,8 +486,9 @@ module.exports = class Restful {
                 options.fillRec = options.fillRec || 0
 
                 if (!options.jsonIgnore && jsonIgnoreProperties.indexOf(attr) === -1 &&
-                options.fill !== false && 
-                (options.fill ||
+                !(options.fill === false && options.subFill === false) &&
+                (options.fill || 
+                options.subFill ||
                 options.fillRec > 0 && fillRec === true || 
                 options.fillRec < 0 && fillRec === true ||
                 typeof(fillRec) === 'number' && fillRec > 0 || 
@@ -511,7 +512,7 @@ module.exports = class Restful {
                         })
 
                         subEntities = copyEntity(subEntities)
-                    } else if (options.name) {
+                    } else if (options.name && options.fill !== false) {
                         subEntity = this.entities[options.name]
                         subEntities = await subEntity.findByIds(ids, this)
                         subEntities = copyEntity(subEntities)
@@ -527,6 +528,9 @@ module.exports = class Restful {
                         recursive = false
                         
                     if (options.fill)
+                        recursive = recursive || 1
+                    
+                    if (options.subFill)
                         recursive = recursive || 1
 
                     let syncSubEntity
@@ -548,12 +552,13 @@ module.exports = class Restful {
 
                     if (!options.virtual) {
                         for (let [v, index] of enumerate(value))
-                            if (options.sync)
+                            if (options.sync && options.subFill !== false) {
                                 value[index] = await this.fill(v, options.sync, id, recursive, {
                                     ignoreFillProperties: newIgnoreFillProperties, 
                                     jsonIgnoreProperties: newJsonIgnoreProperties ,
                                     syncs
                                 })
+                            }
 
                         for (let [v, index] of enumerate(value)) {
                             value[index] = {

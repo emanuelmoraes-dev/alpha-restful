@@ -19,7 +19,7 @@ restful.add(new Entity({
     },
     sync: {
         info: {
-            fill: true,
+            subFill: true,
             sync: {
                 peoples: { 
                     name: 'People', 
