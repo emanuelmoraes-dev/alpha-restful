@@ -95,7 +95,7 @@ module.exports = class Restful {
     async query (conditions, target, descriptor, { 
         select=null, skip=null, limit=null, 
         sort=null, internalSearch=true,
-        selectCount=false
+        selectCount=false, isCopyEntity=false
     } = {}) {
         let newFind
 
@@ -103,7 +103,7 @@ module.exports = class Restful {
             newFind=[]
             for (let [value, index] of enumerate(conditions)) {
                 newFind[index] = await this.query(value, target, descriptor, {
-                    internalSearch: false, selectCount: false
+                    internalSearch: false, selectCount: false, isCopyEntity: true
                 })
             }
         } else {
@@ -112,7 +112,7 @@ module.exports = class Restful {
                 if (['select', 'sort', 'limit', 'skip'].indexOf(key)+1) continue
                 if (['$or', '$and', '$in', '$nin'].indexOf(key)+1) {
                     newFind[key] = await this.query(conditions[key], target, descriptor, {
-                        internalSearch: false, selectCount: false
+                        internalSearch: false, selectCount: false, isCopyEntity: true
                     })
 
                     if (key === '$and' && (!(newFind[key] instanceof Array) || 
@@ -160,7 +160,7 @@ module.exports = class Restful {
                         subConditions[rt.remaining] = conditions[key]
 
                         let subQuery = await this.query(subConditions, rt.target, rt.descriptor, {
-                            select: false, internalSearch: true, selectCount: false
+                            select: false, internalSearch: true, selectCount: false, isCopyEntity: true
                         })
 
                         subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
@@ -219,7 +219,7 @@ module.exports = class Restful {
                             throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.target.name}!`)
 
                         let subQuery = await this.query(subConditions, rt.target, rt.descriptor, {
-                            select: '_id', internalSearch: true, selectCount: false
+                            select: '_id', internalSearch: true, selectCount: false, isCopyEntity: true
                         })
                         subQuery = subQuery.map(e => e._id)
 
@@ -283,7 +283,8 @@ module.exports = class Restful {
             if (select)
                 find = find.select(select)
 
-            data = copyEntity(await find.exec())
+            if (isCopyEntity)
+                data = copyEntity(await find.exec())
         }
 
         return data
@@ -512,7 +513,8 @@ module.exports = class Restful {
                             select: options.select,
                             selectCount: options.selectCount,
                             skip: options.skip,
-                            sort: options.sort
+                            sort: options.sort,
+                            isCopyEntity: false
                         })
 
                         if (options.selectCount !== true && options.selectCount !== 'true')
@@ -677,7 +679,7 @@ module.exports = class Restful {
                     }
 
                     for (let entity of entities)
-                        await subEntity.model.findByIdAndRemove(`${entity.id}`).exec()
+                        await subEntity.model.findByIdAndRemove(`${entity._id}`).exec()
                 }
             }
 
