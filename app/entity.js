@@ -47,12 +47,14 @@ module.exports = class Entity {
         this.model = null
     }
 
-    getRouteHandler(handlerName, parseEntity) {
+    getRouteHandler(handlerName) {
         const that = this
 
         if (['beforeQuery', 'afterQuery', 'beforeCreate', 'afterCreate', 
         'beforeRemove', 'afterRemove', 'beforeEdit', 'afterEdit'].indexOf(handlerName) == -1)
             throw new Error(`Handler ${handlerName} Inválido!`)
+
+        const parseEntity = handlerName !== 'beforeQuery'
 
         return async function (req, res, next) {
 
@@ -107,14 +109,14 @@ module.exports = class Entity {
     findOneRouter (restful) {
         let that = this
         return restful.execAsync(
-            this.getRouteHandler('beforeQuery', false),
+            this.getRouteHandler('beforeQuery'),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
                 // res._content_ = copyEntity(res._content_)
             }, 
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
-            this.getRouteHandler('afterQuery', true),
+            this.getRouteHandler('afterQuery'),
             async function (req, res, next) {
                 if (res._content_)
                     res.status(200).send(res._content_)
@@ -129,11 +131,11 @@ module.exports = class Entity {
             return
 
         return restful.execAsync(
-            this.getRouteHandler('beforeQuery', false),
+            this.getRouteHandler('beforeQuery'),
             this.getQuery(restful),
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
-            this.getRouteHandler('afterQuery', true),
+            this.getRouteHandler('afterQuery'),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -150,11 +152,11 @@ module.exports = class Entity {
                 // req.body = prepareEntity(req.body, that.descriptor)
                 res._content_ = new that.model(req.body)
             },
-            this.getRouteHandler('beforeCreate', true),
+            this.getRouteHandler('beforeCreate'),
             async function (req, res, next) {
                 await res._content_.save()
             },
-            this.getRouteHandler('afterCreate', true),
+            this.getRouteHandler('afterCreate'),
             async function (req, res, next) {
                 res.status(201).send(res._content_)
             }
@@ -175,7 +177,7 @@ module.exports = class Entity {
                     resolve()
                 })
             },
-            this.getRouteHandler('beforeEdit', true),
+            this.getRouteHandler('beforeEdit'),
             this.beforeCreateAndEditVerifyIds(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
@@ -191,7 +193,7 @@ module.exports = class Entity {
                     )
                 })
             },
-            this.getRouteHandler('afterEdit', true),
+            this.getRouteHandler('afterEdit'),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
@@ -207,12 +209,12 @@ module.exports = class Entity {
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
             },
-            this.getRouteHandler('beforeRemove', true),
+            this.getRouteHandler('beforeRemove'),
             this.beforeDeleteSync(restful),
             async function (req, res, next) {
                 await res._content_.remove()
             },
-            this.getRouteHandler('afterRemove', true),
+            this.getRouteHandler('afterRemove'),
             async function (req, res, next) {
                 res.status(204).end()
             }
@@ -244,7 +246,7 @@ module.exports = class Entity {
 
                 res._content_ = content
             },
-            this.getRouteHandler('beforeEdit', true),
+            this.getRouteHandler('beforeEdit'),
             this.beforeCreateAndEditVerifyIds(restful),
             async function (req, res, next) {
                 return await new Promise((resolve, reject) => {
@@ -260,7 +262,7 @@ module.exports = class Entity {
                     )
                 })
             },
-            this.getRouteHandler('afterEdit', true),
+            this.getRouteHandler('afterEdit'),
             async function (req, res, next) {
                 res.status(200).send(res._content_)
             }
