@@ -1,5 +1,18 @@
 {
   "name": "alpha-restful",
+  "description": "O Alpha Restful é um framework para o desenvolvimento de aplicações web Rest backend em MongoDB, feito para Node JS. Esta ferramenta é executada em cima do Express JS e da ORM de banco de dados Mongoose.",
+  "readmeFilename": "README.md",
+  "keywords": [
+    "alpha-restful",
+    "alpha",
+    "restful",
+    "rest",
+    "http",
+    "express",
+    "mongo",
+    "nosql",
+    "node"
+  ],
   "version": "0.5.12",
   "main": "index.js",
   "scripts": {
@@ -17,7 +30,13 @@
     "morgan": "~1.9.0"
   },
   "repository": "https://github.com/emanuelmoraes-dev/alpha-restful.git",
-  "author": "Emanuel Moraes",
+  "author": {
+    "name": "Emanuel Moraes",
+    "email": "emanuelmoraes297@gmail.com"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "license": "MIT",
   "private": false
 }
