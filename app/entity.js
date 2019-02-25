@@ -47,6 +47,29 @@ module.exports = class Entity {
         this.model = null
     }
 
+    parseAsyncFunction(fn) {
+        return async function () {
+            const args = Array.prototype.slice(arguments)
+            return await new Promise((resolve, reject) => {
+
+                const next = function () {
+                    let arg = arguments[0]
+
+                    if (arg)
+                        reject(arg)
+                    else
+                        resolve()
+                }
+
+                let rt = fn(...args, next)
+
+                if (rt && typeof rt.then === 'function') {
+                    rt.then(() => resolve()).catch(err => reject(err))
+                }
+            })
+        }
+    }
+
     getRouteHandler(handlerName) {
         const that = this
 
@@ -445,9 +468,10 @@ module.exports = class Entity {
         }
     }
 
-    async parseFromProjection(projection, content) {
+    async parseFromProjection(projection, content) {   
         if (typeof projection === 'function') {
-            return await Promise.resolve(projection(content))
+            projection = this.parseAsyncFunction(projection)
+            return await projection(content)
         } else if (projection instanceof Array) {
             for (let key of Object.keys(content)) {
                 if (!(projection.indexOf(key) + 1))
