@@ -385,7 +385,9 @@ Neste exemplo, os atributos _idade_ e _casas_ não serão incluídos no json de 
 
 #### Observação
 
-Por questões de desempenho, somente atributos diretos poderão ser ignorados (a não ser que o método de recursão de preenchimento tenha chegado a analisá-lo), ou seja, na entidade _Casa_, os atributos dentro de _endereco_ não poderão ser ignorados, porém o atributo _endereco_ poderá ser ignorado. Caso você deseje que um sub-atributo possa ser ignorado, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
+Por questões de desempenho, somente atributos diretos são garantidos de maneira incondicional a serem ignorados pelo _jsonIgnore_, ou seja, na entidade _Casa_, os atributos dentro de _endereco_ não serão ignorados de maneira individual. Os atributos dentro de _endereco_ serão ignorados se o atributo _endereco_ for ignorado. Caso você deseje que um sub-atributo possa ser ignorado de maneira garantida e individual, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
+
+O _jsonIgnore_ é aplicado na função de preenchimento de entidades explicada posteriormente.
 
 ### Rotas Personalizadas com Funções Assincronas
 
@@ -543,6 +545,10 @@ const Casa = new Entity({
 Se a opção _fill_ é igual a `true`, o atributo sincronizado irá ser preenchido, mas se além desta opção também está presente a opção _subFill_ igual a `false`, então o Alpha Restful não irá preencher os sub-atributos dos níveis abaixo.
 
 Uma alternativa ao _fill_ é a opção _fillRec_. Tal opção contém um número que indica quantos níveis abaixo serão preenchidos com a opção _fill_ igual a `true`. Se _fillRec_ for um número negativo, o Alpha Restful irá tentar expandir todos os níveis abaixo em todos os sub-atributos da entidade e das sub-entidades. A opção _fill_ possui maior prioridade que a opção _fillRec_. Se _fillRec_ for negativo, a recursão somente terminará se algum _fill_ abaixo for igual a `false` ou se não houver mais atributos abaixo para ser preenchidos.
+
+##### Observação
+
+Da mesma forma, por padrão, sub-atributos somente poderão ser ignorados pelo _jsonIgnore_ se o atributo pai tiver a opção _fill_ ou _subFill_. Caso você deseje que sub-atributos possam ser ignorados pelo _jsonIgnore_, independente das opções _fill_ e _subFill_, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
 
 #### Evitando Preenchimento Circular
 
@@ -812,6 +818,10 @@ limit             | `null`       | Quantidade máxima de elementos  da busca
 sort              | `null`       | Atributo a ser ordenado
 internalSearch    | `true`       | Se for `false` retorna um objeto de busca a ser utilizado em uma pesquisa com o mongoose. Se for `true` retorna-se o resultado da busca
 selectCount       | `false`      | Se for `true` retorna a quantidade de elementos da busca. Se for `false` retorna os elementos da busca.
+
+#### Observação
+
+Ao realizar uma pesquisa no método `restful.query`, os atributos com a opção _jsonIgnore_ igual a `true` **não** serão ignorados. Para que estes atributos sejam ignorados é necessário que o método de preenchimento (explicado logo a seguir) seja chamado.
 
 ### Método de Preenchimento
 
