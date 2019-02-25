@@ -87,20 +87,23 @@ module.exports = class Entity {
                 handler = that[handlerName].bind(that)
 
             return await new Promise((resolve, reject) => {
+                try {
+                    next = function () {
+                        let arg = arguments[0]
 
-                next = function () {
-                    let arg = arguments[0]
+                        if (arg)
+                            reject(arg)
+                        else
+                            resolve()
+                    }
 
-                    if (arg)
-                        reject(arg)
-                    else
-                        resolve()
-                }
+                    let rt = handler(req, res, next)
 
-                let rt = handler(req, res, next)
-
-                if (rt && typeof rt.then === 'function') {
-                    rt.then(() => resolve()).catch(err => reject(err))
+                    if (rt && typeof rt.then === 'function') {
+                        rt.then(() => resolve()).catch(err => reject(err))
+                    }
+                } catch (err) {
+                    reject(err)
                 }
             })
         }
