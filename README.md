@@ -272,7 +272,7 @@ const Pessoa = new Entity({
 })
 ```
 
-No _sync_ da entidade _Pessoa_, defini-se que uma pessoa possui um relacionamento com _Casa_, porém o atributo _casas_ não será armazenado no banco (por isso este atributo não está presente no _descriptor_), porém o Alpha Restful irá considerar a existência de tal atributo em pesquisas no banco de dados. A opção _syncronized_ no _sync_ de _Pessoa_ contém o nome do atributo na entidade _Casa_ que se relaciona com _Pessoa_. Se houverem várias casas, envolve-se em colchetes ( [ ] ) o nome do atributo. Caso haja sempre apenas uma casa, remove-se os colchetes no nome do atributo em _syncronized_.
+No _sync_ da entidade _Pessoa_, defini-se que uma pessoa possui um relacionamento com _Casa_, porém o atributo _casas_ não será armazenado no banco (por isso este atributo não está presente no _descriptor_), porém o Alpha Restful irá considerar a existência de tal atributo em pesquisas no banco de dados. A opção _syncronized_ no _sync_ de _Pessoa_ contém o nome do atributo na entidade _Casa_ que se relaciona com _Pessoa_. Se houverem várias casas, envolve-se em colchetes ( [ ] ) o nome do atributo. Caso haja sempre apenas uma _Casa_, remove-se os colchetes no nome do atributo em _syncronized_.
 
 Por padrão o Alpha Restful irá buscar todos os ids das casas relacionadas com esta pessoa e colocar no atributo _casas_ automaticamente em tempo de execução. Para que este atributo não seja buscado ao realizar uma busca por pessoa, basta adicionar uma opção de _jsonIgnore_ que será explicado mais a frente. Mesmo que seja adicionada esta opção, você ainda poderá buscar pessoas filtradas por este atributo.
 
@@ -437,7 +437,7 @@ const Casa = new Entity({
 })
 ```
 
-Neste caso, ao buscar uma casa, serão jogados no atributo _pessoas_ todos os atributos existentes dentro de pessoa. Este procedimento é recursivo, ou seja, se _Pessoa_ possuir atributos com _fill_ igual a `true`, estes atributos de pessoa também serão preenchidos.
+Neste caso, ao buscar uma _Casa_, serão jogados no atributo _pessoas_ todos os atributos existentes dentro de pessoa. Este procedimento é recursivo, ou seja, se _Pessoa_ possuir atributos com _fill_ igual a `true`, estes atributos de pessoa também serão preenchidos.
 
 #### Preenchimento Automático em Sub-Atributos
 
@@ -675,7 +675,7 @@ No código exemplo apresentado, ao buscar uma _Pessoa_, o atributo _pessoas_ na 
 
 ### Opção de Dependência em Relacionamento
 
-Digamos que uma pessoa não possa ser removida se houver um relacionamento desta pessoa com uma casa. Neste caso basta informar que o relacionamento de _Pessoa_ com _Casa_ é um relacionamento de dependência. Para isto basta informar a opção _required_ com valor `true`:
+Digamos que uma pessoa não possa ser removida se houver um relacionamento desta pessoa com uma _Casa_. Neste caso basta informar que o relacionamento de _Pessoa_ com _Casa_ é um relacionamento de dependência. Para isto basta informar a opção _required_ com valor `true`:
 
 ```js
 const Casa = new Entity({
@@ -721,7 +721,7 @@ const Casa = new Entity({
 
 ### Opção de Remoção em Cascata
 
-Digamos que ao remover uma _Casa_, todas as pessoas relacionadas com esta casa devam ser removida também de maneira automática. Neste caso basta colocar a opção _deleteCascade_ igual a `true`.
+Digamos que ao remover uma _Casa_, todas as pessoas relacionadas com esta _Casa_ devam ser removida também de maneira automática. Neste caso basta colocar a opção _deleteCascade_ igual a `true`.
 
 ```js
 const Pessoa = new Entity({
@@ -753,7 +753,7 @@ const Pessoa = new Entity({
 
 Caso seja habilitada a criação de CRUD, habilitando a geração de método http _get_, automaticamente é gerada uma rota de busca na qual buscas complexas podem ser realizadas alterando apenas os paprâmetros da rota.
 
-Como exemplo de busca, imagina que deseja-se buscar todas as casas, na qual existe pelo menos uma pessoa que mora em alguma casa, que nesta casa existe uma pessoa que possui idade maior ou igual a 18 anos. Para se realizar esta pesquisa bastaria fazer uma requisição http _get_ com a seguinte url:
+Como exemplo de busca, imagina que deseja-se buscar todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para se realizar esta pesquisa bastaria fazer uma requisição http _get_ com a seguinte url:
 
 ```http
 /casas?pessoas.casas.pessoas.idade__$ge=18
@@ -788,7 +788,7 @@ Quantidade          | selectCount | `/pessoas?selectCount=true`   | Busca a quan
 
 Digamos que você deseje realizar uma busca em uma rota personalizada, utilizando um poder ainda maior do que as opções disponíveis anteriormente. Neste caso, basta você chamar o método `restful.query(<condições>, <sync>, <descriptor>, <opções>)`.
 
-Por exemplo: digamos que você deseje realizar uma pesquisa de todas as casas, na qual existe pelo menos uma pessoa que mora em alguma casa, que nesta casa existe uma pessoa que possui idade maior ou igual a 18 anos. Para realizar esta pesquisa basta realizar a seguinte chamada de método:
+Por exemplo: digamos que você deseje realizar uma pesquisa de todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para realizar esta pesquisa basta realizar a seguinte chamada de método:
 
 ```js
 let pessoas = await restful.query({
@@ -1208,8 +1208,8 @@ Veja que aqui optamos por aplicar as projeções antes de nosso handler `afterEd
 
 O guia aqui presente engloga a grande maioria das funcionalidades implementadas, porém ainda existem alguns detalhes não especificados aqui. Em breve atualizarei este guia colocando nele mais informações.
 
-Sinta-se a vontade de testar as funcionalidades aqui apresentadas e em caso de algum erro você poderá relatar aui nas Issues que eu tentarei resolver o mais rápido possível.
+Sinta-se a vontade de testar as funcionalidades aqui apresentadas e em caso de algum erro você poderá relatar aqui nas Issues que eu tentarei resolver o mais rápido possível.
 
-Este software ainda **não** está 100% pronto para o uso. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados. Eu aceito qualquer contribuição da comunidade.
+Este software ainda **não** está 100% pronto para o uso. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados. Eu aceito contribuições da comunidade.
 
 Este software começou a ser desenvolvido como um hobby. Não tenho o interesse em comercializá-lo e eu atualizo este repositório assim que possível. Tentarei resolver os problemas apresentados nas Issues o mais rápido que puder na medida do possível. De mais, aceito sugestões e ficaria muito grato em receber o crédito em caso de divulgação desta ferramenta. Obrigado!
