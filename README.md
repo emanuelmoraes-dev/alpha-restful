@@ -18,7 +18,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
 
         * Com apenas a habilitação de uma opção, uma instância de uma entidade não pode ser removida se possuir um relacionamento de um atributo seu com outra entidade.
 
-        * Com apenas a habilitação de uma opção, as instâncias relacionadas com a instância da qual deseja-se remover, serão removidas tambem.
+        * Com apenas a habilitação de uma opção, as instâncias relacionadas com a instância da qual deseja-se remover, serão removidas também.
 
     * Ao remover a instância de uma entidade, automaticamente são removidos seus valores nas instâncias de entidades relacionadas (É possível desativar esta função caso desejado).
 
@@ -239,7 +239,7 @@ Através da opção _sync_, sincronizou-se o atributo _pessoas_ com a entidade _
 
 #### Relacionamento na Entidade Relacionada
 
-Mas, e se desejarmos obter na entidade _Pessoa_ a lista de casas relacionadas a ela? Nós não podemos repetir o procedimento anterior na entidade _Pessoa_, pois o Alpha Restful interpretaria isso como outro relacionamento. Nós poderíamos criar um novo atributo em _Pessoa_ para armazenar manualmente todos os ids das casas que se relacionam com a pessoa armazenada, porém isto deixaria o código da sua aplicação complexa e sucetível a erros humanos.
+Mas, e se desejarmos obter na entidade _Pessoa_ a lista de casas relacionadas a ela? Nós não podemos repetir o procedimento anterior na entidade _Pessoa_, pois o Alpha Restful interpretaria isso como outro relacionamento. Nós poderíamos criar um novo atributo em _Pessoa_ para armazenar manualmente todos os ids das casas que se relacionam com a pessoa armazenada, porém isto deixaria o código da sua aplicação complexa e suscetível a erros humanos.
 
 Pensando nisto, o Alpha Restful dispõe de uma opção na qual você informa que existe um atributo virtual, representando o relacionamento feito por outra entidade. Este atributo não é armazenado em seu banco de dados, porém o Alpha Restful irá considerar este atributo como se ele estivesse declarado na entidade. Tal atributo virtual representa o relacionamento na entidade relacionada, sem que seja necessário adicionar nenhum dado no documento do MongoDB.
 
@@ -282,7 +282,7 @@ Neste exemplo na qual estamos abordando, caso uma pessoa seja removida, automati
 
 ### Atributos de Relacionamento
 
-O Alpha Restful permite que sejam definidos atributos de relacionamentos. Estes atributos de relacionamento podem ser atributos presentes dentro da entidade relacionada, como tambem podem ser atributos presentes apenas dentro do relacionamento.
+O Alpha Restful permite que sejam definidos atributos de relacionamentos. Estes atributos de relacionamento podem ser atributos presentes dentro da entidade relacionada, como também podem ser atributos presentes apenas dentro do relacionamento.
 
 Como exemplo, imagine a seguinte situação: imagine que no relacionamento entre _Pessoa_ e _Casa_ existe um aluguel. Vamos imaginar que por algum motivo o aluguel precisa ser modelado como uma entidade separada. Neste caso, pode-se representar esta situação com o seguinte código:
 
@@ -343,7 +343,7 @@ const Casa = new Entity({
 })
 ```
 
-Atributos de relacionamento são atributos normais, na qual podem se relacionar com outras entidades e podem receber opções como qualquer outra entidade.
+Atributos de relacionamento são atributos normais, na qual podem se relacionar com outras entidades e podem receber opções como qualquer outra opção.
 
 ### Json Ignore
 
@@ -387,9 +387,9 @@ Neste exemplo, os atributos _idade_ e _casas_ não serão incluídos no json de 
 
 Por questões de desempenho, somente atributos diretos poderão ser ignorados (a não ser que o método de recursão de preenchimento tenha chegado a analisá-lo), ou seja, na entidade _Casa_, os atributos dentro de _endereco_ não poderão ser ignorados, porém o atributo _endereco_ poderá ser ignorado. Caso você deseje que um sub-atributo possa ser ignorado, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
 
-### Rotas Personalizadas com Funções Asincronas
+### Rotas Personalizadas com Funções Assincronas
 
-Se você deseja criar uma rota personalizada usando funções asincronas, você pode utilizar o método `restful.execAsync`.
+Se você deseja criar uma rota personalizada usando funções assincronas, você pode utilizar o método `restful.execAsync`.
 
 Como exemplo, vamos criar a estrutura de uma rota http _get_ com a URI _/rota-personalizada_:
 
@@ -437,7 +437,7 @@ const Casa = new Entity({
 })
 ```
 
-Neste caso, ao buscar uma casa, serão jogados no atributo _pessoas_ todos os atributos existentes dentro de pessoa. Este procedimento é recursivo, ou seja, se _Pessoa_ possuir atributos com _fill_ igual a `true`, estes atributos de pessoa tambem serão preenchidos.
+Neste caso, ao buscar uma casa, serão jogados no atributo _pessoas_ todos os atributos existentes dentro de pessoa. Este procedimento é recursivo, ou seja, se _Pessoa_ possuir atributos com _fill_ igual a `true`, estes atributos de pessoa também serão preenchidos.
 
 #### Preenchimento Automático em Sub-Atributos
 
@@ -518,7 +518,7 @@ const Casa = new Entity({
 
             /*
             Também indica que um sub-atributo poderá ser 
-            preenchido, porém tambem preenche o atributo 
+            preenchido, porém também preenche o atributo 
             pessoas
             */
             fill: true,
@@ -567,7 +567,7 @@ const Pessoa = new Entity({
 })
 ```
 
-Digamos também que desejemos preencher o atributo _pesssoas_ na entidade _Casa_. Neste caso poderíamos também fazer o seguinte:
+Digamos também que desejemos preencher o atributo _pessoas_ na entidade _Casa_. Neste caso poderíamos também fazer o seguinte:
 
 ```js
 const Casa = new Entity({
@@ -798,7 +798,7 @@ let pessoas = await restful.query({
 }, Pessoa, Pessoa.sync, Pessoa.descriptor)
 ```
 
-O primeiro argumento do método de busca contém as espeficicações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
+O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
 
 O argumento `Pessoa.sync`, assim como o argumento `Pessoa.descriptor` podem ser objetos personalizados especificamente para esta pesquisa, porém, neste caso, utiliza-se o _sync_ e o _descriptor_ definidos na modelagem da entidade _Pessoa_. O Quarto argumento é um objeto opcional.
 
@@ -811,7 +811,7 @@ skip              | `null`       | Quantidade de elementos a serem pulados
 limit             | `null`       | Quantidade máxima de elementos  da busca
 sort              | `null`       | Atributo a ser ordenado
 internalSearch    | `true`       | Se for `false` retorna um objeto de busca a ser utilizado em uma pesquisa com o mongoose. Se for `true` retorna-se o resultado da busca
-selectCount       | `false`      | Se for `true` retorna a quantidade de elementos da busca. Se for `true` retorna os elementos da busca.
+selectCount       | `false`      | Se for `true` retorna a quantidade de elementos da busca. Se for `false` retorna os elementos da busca.
 
 ### Método de Preenchimento
 
@@ -820,7 +820,7 @@ Caso você deseja preencher os atributos com relacionamentos, basta chamar o mé
 Por exemplo, vamos imaginar que você deseje que uma _Pessoa_ tenha o atributo _nome_ ignorado no json e que o atributo _casas_ seja preenchido **independente** do valor contido no _sync_ da modelagem, mas que isto tenha efeito em apenas uma rota especifica. Para isto bastaria fazer a seguinte chamada de código:
 
 ```js
-pessoas = await Pessoa.fill(pessoas, restfil, {
+pessoas = await Pessoa.fill(pessoas, restful, {
     sync: {
         nome: { jsonIgnore: true },
         casas: { fill: true }
@@ -1072,7 +1072,7 @@ app.get('/rota-personalizada',
 
 Para que o código anterior funcione, é necessário que no código de sua rota personalizada não seja enviado nenhum dado como resposta. Aquilo que seria enviado pela rota como resposta deve ser adicionado na variavel `res._content_`, que o Alpha Restful se encarregará de enviar seu conteúdo.
 
-No último argumento do `restful.execAsync` encontra-se o _status code_ de resposta do http. Caso você deseje, ao inves de colocar no ultimo argumento o _status code_, você pode passar outra função asincrona que se encarregará de enviar o conteúdo presente no `res._content_`.
+No último argumento do `restful.execAsync` encontra-se o _status code_ de resposta do http. Caso você deseje, ao invés de colocar no ultimo argumento o _status code_, você pode passar outra função assincrona que se encarregará de enviar o conteúdo presente no `res._content_`.
 
 #### Aplicando Projeções em um Objeto Qualquer
 
@@ -1094,7 +1094,7 @@ const Casa = new Entity({
             const Casa = restful.entities.Casa
             
             casa.pessoas = await Casa.applyProjections(
-                pessoa, 'projecao-base', restful
+                casa.pessoas, 'projecao-base', restful
             )
 
             return casa
@@ -1120,11 +1120,11 @@ afterRemove (entity, req, res, next) | Executado após a aplicação de uma rota
 beforeEdit (entity, req, res, next) | Executado antes da aplicação de uma rota _put_ ou _patch_
 afterEdit (entity, req, res, next) | Executado após a aplicação de uma rota _put_ ou _patch_
 
-Se a implementação do handler retornar uma promise ou for uma função asincrona, o método `next` não devera ser utilizado e em caso de erro deve ser lançado uma exceção. 
+Se a implementação do handler retornar uma promise ou for uma função assincrona, o método `next` não devera ser utilizado e em caso de erro deve ser lançado uma exceção. 
 
-Se o handler não retornar uma promise e não for uma função asincrona, obrigatoriamente a função `next` deverá ser executada ao final do procedimento e caso algum erro ocorra, o objeto do erro deve ser jogado como o primeiro argumento da função `next`.
+Se o handler não retornar uma promise e não for uma função assincrona, obrigatoriamente a função `next` deverá ser executada ao final do procedimento e caso algum erro ocorra, o objeto do erro deve ser jogado como o primeiro argumento da função `next`.
 
-Apenas o handler `beforeCreate` não recebe o conteúdo da entidade (ou entidades) como primeiro argumento. Nos demais handlers, o primeiro argumento é o conteúdo que está sendo manipulado. Este conteúdo tambem pode ser acessado pelo `res._content_`.
+Apenas o handler `beforeCreate` não recebe o conteúdo da entidade (ou entidades) como primeiro argumento. Nos demais handlers, o primeiro argumento é o conteúdo que está sendo manipulado. Este conteúdo também pode ser acessado pelo `res._content_`.
 
 #### Implementando um handler
 
@@ -1147,7 +1147,7 @@ Pessoa.afterQuery = async function (pessoas, req, res, next) {
 
 #### Integrando os Handlers a suas Rotas Personalizadas
 
-No utilitário `restful.execAsync`, você deverá chamar antes ou depois de sua(s) rota(s) personalizada(s) os handlers desejados, sempre lembrando que o Alpha Restful irá colocar como primeiro argumento de todos os handlers (com exceção do handler `beforeCreate`) o conteúdo da variável `res._content_` (a menos que ).
+No utilitário `restful.execAsync`, você deverá chamar antes ou depois de sua(s) rota(s) personalizada(s) os handlers desejados, sempre lembrando que o Alpha Restful irá colocar como primeiro argumento de todos os handlers (com exceção do handler `beforeCreate`) o conteúdo da variável `res._content_`.
 
 Para obter um handler, basta chamar a função `Entidade.getRouteHandler(<nome-do-handler>)`. O argumento da função `getRouteHandler` é o nome do handler.
 
@@ -1212,4 +1212,4 @@ Sinta-se a vontade de testar as funcionalidades aqui apresentadas e em caso de a
 
 Este software ainda **não** está 100% pronto para o uso. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados. Eu aceito qualquer contribuição da comunidade.
 
-Este software começou a ser desenvolvido como um hobbi. Não tenho o interesse em comercializá-lo e eu atualizo este repositório assim que possível. Tentarei resolver os problemas apresentados nas Issues o mais rápido que puder na medida do possível. De mais, aceito sugestões e ficaria muito grato em receber o crédito em caso de divulgação desta ferramenta. Obrigado!
+Este software começou a ser desenvolvido como um hobby. Não tenho o interesse em comercializá-lo e eu atualizo este repositório assim que possível. Tentarei resolver os problemas apresentados nas Issues o mais rápido que puder na medida do possível. De mais, aceito sugestões e ficaria muito grato em receber o crédito em caso de divulgação desta ferramenta. Obrigado!
