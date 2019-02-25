@@ -521,10 +521,8 @@ module.exports = class Restful {
                             subEntities = [subEntities.count]
                     } else if (options.name && options.fill !== false) {
                         subEntity = this.entities[options.name]
-                        console.log('ids', ids)
                         subEntities = await subEntity.findByIds(ids, this)
                         subEntities = copyEntity(subEntities)
-                        console.log('subEntities', subEntities)
                     }
 
                     let recursive = fillRec
