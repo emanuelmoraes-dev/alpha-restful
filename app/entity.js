@@ -51,20 +51,18 @@ module.exports = class Entity {
         return async function () {
             const args = Array.prototype.slice(arguments)
             return await new Promise((resolve, reject) => {
+                try {
+                    const next = function (arg) {
+                        resolve(arg)
+                    }
 
-                const next = function () {
-                    let arg = arguments[0]
+                    let rt = fn(...args, next)
 
-                    if (arg)
-                        reject(arg)
-                    else
-                        resolve()
-                }
-
-                let rt = fn(...args, next)
-
-                if (rt && typeof rt.then === 'function') {
-                    rt.then(() => resolve()).catch(err => reject(err))
+                    if (rt && typeof rt.then === 'function') {
+                        rt.then(() => resolve()).catch(err => reject(err))
+                    }
+                } catch (err) {
+                    reject(err)
                 }
             })
         }
