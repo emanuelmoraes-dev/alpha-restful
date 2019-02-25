@@ -1045,6 +1045,22 @@ const Pessoa = new Entity({
 })
 ```
 
+Se nossa projeção for uma função não assincrona e nem retornar uma promise, precisaremos chamar ao final da projeção a função `next` passando o objeto a ser retornado como argumento:
+
+```js
+const Pessoa = new Entity({
+    //...
+    projections: {
+        'projecao-base': function (pessoa, next) {
+            pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
+            next(pessoa)
+        }
+    }
+})
+```
+
+Em caso erro na execução dentro da projeção, deve ser lançado uma exceção.
+
 #### Projeção Padrão
 
 E se quisermos que nossa projeção _projecao-base_ seja executada automaticamente sem precisarmos passar `projection=projecao-base` em nossas requisições http? Para isto basta definir na entidade a opção _projectionDefault_:
@@ -1146,14 +1162,16 @@ Pessoa.afterQuery = async function (pessoas, req, res) {
 }
 ```
 
-Se nosso handler for uma função não assincrona e nem retornar uma promose, precisaremos chamar ao final do handler a função `next`:
+Se nosso handler for uma função não assincrona e nem retornar uma promise, precisaremos chamar ao final do handler a função `next`:
 
 ```js
-Pessoa.afterQuery = async function (pessoas, req, res, next) {
+Pessoa.afterQuery = function (pessoas, req, res, next) {
     console.log(pessoas)
     next()
 }
 ```
+
+Caso ocorra algum erro dentro do handler, basta passar o objeto do erro na função `next`.
 
 #### Integrando os Handlers a suas Rotas Personalizadas
 
@@ -1222,4 +1240,4 @@ Sinta-se a vontade de testar as funcionalidades aqui apresentadas e em caso de a
 
 Este software ainda **não** está 100% pronto para o uso. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados. Eu aceito contribuições da comunidade.
 
-Este software começou a ser desenvolvido como um hobby. Não tenho o interesse em comercializá-lo e eu atualizo este repositório assim que possível. Tentarei resolver os problemas apresentados nas Issues o mais rápido que puder na medida do possível. De mais, aceito sugestões e ficaria muito grato em receber o crédito em caso de divulgação desta ferramenta. Obrigado!
+De mais, aceito sugestões e ficaria muito grato em receber o crédito em caso de divulgação desta ferramenta. Obrigado!
