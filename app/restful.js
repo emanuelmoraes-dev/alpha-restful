@@ -431,6 +431,16 @@ module.exports = class Restful {
                 if (typeof options === 'string')
                     options = { name: options }
 
+                if (options.ignoreFillProperties && options.ignoreFillProperties instanceof Array)
+                    newIgnoreFillProperties.push(...options.ignoreFillProperties)
+                else if (options.ignoreFillProperties && typeof options.ignoreFillProperties === 'string')
+                    newIgnoreFillProperties.push(options.ignoreFillProperties)
+
+                if (options.jsonIgnoreProperties && options.jsonIgnoreProperties instanceof Array)
+                    newJsonIgnoreProperties.push(...options.jsonIgnoreProperties)
+                else if (options.jsonIgnoreProperties && typeof options.jsonIgnoreProperties === 'string')
+                    newJsonIgnoreProperties.push(options.jsonIgnoreProperties)
+
                 if (!data[attr] && !options.jsonIgnore && options.syncronized && id) {
                     let attrSyncronized = options.syncronized
                     if (attrSyncronized instanceof Array) {
@@ -452,20 +462,14 @@ module.exports = class Restful {
                     }
                 } else if (!data[attr] && options.virtual) {
                     data[attr] = options.virtualDefault
-                } else if (!data[attr]) {
-                    continue
                 }
 
-                if (options.ignoreFillProperties && options.ignoreFillProperties instanceof Array)
-                    newIgnoreFillProperties.push(...options.ignoreFillProperties)
-                else if (options.ignoreFillProperties && typeof options.ignoreFillProperties === 'string')
-                    newIgnoreFillProperties.push(options.ignoreFillProperties)
+                if ((jsonIgnoreProperties.indexOf(attr)+1) || options.jsonIgnore)
+                    delete data[attr]
 
-                if (options.jsonIgnoreProperties && options.jsonIgnoreProperties instanceof Array)
-                    newJsonIgnoreProperties.push(...options.jsonIgnoreProperties)
-                else if (options.jsonIgnoreProperties && typeof options.jsonIgnoreProperties === 'string')
-                    newJsonIgnoreProperties.push(options.jsonIgnoreProperties)
-                
+                if (!data[attr])
+                    continue
+
                 let value = data[attr]
                 
                 if (value instanceof Array && value.length === 0)
@@ -517,8 +521,10 @@ module.exports = class Restful {
                             subEntities = [subEntities.count]
                     } else if (options.name && options.fill !== false) {
                         subEntity = this.entities[options.name]
+                        console.log('ids', ids)
                         subEntities = await subEntity.findByIds(ids, this)
                         subEntities = copyEntity(subEntities)
+                        console.log('subEntities', subEntities)
                     }
 
                     let recursive = fillRec
@@ -585,9 +591,6 @@ module.exports = class Restful {
                             data[attr] = null
                     }
                 }
-
-                if (jsonIgnoreProperties.indexOf(attr)+1 || options.jsonIgnore)
-                    delete data[attr]
             }
 
             return data

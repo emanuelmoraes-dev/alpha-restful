@@ -1,5 +1,6 @@
 const { Entity } = require('../../app')
 const restful = require('./restful')
+const mongoose = require('mongoose')
 
 restful.add(new Entity({
     name: 'House',
@@ -8,7 +9,7 @@ restful.add(new Entity({
     descriptor: {
         description: String,
         info: {
-            peoples: [{ id: String, rent: { id: String }, date: Date }],
+            peoples: [{ id: mongoose.Types.ObjectId, rent: { id: mongoose.Types.ObjectId }, date: Date }],
         },
         address: {
             street: String,
@@ -61,29 +62,6 @@ restful.add(new Entity({
             fill: true,
             ignoreFillProperties: ['peoples'],
             syncronized: ['info.peoples']
-        }
-    }
-}))
-
-restful.add(new Entity({
-    name: 'Family',
-    resource: '/families',
-    methods: ['get', 'post', 'put', 'delete', 'patch'],
-    descriptor: {
-        name: String
-    },
-    sync: {
-        peoples: {
-            name: 'People',
-            virtual: true,
-            fill: true,
-            // selectCount: true,
-            // select: 'name',
-            // limit: 2,
-            // skip: 1,
-            // find: {
-                // age: { $gt: 20 }
-            //}
         }
     }
 }))
