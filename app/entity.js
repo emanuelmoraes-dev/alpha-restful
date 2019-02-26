@@ -49,7 +49,7 @@ module.exports = class Entity {
 
     parseAsyncFunction(fn) {
         return async function () {
-            const args = Array.prototype.slice(arguments)
+            const args = Array.prototype.slice.call(arguments)
             return await new Promise((resolve, reject) => {
                 try {
                     let rt = fn(...args, resolve, reject)

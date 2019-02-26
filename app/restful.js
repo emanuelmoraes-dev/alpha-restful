@@ -808,7 +808,8 @@ module.exports = class Restful {
                     let find = entity.model.find.bind(entity.model)
                     let that = this
                     entity.model.find = function () {
-                        return find(...arguments).collation({ 'locale': that.locale })
+                        const args = Array.prototype.slice.call(arguments)
+                        return find(...args).collation({ 'locale': that.locale })
                     }
                 }
             }
