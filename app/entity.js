@@ -311,7 +311,7 @@ module.exports = class Entity {
                 if ([
                 restful.selectCountName, restful.selectName, 
                 restful.limiteName, restful.skipName,
-                restful.sortName
+                restful.sortName, restful.projectionName
                 ].indexOf(key)+1) continue
 
                 if (key.endsWith('__regex')) {
