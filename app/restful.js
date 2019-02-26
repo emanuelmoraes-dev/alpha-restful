@@ -283,8 +283,10 @@ module.exports = class Restful {
             if (select)
                 find = find.select(select)
 
+            data = await find.exec()
+
             if (isCopyEntity)
-                data = copyEntity(await find.exec())
+                data = copyEntity(data)
         }
 
         return data
