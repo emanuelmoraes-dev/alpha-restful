@@ -55,7 +55,7 @@ module.exports = class Entity {
                     let rt = fn(...args, resolve, reject)
 
                     if (rt && typeof rt.then === 'function') 
-                        rt.then(() => resolve()).catch(err => reject(err))
+                        rt.then(v => resolve(v)).catch(err => reject(err))
                         
                 } catch (err) {
                     reject(err)
