@@ -52,15 +52,11 @@ module.exports = class Entity {
             const args = Array.prototype.slice(arguments)
             return await new Promise((resolve, reject) => {
                 try {
-                    const next = function (arg) {
-                        resolve(arg)
-                    }
+                    let rt = fn(...args, resolve, reject)
 
-                    let rt = fn(...args, next)
-
-                    if (rt && typeof rt.then === 'function') {
+                    if (rt && typeof rt.then === 'function') 
                         rt.then(() => resolve()).catch(err => reject(err))
-                    }
+                        
                 } catch (err) {
                     reject(err)
                 }

@@ -1045,21 +1045,23 @@ const Pessoa = new Entity({
 })
 ```
 
-Se nossa projeção for uma função não assincrona e nem retornar uma promise, precisaremos chamar ao final da projeção a função `next` passando o objeto a ser retornado como argumento:
+Se nossa projeção for uma função não assincrona e nem retornar uma promise, precisaremos chamar ao final da projeção a função `resolve` passando o objeto a ser retornado como argumento. Se houver algum erro, precisaremos chamar a função `reject` passando o objeto do erro como argumento. Como exemplo de uso nós temos:
 
 ```js
 const Pessoa = new Entity({
     //...
     projections: {
-        'projecao-base': function (pessoa, next) {
-            pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
-            next(pessoa)
+        'projecao-base': function (pessoa, resolve, reject) {
+            try {
+                pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
+                resolve(pessoa)
+            } catch (err) {
+                reject(err)
+            }
         }
     }
 })
 ```
-
-Em caso erro na execução dentro da projeção, deve ser lançado uma exceção.
 
 #### Projeção Padrão
 
