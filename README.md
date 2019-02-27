@@ -22,7 +22,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
 
     * Ao remover a instância de uma entidade, automaticamente são removidos seus valores nas instâncias de entidades relacionadas (É possível desativar esta função caso desejado).
 
-    * É possível definir atributos de relacionamento entre duas entidades. Estes atributos de relacionamento podem inclusive ter relacionamento com outra entidade e ainda pode possuir outros atributos que por sua vez também podem ter relacionamento com outras entidades, podendo repetir este procedimento em qualquer quantidade de níveis.
+    * É possível definir atributos de relacionamento entre duas entidades. Estes atributos de relacionamento podem inclusive ter relacionamento com outra entidade e ainda podem possuir outros atributos que por sua vez também podem ter relacionamento com outras entidades, podendo repetir este procedimento em qualquer quantidade de níveis.
 
     * Com o Alpha Restful você poderá realizar relacionamento virtual entre entidades, evitando a criação de rotas e códigos de pesquisa personalizados desnecessários.
 
@@ -32,7 +32,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
 
     * O desenvolvimento de uma API Rest backend se torna extremamente fácil e simples de ser desenvolvido! Com pouquíssimas linhas de código um aplicação completa pode ser criada!
 
-    * As funcionalidade e verificações que o Alpha Restful realiza a mais em cima do banco de dados MongoDB possui um ótimo desempenho, porém podem ser desativadas individualmente caso seja necessário.
+    * As funcionalidades e verificações que o Alpha Restful realiza a mais em cima do banco de dados MongoDB possui um ótimo desempenho, porém podem ser desativadas individualmente caso seja necessário.
 
     * O Alpha Restful gera todas as rotas CRUD padrão de uma aplicação Rest, bastando apenas definir quais métodos http você deseja que seja criado.
 
@@ -549,6 +549,8 @@ Uma alternativa ao _fill_ é a opção _fillRec_. Tal opção contém um número
 ##### Observação
 
 Da mesma forma, por padrão, sub-atributos somente poderão ser ignorados pelo _jsonIgnore_ se o atributo pai tiver a opção _fill_ ou _subFill_. Caso você deseje que sub-atributos possam ser ignorados pelo _jsonIgnore_, independente das opções _fill_ e _subFill_, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
+
+Se você desejar que por padrão sub-atributos de sub-entidades também possam ser ignorados pelo _jsonIgnore_ de maneira individual, independente das opções _fill_ e _subFill_, além de adcionar a opção _ignoreFieldsRecursive_ como `false`, torna-se necessário também adicionar a opção _ignoreFieldsRecursiveSubEntity_ como `false` nas opções da entidade.
 
 #### Evitando Preenchimento Circular
 
