@@ -846,21 +846,25 @@ module.exports = class Restful {
             }
     
             return fsAsync.map((fAsync, index) => function (req, res, next) {
-                Promise.resolve(fAsync(req, res, next))
-                    .then(() => {
-                        if (index == fsAsync.length - 1) {
-                            if (autoSendStatus && typeof autoSendStatus === 'number')
-                                res.status(autoSendStatus).send(res._content_)
-                            else if (autoSendStatus)
-                                res.status(200).send(res._content_)
-                        }
-                        else {
-                            next()
-                        }
-                    })
-                    .catch(err => { 
-                        next(internalError(err, this))
-                    })
+                if (typeof fAsync.then !== 'function') {
+                    fAsync(req, res, next)
+                } else {
+                    fAsync(req, res)
+                        .then(() => {
+                            if (index == fsAsync.length - 1) {
+                                if (autoSendStatus && typeof autoSendStatus === 'number')
+                                    res.status(autoSendStatus).send(res._content_)
+                                else if (autoSendStatus)
+                                    res.status(200).send(res._content_)
+                            }
+                            else {
+                                next()
+                            }
+                        })
+                        .catch(err => { 
+                            next(internalError(err, this))
+                        })
+                }
             })
         } catch (err) {
             throw internalError(err, this)

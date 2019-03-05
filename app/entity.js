@@ -65,44 +65,16 @@ module.exports = class Entity {
     }
 
     getRouteHandler(handlerName) {
-        const that = this
-
         if (['beforeQuery', 'afterQuery', 'beforeCreate', 'afterCreate', 
         'beforeRemove', 'afterRemove', 'beforeEdit', 'afterEdit'].indexOf(handlerName) == -1)
             throw new Error(`Handler ${handlerName} Inválido!`)
 
         const parseEntity = handlerName !== 'beforeQuery'
 
-        return async function (req, res, next) {
-
-            let handler
-
-            if (parseEntity)
-                handler = that[handlerName].bind(that, res._content_)
-            else
-                handler = that[handlerName].bind(that)
-
-            return await new Promise((resolve, reject) => {
-                try {
-                    next = function () {
-                        let arg = arguments[0]
-
-                        if (arg)
-                            reject(arg)
-                        else
-                            resolve()
-                    }
-
-                    let rt = handler(req, res, next)
-
-                    if (rt && typeof rt.then === 'function') {
-                        rt.then(() => resolve()).catch(err => reject(err))
-                    }
-                } catch (err) {
-                    reject(err)
-                }
-            })
-        }
+        if (parseEntity)
+            return (req, res, next) => this[handlerName](res._content_, req, res, next)
+        else
+            return (req, res, next) => this[handlerName](req, res, next)
     }
 
     applyRouters (app, restful) {
