@@ -848,7 +848,7 @@ module.exports = class Restful {
             return fsAsync.map((fAsync, index) => function (req, res, next) {
                 let rt = fAsync(req, res, next)
 
-                if (typeof rt.then === 'function') {
+                if (rt && typeof rt.then === 'function') {
                     rt.then(() => {
                         if (index == fsAsync.length - 1) {
                             if (autoSendStatus && typeof autoSendStatus === 'number')
