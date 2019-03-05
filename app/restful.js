@@ -846,9 +846,9 @@ module.exports = class Restful {
             }
     
             return fsAsync.map((fAsync, index) => function (req, res, next) {
-                if (typeof fAsync.then !== 'function') {
-                    fAsync(req, res, next)
-                } else {
+                let rt = fAsync(req, res, next)
+
+                if (typeof rt.then === 'function') {
                     fAsync(req, res)
                         .then(() => {
                             if (index == fsAsync.length - 1) {
