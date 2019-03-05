@@ -849,21 +849,20 @@ module.exports = class Restful {
                 let rt = fAsync(req, res, next)
 
                 if (typeof rt.then === 'function') {
-                    fAsync(req, res)
-                        .then(() => {
-                            if (index == fsAsync.length - 1) {
-                                if (autoSendStatus && typeof autoSendStatus === 'number')
-                                    res.status(autoSendStatus).send(res._content_)
-                                else if (autoSendStatus)
-                                    res.status(200).send(res._content_)
-                            }
-                            else {
-                                next()
-                            }
-                        })
-                        .catch(err => { 
-                            next(internalError(err, this))
-                        })
+                    rt.then(() => {
+                        if (index == fsAsync.length - 1) {
+                            if (autoSendStatus && typeof autoSendStatus === 'number')
+                                res.status(autoSendStatus).send(res._content_)
+                            else if (autoSendStatus)
+                                res.status(200).send(res._content_)
+                        }
+                        else {
+                            next()
+                        }
+                    })
+                    .catch(err => { 
+                        next(internalError(err, this))
+                    })
                 }
             })
         } catch (err) {
