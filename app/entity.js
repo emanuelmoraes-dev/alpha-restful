@@ -1,5 +1,6 @@
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { copyEntity, prepareEntity, patchUpdate } = require('./util/db-utility')
+const mongoose = require('mongoose')
 
 module.exports = class Entity {
     constructor ({
@@ -101,6 +102,12 @@ module.exports = class Entity {
     findOneRouter (restful) {
         let that = this
         return restful.execAsync(
+            function (req, res, next) {
+                if (!mongoose.Types.ObjectId.isValid(req.params.id))
+                    next('route')
+                else
+                    next()
+            },
             this.getRouteHandler('beforeQuery'),
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
