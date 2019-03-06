@@ -439,8 +439,7 @@ module.exports = class Entity {
     afterGetFill (restful) {
         const that = this
         return async function (req, res, next) {
-            if (that.fillSync
-            && req.query.selectCount !== true && req.query.selectCount !== 'true')
+            if (that.fillSync)
                 res._content_ = await that.fill(res._content_, restful)
         }
     }
@@ -499,8 +498,7 @@ module.exports = class Entity {
     afterGetProjections(restful) {
         const that = this
         return async function (req, res, next) {
-            if (req.query.selectCount !== true && req.query.selectCount !== 'true')
-                res._content_ = await that.applyProjections(res._content_, req.query[restful.projectionName], restful)
+            res._content_ = await that.applyProjections(res._content_, req.query[restful.projectionName], restful)
         }
     }
 
