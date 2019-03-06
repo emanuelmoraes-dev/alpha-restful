@@ -2,6 +2,7 @@ const isISODate = require('is-iso-date')
 
 module.exports = exports = {
     copyEntity (data) {
+        if (!data) return data
         return JSON.parse(JSON.stringify(data))
     },
     convertType (type, value) {
