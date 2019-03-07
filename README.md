@@ -764,7 +764,7 @@ Caso seja habilitada a criação de CRUD, habilitando a geração de método htt
 Como exemplo de busca, imagina que deseja-se buscar todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para se realizar esta pesquisa bastaria fazer uma requisição http _get_ com a seguinte url:
 
 ```http
-/casas?pessoas.casas.pessoas.idade__$ge=18
+/casas?pessoas.casas.pessoas.idade__$gte=18
 ```
 
 Nesta rota de busca pode-se realizar pesquisas em atributos e sub-atributos da entidade e de sub-endades relacionadas. 
@@ -772,7 +772,7 @@ Nesta rota de busca pode-se realizar pesquisas em atributos e sub-atributos da e
 Você também pode adicionar várias condições. Neste caso, você poderia deixar esta busca ainda mais específica, exigindo que todas as casas buscadas precisa-se estar na rua "Castelo". Neste caso bastaria realizar a seguinte requisição http _get_:
 
 ```http
-/casas?pessoas.casas.pessoas.idade__$ge=18&endereco.rua=Castelo
+/casas?pessoas.casas.pessoas.idade__$gte=18&endereco.rua=Castelo
 ```
 
 Segue uma tabela com todas as opções de busca nesta rota de pesquisa gerada automaticamente:
@@ -782,7 +782,9 @@ Filtro              | Condição    | Exemplo                       | Descriçã
 Igual               | __$eq       | `/pessoas?nome=Emanuel` ou `/pessoas?nome__$eq=Emanuel` | Busca todas as pessoas com o nome igual a _Emanuel_
 Diferente           | __$ne       | `/pessoas?nome__$ne=Emanuel`  | Busca todas as pessoas na qual o nome é diferente de _Emanuel_
 Maior que           | __$gt       | `/pessoas?idade__$gt=18`      | Busca todas as pessoas com idade maior que 18
-Maior ou Igual      | __$ge       | `/pessoas?idade__$ge=18`      | Busca todas as pessoas com idade maior ou igual a 18
+Maior ou Igual      | __$gte       | `/pessoas?idade__$gte=18`      | Busca todas as pessoas com idade maior ou igual a 18
+Menor que           | __$lt       | `/pessoas?idade__$lt=18`      | Busca todas as pessoas com idade menor que 18
+Menor ou Igual      | __$lte       | `/pessoas?idade__$lte=18`      | Busca todas as pessoas com idade menor ou igual a 18
 Está Em             | __$in       | `/pessoas?idade__$in=18,19`   | Busca todas as pessoas com idade igual a 18 ou 19 anos
 Não Está Em         | __$nin      | `/pessoas?idade__$nin=18,19`  | Busca todas as pessoas na qual a idade não é 18 nem 19 anos
 Expressão Regular   | __regex     | `/pessoas?nome__regex=/^Em/i` | Busca todas as pessoas na qual o nome começa com "Em" (Case Insensitive)
@@ -801,7 +803,7 @@ Por exemplo: digamos que você deseje realizar uma pesquisa de todas as casas, n
 ```js
 let pessoas = await restful.query({
     'pessoas.casas.pessoas.idade': {
-        $ge: 18
+        $gte: 18
     }
 }, Pessoa, Pessoa.sync, Pessoa.descriptor)
 ```
