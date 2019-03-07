@@ -13,7 +13,7 @@
     "nosql",
     "node"
   ],
-  "version": "0.5.32",
+  "version": "0.5.33",
   "main": "index.js",
   "scripts": {
     "start": "node examples/example1/main.js",
