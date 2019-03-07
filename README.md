@@ -810,9 +810,9 @@ let pessoas = await restful.query({
 
 O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
 
-O argumento `Pessoa.sync`, assim como o argumento `Pessoa.descriptor` podem ser objetos personalizados especificamente para esta pesquisa, porém, neste caso, utiliza-se o _sync_ e o _descriptor_ definidos na modelagem da entidade _Pessoa_. O Quarto argumento é um objeto opcional.
+O argumento `Pessoa.sync`, assim como o argumento `Pessoa.descriptor` podem ser objetos personalizados especificamente para esta pesquisa, porém, neste caso, utiliza-se o _sync_ e o _descriptor_ definidos na modelagem da entidade _Pessoa_. O quinto argumento é um objeto opcional.
 
-Os opções do objeto passado no quarto argumento são:
+Os opções do objeto passado no quinto argumento são:
 
 Opção             | Valor Padrão | Descrição
 ----------------- | :----------: | -----------
