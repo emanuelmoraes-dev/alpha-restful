@@ -4,6 +4,8 @@ O Alpha Restful é um framework para o desenvolvimento de aplicações web Rest 
 
 ## Atenção!
 
+O Alpha Restful possui compatibilidade **apenas** com o **NODE 8 ou superior!**
+
 O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro poderá ocorrer. Caso você detecte algum erro, sinta-se livre para fazer uma publicação nas Issues do github, que eu tentarei resolver o mais rápido possível.
 
 ## Mas Porque Usar o Alpha Restful?
