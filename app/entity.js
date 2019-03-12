@@ -55,9 +55,9 @@ module.exports = class Entity {
                 try {
                     let rt = fn(...args, resolve, reject)
 
-                    if (rt && typeof rt.then === 'function') 
+                    if (rt && typeof rt.then === 'function')
                         rt.then(v => resolve(v)).catch(err => reject(err))
-                        
+
                 } catch (err) {
                     reject(err)
                 }
@@ -66,7 +66,7 @@ module.exports = class Entity {
     }
 
     getRouteHandler(handlerName) {
-        if (['beforeQuery', 'afterQuery', 'beforeCreate', 'afterCreate', 
+        if (['beforeQuery', 'afterQuery', 'beforeCreate', 'afterCreate',
         'beforeRemove', 'afterRemove', 'beforeEdit', 'afterEdit'].indexOf(handlerName) == -1)
             throw new Error(`Handler ${handlerName} Inválido!`)
 
@@ -91,7 +91,7 @@ module.exports = class Entity {
 
         if (this.methods.indexOf('put')+1)
             app.put(`/${this.resource}/:id`, this.putRouter(restful))
-        
+
         if (this.methods.indexOf('delete')+1)
             app.delete(`/${this.resource}/:id`, this.deleteRouter(restful))
 
@@ -112,7 +112,7 @@ module.exports = class Entity {
             async function (req, res, next) {
                 res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
                 // res._content_ = copyEntity(res._content_)
-            }, 
+            },
             this.afterGetFill(restful),
             this.afterGetProjections(restful),
             this.getRouteHandler('afterQuery'),
@@ -229,9 +229,9 @@ module.exports = class Entity {
             async function (req, res, next) {
                 const id = req.params.id
                 req.body._id = id
-                
+
                 let content = await that.model.findOne({ _id: id }).exec()
-                
+
                 content = copyEntity(content)
                 // req.body = prepareEntity(req.body, that.descriptor)
                 if ((req.query[restful.patchRecursiveName] == 'true'  || restful.patchRecursive)
@@ -288,7 +288,7 @@ module.exports = class Entity {
         if (this.querySync) {
             for (let key in find) {
                 if ([
-                restful.selectCountName, restful.selectName, 
+                restful.selectCountName, restful.selectName,
                 restful.limiteName, restful.skipName,
                 restful.sortName, restful.projectionName
                 ].indexOf(key)+1) continue
@@ -315,7 +315,7 @@ module.exports = class Entity {
                         newFind.$and.push(condition)
 
                     } else if (['$in', '$nin'].indexOf(keyArray[1])+1) {
-                        
+
                         let value = find[key].split(',')
 
                         let condition = {}
@@ -343,7 +343,7 @@ module.exports = class Entity {
             delete newFind.$and
 
         if (find[restful.selectCountName] == 'true') {
-            return await restful.query(newFind, this, this.descriptor, { 
+            return await restful.query(newFind, this, this.descriptor, {
                 limit, skip, selectCount: true, internalSearch: true
             })
         } else {
@@ -370,7 +370,7 @@ module.exports = class Entity {
                 let count = await this.model.countDocuments({
                     _id: id
                 }).exec()
-                
+
                 if (!count)
                     return id
             }
@@ -398,7 +398,7 @@ module.exports = class Entity {
         }
     }
 
-    async fill (content, restful, { 
+    async fill (content, restful, {
         ignoreFillProperties=[], jsonIgnoreProperties=[],
         sync=null, syncs={}
     }={}) {
@@ -424,7 +424,7 @@ module.exports = class Entity {
                     ignoreFillProperties, jsonIgnoreProperties,
                     syncs
                 })
-                content[index] = restful.ignoreFields(value, this.sync, 
+                content[index] = restful.ignoreFields(value, this.sync,
                     this.ignoreFieldsRecursive, this.ignoreFieldsRecursiveSubEntity)
             }
 
@@ -445,7 +445,7 @@ module.exports = class Entity {
         }
     }
 
-    async parseFromProjection(projection, content) {   
+    async parseFromProjection(projection, content) {
         if (typeof projection === 'function') {
             projection = this.parseAsyncFunction(projection)
             return await projection(content)
@@ -474,7 +474,7 @@ module.exports = class Entity {
                 if (!this.projectionDefault) return content
                 projectionName = this.projectionDefault
             }
-            
+
             let projection = this.projections[projectionName]
 
             if (!projection)

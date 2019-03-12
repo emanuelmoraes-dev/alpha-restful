@@ -15,7 +15,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
     * Todas as entidades com seus respectivos relacionamentos entre si são gerenciadas e integradas com várias funções disponibilizadas pelo framework.
 
     * Ao declarar uma entidade, é possível definir várias opções em seus atributos e relacionamentos.
-        
+
         * Com apenas a habilitação de uma opção, os atributos relacionados com outra entidade são preenchidos por todos os atributos armazenados na entidade relacionada, mesmo estando em outro documento.
 
         * Com apenas a habilitação de uma opção, uma instância de uma entidade não pode ser removida se possuir um relacionamento de um atributo seu com outra entidade.
@@ -34,7 +34,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
 
     * O desenvolvimento de uma API Rest backend se torna extremamente fácil e simples de ser desenvolvido! Com pouquíssimas linhas de código um aplicação completa pode ser criada!
 
-    * As funcionalidades e verificações que o Alpha Restful realiza a mais em cima do banco de dados MongoDB possui um ótimo desempenho, porém podem ser desativadas individualmente caso seja necessário.
+    * As funções e verificações, além das disponibilizadas pelo MongoDB e Mongoose, possui um ótimo desempenho, mas podem ser desativadas individualmente para garantir uma performance ou liberdade ainda maior.
 
     * O Alpha Restful gera todas as rotas CRUD padrão de uma aplicação Rest, bastando apenas definir quais métodos http você deseja que seja criado.
 
@@ -110,7 +110,7 @@ const mongoose = require('mongoose') // ORM de banco de dados MongoDB
 const { Connector, www, Restful, Entity } = require('alpha-restful') // Importa módulos do Alpha-Restful
 const restful = new Restful() // Instância do Alpha Restful
 
-// ... 
+// ...
 
 process.env.PORT = 3001 // Porta do servidor
 const connector = new Connector('db_test', 'localhost', restful, app) // Conexão com Banco de Dados Mongo DB
@@ -192,7 +192,7 @@ restful.applyRouters(app)
 
 O Mongoose possui uma funcionalidade chamada de [populate](https://mongoosejs.com/docs/populate.html). Esta funcionalidade permite um certo relacionamento entre entidades.
 
-Porém o Alpha Restful disponibiliza seu próprio método de relacionamento entre entidades, disponibilizando diversas funções a mais. 
+Porém o Alpha Restful disponibiliza seu próprio método de relacionamento entre entidades, disponibilizando diversas funções a mais.
 
 Para que as funcionalidades a seguir descritas funcionem, é necessário que o relacionamento entre entidades seja realizado por meio do Alpha Restful.
 
@@ -218,7 +218,7 @@ const Casa = new Entity({
         na qual pelo menos o id da entidade Pessoa deve
         ser armazenada
         */
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId // Id da entidade pessoa
         }]
     },
@@ -258,8 +258,8 @@ const Pessoa = new Entity({
     sync: {
         /*
         Como este relacionamento exige a passagem de
-        novas opções, ao invés da String contendo o 
-        nome da entidade, coloca-se um objeto, na 
+        novas opções, ao invés da String contendo o
+        nome da entidade, coloca-se um objeto, na
         qual o atributo name é o nome da entidade
         relacionada. A opção syncronized descreve
         o nome do atributo que realiza o
@@ -313,7 +313,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
 
             /*
@@ -363,7 +363,7 @@ const Pessoa = new Entity({
         idade: {
 
             /*
-            Ao buscar uma pessoa, o atributo idade não 
+            Ao buscar uma pessoa, o atributo idade não
             existirá
             */
             jsonIgnore: true
@@ -373,7 +373,7 @@ const Pessoa = new Entity({
             syncronized: ['pessoas'],
 
             /*
-            Ao buscar uma pessoa, o atributo casas não 
+            Ao buscar uma pessoa, o atributo casas não
             existirá
             */
             jsonIgnore: true
@@ -398,7 +398,7 @@ Se você deseja criar uma rota personalizada usando funções assincronas, você
 Como exemplo, vamos criar a estrutura de uma rota http _get_ com a URI _/rota-personalizada_:
 
 ```js
-app.get('/rota-personalizada', 
+app.get('/rota-personalizada',
     restful.execAsyn(async function (req, res) {
         // ...
         // Executando alguma coisa
@@ -425,7 +425,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
             aluguel: { id: mongoose.Types.ObjectId }
         }]
@@ -459,7 +459,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
 
             aluguel: {
@@ -472,7 +472,7 @@ const Casa = new Entity({
             name: 'Pessoa',
 
             /*
-            Indica que um sub-atributo poderá ser 
+            Indica que um sub-atributo poderá ser
             preenchido
             */
             subFill: true,
@@ -482,7 +482,7 @@ const Casa = new Entity({
                     name: 'Aluguel',
 
                     /*
-                    Preenche o atributo aluguel com os 
+                    Preenche o atributo aluguel com os
                     valores presentes na entidade Aluguel
                     */
                     fill: true
@@ -508,7 +508,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
 
             aluguel: {
@@ -521,8 +521,8 @@ const Casa = new Entity({
             name: 'Pessoa',
 
             /*
-            Também indica que um sub-atributo poderá ser 
-            preenchido, porém também preenche o atributo 
+            Também indica que um sub-atributo poderá ser
+            preenchido, porém também preenche o atributo
             pessoas
             */
             fill: true,
@@ -532,7 +532,7 @@ const Casa = new Entity({
                     name: 'Aluguel',
 
                     /*
-                    Preenche o atributo aluguel com os 
+                    Preenche o atributo aluguel com os
                     valores presentes na entidade Aluguel
                     */
                     fill: true
@@ -591,7 +591,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
 
             aluguel: {
@@ -632,7 +632,7 @@ const Pessoa = new Entity({
             fill: true,
 
             /*
-            Todos os atributos abaixo desta recursão com 
+            Todos os atributos abaixo desta recursão com
             o nome 'pessoas' não serão preenchidos
             */
             ignoreFillProperties: ['pessoas']
@@ -652,7 +652,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
 
             aluguel: {
@@ -666,8 +666,8 @@ const Casa = new Entity({
             fill: true,
 
             /*
-            Todos os atributos abaixo desta recursão com 
-            o nome 'casas' não serão incluídos dentro do 
+            Todos os atributos abaixo desta recursão com
+            o nome 'casas' não serão incluídos dentro do
             json
             */
             ignoreJsonProperties: ['casas'],
@@ -699,7 +699,7 @@ const Casa = new Entity({
             estado: String,
             pais: String
         },
-        pessoas: [{ 
+        pessoas: [{
             id: mongoose.Types.ObjectId,
 
             aluguel: {
@@ -714,8 +714,8 @@ const Casa = new Entity({
             ignoreJsonProperties: ['casas'],
 
             /*
-            As pessoas armazenadas no atributo 'pessoas' 
-            não poderão ser removidas enquando estiverem 
+            As pessoas armazenadas no atributo 'pessoas'
+            não poderão ser removidas enquando estiverem
             dentro deste relacionamento
             */
             required: true,
@@ -769,7 +769,7 @@ Como exemplo de busca, imagina que deseja-se buscar todas as casas, na qual exis
 /casas?pessoas.casas.pessoas.idade__$gte=18
 ```
 
-Nesta rota de busca pode-se realizar pesquisas em atributos e sub-atributos da entidade e de sub-endades relacionadas. 
+Nesta rota de busca pode-se realizar pesquisas em atributos e sub-atributos da entidade e de sub-endades relacionadas.
 
 Você também pode adicionar várias condições. Neste caso, você poderia deixar esta busca ainda mais específica, exigindo que todas as casas buscadas precisa-se estar na rua "Castelo". Neste caso bastaria realizar a seguinte requisição http _get_:
 
@@ -798,7 +798,7 @@ Quantidade          | selectCount | `/pessoas?selectCount=true`   | Busca a quan
 
 ### Método de Busca
 
-Digamos que você deseje realizar uma busca em uma rota personalizada, utilizando um poder ainda maior do que as opções disponíveis anteriormente. Neste caso, basta você chamar o método `restful.query(<condições>, <sync>, <descriptor>, <opções>)`.
+Digamos que você deseje realizar uma busca em uma rota personalizada, utilizando um poder ainda maior do que as opções disponíveis anteriormente. Neste caso, basta você chamar o método `restful.query(<condições>, <Entidade>, <descriptor>, <opções>)`.
 
 Por exemplo: digamos que você deseje realizar uma pesquisa de todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para realizar esta pesquisa basta realizar a seguinte chamada de método:
 
@@ -807,14 +807,14 @@ let pessoas = await restful.query({
     'pessoas.casas.pessoas.idade': {
         $gte: 18
     }
-}, Pessoa, Pessoa.sync, Pessoa.descriptor)
+}, Pessoa, Pessoa.descriptor)
 ```
 
 O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
 
-O argumento `Pessoa.sync`, assim como o argumento `Pessoa.descriptor` podem ser objetos personalizados especificamente para esta pesquisa, porém, neste caso, utiliza-se o _sync_ e o _descriptor_ definidos na modelagem da entidade _Pessoa_. O quinto argumento é um objeto opcional.
+O argumento `Pessoa.descriptor` pode ser um objeto personalizado especificamente para esta pesquisa, porém, neste caso, utiliza-se o _descriptor_ definido na modelagem da entidade _Pessoa_. O terceiro e o quarto argumentos são opcionais. Caso o _descriptor_ utilizado pela pesquisa seja o definido na modelagem, pode-se simplesmente omitir este argumento. O quarto argumento é um objeto com várias opções para a pesquisa.
 
-Os opções do objeto passado no quinto argumento são:
+Os opções do objeto passado no quarto argumento são:
 
 Opção             | Valor Padrão | Descrição
 ----------------- | :----------: | -----------
@@ -1091,7 +1091,7 @@ const Pessoa = new Entity({
 E se quisermos que nossas rotas personalizadas também usaem nossas projeções? Neste caso basta adicionar dois novos argumentos no utilitário `restful.execAsync` e adicionar aquilo que seria enviado no atributo `res._content_`:
 
 ```js
-app.get('/rota-personalizada', 
+app.get('/rota-personalizada',
     restful.execAsync(async function (req, res) {
         // ...
         // Código da rota personalizada
@@ -1126,7 +1126,7 @@ const Casa = new Entity({
             atributo restful.entities
             */
             const Casa = restful.entities.Casa
-            
+
             casa.pessoas = await Casa.applyProjections(
                 casa.pessoas, 'projecao-base', restful
             )
@@ -1154,7 +1154,7 @@ afterRemove (entity, req, res, next) | Executado após a aplicação de uma rota
 beforeEdit (entity, req, res, next) | Executado antes da aplicação de uma rota _put_ ou _patch_
 afterEdit (entity, req, res, next) | Executado após a aplicação de uma rota _put_ ou _patch_
 
-Se a implementação do handler retornar uma promise ou for uma função assincrona, o método `next` não devera ser utilizado e em caso de erro deve ser lançado uma exceção. 
+Se a implementação do handler retornar uma promise ou for uma função assincrona, o método `next` não devera ser utilizado e em caso de erro deve ser lançado uma exceção.
 
 Se o handler não retornar uma promise e não for uma função assincrona, obrigatoriamente a função `next` deverá ser executada ao final do procedimento e caso algum erro ocorra, o objeto do erro deve ser jogado como o primeiro argumento da função `next`.
 
@@ -1190,7 +1190,7 @@ Para obter um handler, basta chamar a função `Entidade.getRouteHandler(<nome-d
 Para exemplificar esta integração, definiremos uma rota personalizada que utilizará os handlers `beforeEdit` e `afterEdit`.
 
 ```js
-app.put('/edit-pessoa', 
+app.put('/edit-pessoa',
     restful.execAsync(
         async function (req, res) {
             // ... faz alguma coisa
@@ -1216,7 +1216,7 @@ Neste exemplo nós chamados o handler `beforeEdit` e o handler `afterEdit`, mas 
 Por fim, se quisessemos integrar nossa rota personalizada ao `beforeEdit`, ao `afterEdit` e as nossas projeções explicadas anteriormente, poderíamos fazer o seguinte:
 
 ```js
-app.put('/edit-pessoa', 
+app.put('/edit-pessoa',
     restful.execAsync(
         async function (req, res) {
             // ... faz alguma coisa
