@@ -80,7 +80,7 @@ npm install alpha-restful --save
 
 ### Preparando o Ambiente Express JS
 
-O Alpha Restful executa em cima do Express JS. Para mais informações sobre o Express JS, acesse o link <https://expressjs.com/pt-br/>.
+O Alpha Restful executa em cima do Express JS. Para mais informações sobre o Express JS, acesse o link <https://expressjs.com/>.
 
 Se você já trabalha com o Express JS você poderá pular esta seção.
 

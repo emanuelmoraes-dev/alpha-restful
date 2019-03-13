@@ -133,7 +133,7 @@ module.exports = class Restful {
                     }
 
                     continue
-                } else if (['$gt', '$gte', '$lt', '$leq', '$eq'].indexOf(key)+1) {
+                } else if (['$gt', '$gte', '$lt', '$lte', '$eq'].indexOf(key)+1) {
                     newFind[key] = conditions[key]
                     continue
                 }
