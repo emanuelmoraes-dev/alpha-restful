@@ -95,7 +95,8 @@ module.exports = class Restful {
     async query (conditions, target, descriptor, {
         select=null, skip=null, limit=null,
         sort=null, internalSearch=true,
-        selectCount=false, isCopyEntity=false
+        selectCount=false, isCopyEntity=false,
+        findOne=false
     } = {}) {
 
 		if (!descriptor)
@@ -273,7 +274,10 @@ module.exports = class Restful {
                 count: await find.exec()
             }
         } else {
-            find = entity.model.find(newFind)
+            if (findOne)
+              find = entity.model.findOne(newFind)
+            else
+              find = entity.model.find(newFind)
 
             if (limit === 0 || limit)
                 find = find.limit(limit)

@@ -803,16 +803,16 @@ Digamos que você deseje realizar uma busca em uma rota personalizada, utilizand
 Por exemplo: digamos que você deseje realizar uma pesquisa de todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para realizar esta pesquisa basta realizar a seguinte chamada de método:
 
 ```js
-let pessoas = await restful.query({
+let casas = await restful.query({
     'pessoas.casas.pessoas.idade': {
         $gte: 18
     }
-}, Pessoa, Pessoa.descriptor)
+}, Casa, Casa.descriptor)
 ```
 
 O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
 
-O argumento `Pessoa.descriptor` pode ser um objeto personalizado especificamente para esta pesquisa, porém, neste caso, utiliza-se o _descriptor_ definido na modelagem da entidade _Pessoa_. O terceiro e o quarto argumentos são opcionais. Caso o _descriptor_ utilizado pela pesquisa seja o definido na modelagem, pode-se simplesmente omitir este argumento. O quarto argumento é um objeto com várias opções para a pesquisa.
+O argumento `Casa.descriptor` pode ser um objeto personalizado especificamente para esta pesquisa, porém, neste caso, utiliza-se o _descriptor_ definido na modelagem da entidade _Casa_. O terceiro e o quarto argumentos são opcionais. Caso o _descriptor_ utilizado pela pesquisa seja o definido na modelagem, pode-se simplesmente omitir este argumento. O quarto argumento é um objeto com várias opções para a pesquisa.
 
 Os opções do objeto passado no quarto argumento são:
 
@@ -824,6 +824,8 @@ limit             | `null`       | Quantidade máxima de elementos  da busca
 sort              | `null`       | Atributo a ser ordenado
 internalSearch    | `true`       | Se for `false` retorna um objeto de busca a ser utilizado em uma pesquisa com o mongoose. Se for `true` retorna-se o resultado da busca
 selectCount       | `false`      | Se for `true` retorna a quantidade de elementos da busca. Se for `false` retorna os elementos da busca.
+isCopyEntity      | `false`      | Se for `false` **não** realiza a cópia das entidades buscadas. Neste caso, os atributos das entidades retornadas são imutáveis. Se for `true` as entidades retornadas são uma cópia das originais. Neste caso pode-se alterar os valores de seus atributos. As cópias das entidades **não** possuem os métodos utilizados pelo _mongoose_.
+findOne           | `false`      | Se for `true`, apenas uma entidade é buscada e retornada.
 
 #### Observação
 
@@ -872,6 +874,23 @@ sync                 | `null`       | Objeto _sync_ a ser usado ao invés do _sy
 syncs                | `{}`         | Objeto cuja a chave é o nome da entidade e o valor é o _sync_ a ser usado ao invés do _sync_ definido na modelagem de tal entidade. A entidade que não estiver dentro desta opção terá o _sync_ definido em sua modelagem usado.
 ignoreFillProperties | `[]`         | Lista de propriedade que não serão preenchidas em qualquer nível.
 jsonIgnoreProperties | `[]`         | Lista de propriedade que não serão incluídas em qualquer nível.
+
+#### Forma ALternativa Para Integrar Preenchimento em Rotas Personalizadas
+
+O método de preenchimento `Entidade.fill` pode ser chamado dentro de uma rota personalizada para preencher os atributos com os valores contidos nas entidades relacionadas por eles. Esse método pode ser chamado explicitamente, mas também pode ser chamado de maneira alternativa como uma opção aop método `restful.execAsync`:
+
+```js
+app.get('/rota-personalizada',
+    restful.execAsync(async function (req, res) {
+        // ...
+        // Código da rota personalizada
+        // ...
+
+        res._content_ = casas
+
+    }, Casa.afterGetFill(restful), 200)
+)
+```
 
 #### Sync Dinâmico
 
