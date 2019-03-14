@@ -889,7 +889,7 @@ app.get('/rota-personalizada',
         res._content_ = casas
 
     }, Casa.afterGetFill(restful), 200)
-)
+)X
 ```
 
 #### Sync Dinâmico
