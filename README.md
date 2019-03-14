@@ -875,7 +875,7 @@ syncs                | `{}`         | Objeto cuja a chave é o nome da entidade 
 ignoreFillProperties | `[]`         | Lista de propriedade que não serão preenchidas em qualquer nível.
 jsonIgnoreProperties | `[]`         | Lista de propriedade que não serão incluídas em qualquer nível.
 
-#### Forma ALternativa Para Integrar Preenchimento em Rotas Personalizadas
+#### Forma Alternativa Para Integrar Preenchimento em Rotas Personalizadas
 
 O método de preenchimento `Entidade.fill` pode ser chamado dentro de uma rota personalizada para preencher os atributos com os valores contidos nas entidades relacionadas por eles. Esse método pode ser chamado explicitamente, mas também pode ser chamado de maneira alternativa como uma opção aop método `restful.execAsync`:
 
@@ -889,7 +889,7 @@ app.get('/rota-personalizada',
         res._content_ = casas
 
     }, Casa.afterGetFill(restful), 200)
-)X
+)
 ```
 
 #### Sync Dinâmico
