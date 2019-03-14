@@ -6,12 +6,15 @@
     "alpha-restful",
     "alpha",
     "restful",
+    "web",
     "rest",
     "http",
     "express",
     "mongo",
     "nosql",
-    "node"
+    "node",
+    "api",
+    "framework"
   ],
   "version": "0.5.40",
   "main": "index.js",
