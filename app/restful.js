@@ -6,7 +6,7 @@ const { getAttr, extractValuesByArray } = require('./util/utility')
 module.exports = class Restful {
     constructor ({
         isLocale=true,
-        locale='pt',
+        locale='en',
         entities={},
         patchRecursive=false,
         patchRecursiveName='patchRecursive',
@@ -369,17 +369,21 @@ module.exports = class Restful {
 
     add (entity) {
         try {
-			console.log(`registering the entity ${entity.name}...`)
+          if (process.env.DEBUG)
+			       console.log(`registering the entity ${entity.name}...`)
 
             if (this.entities[entity.name])
                 Object.assign(entity, this.entities[entity.name])
             this.entities[entity.name] = entity
 
-			console.log(`applying relationships to the entity ${entity.name}...`)
+          if (process.env.DEBUG)
+			       console.log(`applying relationships to the entity ${entity.name}...`)
 
             this.applySync(entity, entity.name)
 
-			console.log(`registered entity ${entity.name}`)
+          if (process.env.DEBUG)
+			       console.log(`registered entity ${entity.name}`)
+
         } catch (err) {
             throw internalError(err, this)
         }
@@ -842,11 +846,13 @@ module.exports = class Restful {
             if (!entity.name)
                 throw new RuntimeError(`Entidade ${entityName} não existe!`)
 
-			console.log(`defining default routes for the entity ${entity.name}...`)
+            if (process.env.DEBUG)
+			         console.log(`defining default routes for the entity ${entity.name}...`)
 
             entity.applyRouters(app, this)
 
-			console.log(`standard routes of the defined entity ${entity.name}`)
+            if (process.env.DEBUG)
+			         console.log(`standard routes of the defined entity ${entity.name}`)
         }
     }
 
