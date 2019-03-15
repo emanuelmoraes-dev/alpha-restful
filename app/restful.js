@@ -92,11 +92,11 @@ module.exports = class Restful {
 		return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), target, type, attr, type)
 	}
 
-	async query (conditions, target, descriptor, {
+	async query (conditions, target, {
 		select=null, skip=null, limit=null,
 		sort=null, internalSearch=true,
 		selectCount=false, isCopyEntity=false,
-		findOne=false
+		findOne=false, descriptor=null
 	} = {}) {
 
 		if (!descriptor)
@@ -107,8 +107,9 @@ module.exports = class Restful {
 		if (conditions instanceof Array) {
 			newFind=[]
 			for (let [value, index] of enumerate(conditions)) {
-				newFind[index] = await this.query(value, target, descriptor, {
-					internalSearch: false, selectCount: false, isCopyEntity: true
+				newFind[index] = await this.query(value, target, {
+					internalSearch: false, selectCount: false, isCopyEntity: true,
+					descriptor
 				})
 			}
 		} else {
@@ -116,8 +117,9 @@ module.exports = class Restful {
 			for (let key in conditions) {
 				if (['select', 'sort', 'limit', 'skip'].indexOf(key)+1) continue
 				if (['$or', '$and', '$in', '$nin'].indexOf(key)+1) {
-					newFind[key] = await this.query(conditions[key], target, descriptor, {
-						internalSearch: false, selectCount: false, isCopyEntity: true
+					newFind[key] = await this.query(conditions[key], target, {
+						internalSearch: false, selectCount: false, isCopyEntity: true,
+						descriptor
 					})
 
 					if (key === '$and' && (!(newFind[key] instanceof Array) ||
@@ -164,8 +166,9 @@ module.exports = class Restful {
 						let subConditions = {}
 						subConditions[rt.remaining] = conditions[key]
 
-						let subQuery = await this.query(subConditions, rt.target, rt.descriptor, {
-							select: false, internalSearch: true, selectCount: false, isCopyEntity: true
+						let subQuery = await this.query(subConditions, rt.target, {
+							select: false, internalSearch: true, selectCount: false,
+							isCopyEntity: true, descriptor: rt.descriptor
 						})
 
 						subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
@@ -201,8 +204,9 @@ module.exports = class Restful {
 							]
 						}
 
-						let subQueryCount = await this.query(subConditions, rt.target, rt.descriptor, {
-							internalSearch: true, selectCount: true, limit: rt.limit, skip: rt.skip
+						let subQueryCount = await this.query(subConditions, rt.target, {
+							internalSearch: true, selectCount: true, limit: rt.limit,
+							skip: rt.skip, descriptor: rt.descriptor
 						})
 
 						if (!subQueryCount.count) {
@@ -223,8 +227,9 @@ module.exports = class Restful {
 						rt.descriptor && !rt.descriptor[attr])
 							throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.target.name}!`)
 
-						let subQuery = await this.query(subConditions, rt.target, rt.descriptor, {
-							select: '_id', internalSearch: true, selectCount: false, isCopyEntity: true
+						let subQuery = await this.query(subConditions, rt.target, {
+							select: '_id', internalSearch: true, selectCount: false,
+							isCopyEntity: true, descriptor: rt.descriptor
 						})
 						subQuery = subQuery.map(e => e._id)
 
@@ -529,14 +534,15 @@ module.exports = class Restful {
 
 						let find = options.find || {}
 
-						subEntities = await this.query(find, subEntity, subEntity.descriptor, {
+						subEntities = await this.query(find, subEntity, {
 							internalSearch: true,
 							limit: options.limit,
 							select: options.select,
 							selectCount: options.selectCount,
 							skip: options.skip,
 							sort: options.sort,
-							isCopyEntity: false
+							isCopyEntity: false,
+							descriptor: subEntity.descriptor
 						})
 
 						if (options.selectCount !== true && options.selectCount !== 'true')
@@ -673,8 +679,9 @@ module.exports = class Restful {
 					if (conditions.length) {
 						count = await this.query({
 							$or: conditions
-						}, subEntity, subEntity.descriptor, {
-							selectCount: true
+						}, subEntity, {
+							selectCount: true,
+							descriptor: subEntity.descriptor
 						})
 
 						count = count.count
@@ -697,7 +704,7 @@ module.exports = class Restful {
 					if (conditions.length) {
 						entities = await this.query({
 							$or: conditions
-						}, subEntity, subEntity.descriptor)
+						}, subEntity)
 					}
 
 					for (let entity of entities)
@@ -715,7 +722,7 @@ module.exports = class Restful {
 					if (conditions.length) {
 						let entities = await this.query({
 							$or: conditions
-						}, subEntity, subEntity.descriptor)
+						}, subEntity)
 
 						entities = copyEntity(entities)
 

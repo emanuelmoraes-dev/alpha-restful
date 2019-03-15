@@ -342,12 +342,14 @@ module.exports = class Entity {
 			delete newFind.$and
 
 		if (find[restful.selectCountName] == 'true') {
-			return await restful.query(newFind, this, this.descriptor, {
-				limit, skip, selectCount: true, internalSearch: true
+			return await restful.query(newFind, this, {
+				limit, skip, selectCount: true, internalSearch: true,
+				descriptor: this.descriptor
 			})
 		} else {
-			return await restful.query(newFind, this, this.descriptor, {
-				limit, skip, sort, select, internalSearch: true
+			return await restful.query(newFind, this, {
+				limit, skip, sort, select, internalSearch: true,
+				descriptor: this.descriptor
 			})
 		}
 	}
