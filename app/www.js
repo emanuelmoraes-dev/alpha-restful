@@ -105,7 +105,7 @@ module.exports = async function start(connector, applicationName, createErrorHan
 
 	const server = http.createServer(app)
 
-	return await (new Promise((resolve, reject) => {
+	return await (new connector.restful.Promise((resolve, reject) => {
 		/**
 		 * Listen on provided port, on all network interfaces.
 		 */

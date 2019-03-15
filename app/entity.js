@@ -1,5 +1,6 @@
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { copyEntity, prepareEntity, patchUpdate } = require('./util/db-utility')
+const { enumerate } = require('./util/utility')
 const mongoose = require('mongoose')
 
 module.exports = class Entity {
@@ -48,12 +49,12 @@ module.exports = class Entity {
 		this.model = null
 	}
 
-	parseAsyncProjection(fn) {
+	parseAsyncProjection(fn, restful) {
 		return async function () {
 			const args = Array.prototype.slice.call(arguments)
-			return await new Promise((resolve, reject) => {
+			return await new restful.Promise((resolve, reject) => {
 				try {
-					Promise.resolve(fn(...args, resolve, reject)).catch(err => {
+					restful.Promise.resolve(fn(...args, resolve, reject)).catch(err => {
 						reject(err)
 					})
 				} catch (err) {
@@ -448,10 +449,10 @@ module.exports = class Entity {
 		}
 	}
 
-	async parseFromProjection(projection, content) {
+	async parseFromProjection(projection, content, restful) {
 		if (typeof projection === 'function') {
-			projection = this.parseAsyncProjection(projection)
-			return await projection(content)
+			projection = this.parseAsyncProjection(projection, restful)
+			return await projection(content, restful)
 		} else if (projection instanceof Array) {
 			for (let key of Object.keys(content)) {
 				if (!(projection.indexOf(key) + 1))
@@ -462,7 +463,7 @@ module.exports = class Entity {
 			let anterior = {}
 
 			for (let key of Object.keys(projection)) {
-				anterior[key] = await Promise.resolve(projection[key](content, content[key]))
+				anterior[key] = await restful.Promise.resolve(projection[key](content, content[key]))
 			}
 
 			return anterior
@@ -486,11 +487,11 @@ module.exports = class Entity {
 			if (content instanceof Array) {
 				for (let [entity, i] of enumerate(content)) {
 					entity = copyEntity(entity)
-					content[i] = await this.parseFromProjection(projection, entity)
+					content[i] = await this.parseFromProjection(projection, entity, restful)
 				}
 			} else {
 				content = copyEntity(content)
-				content = await this.parseFromProjection(projection, content)
+				content = await this.parseFromProjection(projection, content, restful)
 			}
 
 			return content

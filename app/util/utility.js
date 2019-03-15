@@ -1,4 +1,12 @@
 module.exports = exports = {
+	enumerate: function* (enumeration) {
+		let index = 0
+		for (let value of enumeration) {
+			yield Object.assign([ value, index ], { value, index })
+			index++
+		}
+	},
+
 	getAttr(pathAttr, obj, searchArray=false) {
 		if (!obj)
 			return obj

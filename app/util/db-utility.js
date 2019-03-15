@@ -1,4 +1,5 @@
 const isISODate = require('is-iso-date')
+const { enumerate } = require('./utility')
 
 module.exports = exports = {
 	copyEntity (data) {

@@ -1,6 +1,3 @@
-require('es6-promise/auto')
-require('./util/js-adapter')
-
 module.exports = {
 	www: require('./www'),
 	Restful: require('./restful'),

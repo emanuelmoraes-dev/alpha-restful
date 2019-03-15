@@ -29,7 +29,7 @@ module.exports = class Connector {
 		if (process.env.DEBUG)
 			console.log(`establishing connection to mongodb using "${this.host}" and "${this.dbName}" database name...`)
 		mongoose.connect(`mongodb://${this.host}/${this.dbName}`, { useNewUrlParser: true })
-		return await (new Promise((resolve, reject) => {
+		return await (new this.restful.Promise((resolve, reject) => {
 			db.on('error', this.onError.bind(this, reject))
 			db.once('open', this.onOpen.bind(this, resolve))
 		}))

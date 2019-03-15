@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { copyEntity, convertType } = require('./util/db-utility')
-const { getAttr, extractValuesByArray } = require('./util/utility')
+const { getAttr, extractValuesByArray, enumerate } = require('./util/utility')
 
 module.exports = class Restful {
 	constructor ({
@@ -16,7 +16,8 @@ module.exports = class Restful {
 		selectCountName='selectCount',
 		limiteName='limit',
 		skipName='skip',
-		sortName='sort'
+		sortName='sort',
+		Promise=require('es6-promise')
 	}={}) {
 		Object.assign(this, {
 			isLocale,
@@ -30,6 +31,7 @@ module.exports = class Restful {
 			limiteName,
 			skipName,
 			sortName,
+			Promise
 		})
 
 		this.entities = {}
@@ -888,8 +890,8 @@ module.exports = class Restful {
 				})
 			}
 
-			return fsAsync.map((fAsync, index) => function (req, res, next) {
-				Promise.resolve(fAsync(req, res, next)).catch(err => {
+			return fsAsync.map((fAsync, index) => (req, res, next) => {
+				this.Promise.resolve(fAsync(req, res, next)).catch(err => {
 					next(internalError(err, this))
 				})
 			})
