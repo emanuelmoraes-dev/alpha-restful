@@ -374,20 +374,20 @@ module.exports = class Restful {
 
 	add (entity) {
 		try {
-		  if (process.env.DEBUG)
-			       console.log(`registering the entity ${entity.name}...`)
+			if (process.env.DEBUG)
+				console.log(`registering the entity ${entity.name}...`)
 
 			if (this.entities[entity.name])
 				Object.assign(entity, this.entities[entity.name])
 			this.entities[entity.name] = entity
 
-		  if (process.env.DEBUG)
-			       console.log(`applying relationships to the entity ${entity.name}...`)
+			if (process.env.DEBUG)
+				console.log(`applying relationships to the entity ${entity.name}...`)
 
 			this.applySync(entity, entity.name)
 
-		  if (process.env.DEBUG)
-			       console.log(`registered entity ${entity.name}`)
+			if (process.env.DEBUG)
+				console.log(`registered entity ${entity.name}`)
 
 		} catch (err) {
 			throw internalError(err, this)
@@ -854,12 +854,12 @@ module.exports = class Restful {
 				throw new RuntimeError(`Entidade ${entityName} não existe!`)
 
 			if (process.env.DEBUG)
-			         console.log(`defining default routes for the entity ${entity.name}...`)
+				console.log(`defining default routes for the entity ${entity.name}...`)
 
 			entity.applyRouters(app, this)
 
 			if (process.env.DEBUG)
-			         console.log(`standard routes of the defined entity ${entity.name}`)
+				console.log(`standard routes of the defined entity ${entity.name}`)
 		}
 	}
 
