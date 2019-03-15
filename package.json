@@ -17,7 +17,7 @@
     "framework"
   ],
   "version": "0.5.41",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
     "start": "node examples/example1/main.js",
     "dev": "DEBUG=alpha-restful:* node examples/example1/main.js"
