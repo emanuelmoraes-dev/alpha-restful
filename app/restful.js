@@ -871,12 +871,17 @@ module.exports = class Restful {
 
 			fsAsync = Array.prototype.slice.call(arguments)
 
+			if (!fsAsync.length)
+				return []
+
+			const last = fsAsync[fsAsync.length-1]
+
 			if (typeof fsAsync[0] === 'boolean' || typeof fsAsync[0] === 'number') {
 				fsAsync = fsAsync.slice(1)
 				autoSendStatus = fsAsync[0]
-			} else if (typeof fsAsync.last() === 'boolean' || typeof fsAsync.last() === 'number') {
+			} else if (typeof last === 'boolean' || typeof last === 'number') {
 				fsAsync = fsAsync.slice(0, fsAsync.length - 1)
-				autoSendStatus = fsAsync.last()
+				autoSendStatus = last
 			} else {
 				autoSendStatus = false
 			}
