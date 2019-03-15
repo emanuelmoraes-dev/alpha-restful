@@ -48,13 +48,13 @@ module.exports = class Entity {
 		this.model = null
 	}
 
-	parseAsyncFunction(fn) {
+	parseAsyncProjection(fn) {
 		return async function () {
 			const args = Array.prototype.slice.call(arguments)
 			return await new Promise((resolve, reject) => {
 				try {
 					Promise.resolve(fn(...args, resolve, reject)).catch(err => {
-					  reject(err)
+						reject(err)
 					})
 				} catch (err) {
 					reject(err)
@@ -267,7 +267,7 @@ module.exports = class Entity {
 		)
 	}
 
-	async query (find, restful) {
+	async _query (find, restful) {
 		let select = null
 
 		if (find[restful.selectName]) {
@@ -357,7 +357,7 @@ module.exports = class Entity {
 	getQuery (restful) {
 		const that = this
 		return async function (req, res, next) {
-			res._content_ = await that.query(req.query, restful)
+			res._content_ = await that._query(req.query, restful)
 			next()
 		}
 	}
@@ -422,11 +422,11 @@ module.exports = class Entity {
 					continue
 
 				value = copyEntity(value)
-				content[index] = await restful.fill(value, sync, value._id, {
+				content[index] = await restful._fill(value, sync, value._id, {
 					ignoreFillProperties, jsonIgnoreProperties,
 					syncs
 				})
-				content[index] = restful.ignoreFields(value, this.sync,
+				content[index] = restful._ignoreFields(value, this.sync,
 					this.ignoreFieldsRecursive, this.ignoreFieldsRecursiveSubEntity)
 			}
 
@@ -450,7 +450,7 @@ module.exports = class Entity {
 
 	async parseFromProjection(projection, content) {
 		if (typeof projection === 'function') {
-			projection = this.parseAsyncFunction(projection)
+			projection = this.parseAsyncProjection(projection)
 			return await projection(content)
 		} else if (projection instanceof Array) {
 			for (let key of Object.keys(content)) {
@@ -558,7 +558,7 @@ module.exports = class Entity {
 					continue
 
 				// value = copyEntity(value)
-				await restful.verifyIds(value, this.sync)
+				await restful._verifyIds(value, this.sync)
 			}
 		} catch (err) {
 			throw internalError(err, restful)
@@ -574,15 +574,15 @@ module.exports = class Entity {
 		}
 	}
 
-	async beforeQuery (req, res, next){}
-	async afterQuery (entity, req, res, next){}
+	async beforeQuery (req, res, next){ next() }
+	async afterQuery (entity, req, res, next){ next() }
 
-	async beforeCreate (entity, req, res, next){}
-	async afterCreate (entity, req, res, next){}
+	async beforeCreate (entity, req, res, next){ next() }
+	async afterCreate (entity, req, res, next){ next() }
 
-	async beforeRemove (entity, req, res, next){}
-	async afterRemove (entity, req, res, next){}
+	async beforeRemove (entity, req, res, next){ next() }
+	async afterRemove (entity, req, res, next){ next() }
 
-	async beforeEdit (entity, req, res, next){}
-	async afterEdit (entity, req, res, next){}
+	async beforeEdit (entity, req, res, next){ next() }
+	async afterEdit (entity, req, res, next){ next() }
 }

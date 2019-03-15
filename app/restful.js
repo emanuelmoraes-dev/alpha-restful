@@ -40,7 +40,7 @@ module.exports = class Restful {
 		}
 	}
 
-	getAttrSearchValid (attrSearch, target, descriptor, context='', type) {
+	_getAttrSearchValid (attrSearch, target, descriptor, context='', type) {
 		if (typeof target === 'string')
 			target = { name: target }
 
@@ -87,9 +87,9 @@ module.exports = class Restful {
 			target = null
 
 		if (context)
-			return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), target, type, `${context}.${attr}`, type)
+			return this._getAttrSearchValid(attrSearchArray.slice(1).join('.'), target, type, `${context}.${attr}`, type)
 
-		return this.getAttrSearchValid(attrSearchArray.slice(1).join('.'), target, type, attr, type)
+		return this._getAttrSearchValid(attrSearchArray.slice(1).join('.'), target, type, attr, type)
 	}
 
 	async query (conditions, target, {
@@ -141,7 +141,7 @@ module.exports = class Restful {
 					continue
 				}
 
-				let rt = this.getAttrSearchValid(key, target, descriptor)
+				let rt = this._getAttrSearchValid(key, target, descriptor)
 
 				if ((!rt.target || !rt.target.name) && !rt.end)
 					throw new IlegallArgumentError(`O atributo ${rt.remaining} não existe!`)
@@ -280,9 +280,9 @@ module.exports = class Restful {
 			}
 		} else {
 			if (findOne)
-			  find = entity.model.findOne(newFind)
+				find = entity.model.findOne(newFind)
 			else
-			  find = entity.model.find(newFind)
+				find = entity.model.find(newFind)
 
 			if (limit === 0 || limit)
 				find = find.limit(limit)
@@ -305,7 +305,7 @@ module.exports = class Restful {
 		return data
 	}
 
-	applySyncronized (entityName, target, field, source, nameSyncronized) {
+	_applySyncronized (entityName, target, field, source, nameSyncronized) {
 		try {
 			if (!target.syncronized)
 				target.syncronized = {}
@@ -318,7 +318,7 @@ module.exports = class Restful {
 
 				nameSyncronized = nameSyncronized.split('.').slice(1).join('.')
 
-				this.applySyncronized(entityName, target.syncronized[newNameSyncronized], field, source, nameSyncronized)
+				this._applySyncronized(entityName, target.syncronized[newNameSyncronized], field, source, nameSyncronized)
 			} else {
 				if (!target.syncronized[nameSyncronized])
 					target.syncronized[nameSyncronized] = { attrs: [], descriptors: [] }
@@ -342,7 +342,7 @@ module.exports = class Restful {
 		}
 	}
 
-	applySync (source, nameSyncronized) {
+	_applySync (source, nameSyncronized) {
 		try {
 			for (let field in source.sync) {
 				if (field === 'sync') continue
@@ -361,11 +361,11 @@ module.exports = class Restful {
 						this.entities[entityName] = subEntity
 					}
 
-					this.applySyncronized(entityName, subEntity, field, source, nameSyncronized)
+					this._applySyncronized(entityName, subEntity, field, source, nameSyncronized)
 				}
 
 				if (options.sync)
-					this.applySync(options, `${nameSyncronized}.${field}`)
+					this._applySync(options, `${nameSyncronized}.${field}`)
 			}
 		} catch (err) {
 			throw internalError(err, this)
@@ -384,7 +384,7 @@ module.exports = class Restful {
 			if (process.env.DEBUG)
 				console.log(`applying relationships to the entity ${entity.name}...`)
 
-			this.applySync(entity, entity.name)
+			this._applySync(entity, entity.name)
 
 			if (process.env.DEBUG)
 				console.log(`registered entity ${entity.name}`)
@@ -394,7 +394,7 @@ module.exports = class Restful {
 		}
 	}
 
-	ignoreFields (data, sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity) {
+	_ignoreFields (data, sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity) {
 		try {
 			if (!data || !sync) return data
 
@@ -413,14 +413,14 @@ module.exports = class Restful {
 				}
 
 				if (options.sync && ignoreFieldsRecursive)
-					data[attr] = this.ignoreFields(data[attr], options.sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity)
+					data[attr] = this._ignoreFields(data[attr], options.sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity)
 
 				if (options.name) {
 					let entityName = options.name
 					let subEntity = this.entities[entityName]
 
 					if (subEntity.sync && ignoreFieldsRecursiveSubEntity) {
-						data[attr] = this.ignoreFields(data[attr], subEntity.sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity)
+						data[attr] = this._ignoreFields(data[attr], subEntity.sync, ignoreFieldsRecursive, ignoreFieldsRecursiveSubEntity)
 					}
 				}
 			}
@@ -431,7 +431,7 @@ module.exports = class Restful {
 		}
 	}
 
-	async fill (data, sync, id=null, fillRec=true, {
+	async _fill (data, sync, id=null, fillRec=true, {
 		ignoreFillProperties=[], jsonIgnoreProperties=[],
 		syncs={}
 	}={}) {
@@ -580,7 +580,7 @@ module.exports = class Restful {
 
 					if (options.selectCount !== true && options.selectCount !== 'true' || !options.virtual) {
 						for (let [se, index] of enumerate(subEntities))
-							subEntities[index] = await this.fill(se, syncSubEntity, se._id, recursive, {
+							subEntities[index] = await this._fill(se, syncSubEntity, se._id, recursive, {
 								ignoreFillProperties: newIgnoreFillProperties,
 								jsonIgnoreProperties: newJsonIgnoreProperties ,
 								syncs
@@ -590,7 +590,7 @@ module.exports = class Restful {
 					if (!options.virtual) {
 						for (let [v, index] of enumerate(value))
 							if (options.sync && options.subFill !== false) {
-								value[index] = await this.fill(v, options.sync, id, recursive, {
+								value[index] = await this._fill(v, options.sync, id, recursive, {
 									ignoreFillProperties: newIgnoreFillProperties,
 									jsonIgnoreProperties: newJsonIgnoreProperties ,
 									syncs
@@ -627,7 +627,7 @@ module.exports = class Restful {
 		}
 	}
 
-	getConditionsBySyncronizedEntity (id, options, cmp=()=>true, path='') {
+	_getConditionsBySyncronizedEntity (id, options, cmp=()=>true, path='') {
 		try {
 			let conditions = []
 
@@ -648,7 +648,7 @@ module.exports = class Restful {
 			if (options.syncronized) {
 				for (let subAttr in options.syncronized) {
 					conditions.push(
-						...this.getConditionsBySyncronizedEntity(
+						...this._getConditionsBySyncronizedEntity(
 							id, options.syncronized[subAttr], cmp, `${path || ''}${subAttr}.`
 						)
 					)
@@ -674,7 +674,7 @@ module.exports = class Restful {
 
 					let count = 0
 
-					let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.required)
+					let conditions = this._getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.required)
 
 					if (conditions.length) {
 						count = await this.query({
@@ -699,7 +699,7 @@ module.exports = class Restful {
 
 					let entities = []
 
-					let conditions = this.getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.deleteCascade)
+					let conditions = this._getConditionsBySyncronizedEntity(id, options, descriptor=>descriptor.deleteCascade)
 
 					if (conditions.length) {
 						entities = await this.query({
@@ -717,7 +717,7 @@ module.exports = class Restful {
 					let options = syncronized[entityName]
 					let subEntity = this.entities[entityName]
 
-					let conditions = this.getConditionsBySyncronizedEntity(id, options)
+					let conditions = this._getConditionsBySyncronizedEntity(id, options)
 
 					if (conditions.length) {
 						let entities = await this.query({
@@ -738,7 +738,7 @@ module.exports = class Restful {
 		}
 	}
 
-	async verifyIds (data, sync, verifyIdsRec=true, {
+	async _verifyIds (data, sync, verifyIdsRec=true, {
 		ignoreVerifyIdsProperties=[]
 	}={}) {
 		let newIgnoreVerifyIdsProperties = [...ignoreVerifyIdsProperties]
@@ -814,7 +814,7 @@ module.exports = class Restful {
 
 					for (let [v, index] of enumerate(value))
 						if (options.sync)
-							await this.verifyIds(v, options.sync, recursive, {
+							await this._verifyIds(v, options.sync, recursive, {
 								ignoreVerifyIdsProperties: newIgnoreVerifyIdsProperties
 							})
 				}
