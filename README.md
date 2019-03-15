@@ -18,7 +18,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
 
         * Com apenas a habilitação de uma opção, os atributos relacionados com outra entidade são preenchidos por todos os atributos armazenados na entidade relacionada, mesmo estando em outro documento.
 
-        * Com apenas a habilitação de uma opção, uma instância de uma entidade não pode ser removida se possuir um relacionamento de um atributo seu com outra entidade.
+        * Com apenas a habilitação de uma opção, uma instância de uma entidade não pode ser removida se possuir um relacionamento com um atributo de outra entidade.
 
         * Com apenas a habilitação de uma opção, as instâncias relacionadas com a instância da qual deseja-se remover, serão removidas também.
 
@@ -60,7 +60,7 @@ Aqui será apresentado um guia para você poder já sair programando!
 
 ### Atenção
 
-Este Guia **não** engloba todas as funções implementadas pelo Alpha Restful. Em breve será disponibilizado uma documentação completa com todas as funções e opções que podem ser utilizadas!
+Este guia **não** engloba todas as funções implementadas pelo Alpha Restful. Em breve será disponibilizado uma documentação completa com todas as funções e opções que podem ser utilizadas!
 
 ### Instalação
 
@@ -261,12 +261,16 @@ const Pessoa = new Entity({
         novas opções, ao invés da String contendo o
         nome da entidade, coloca-se um objeto, na
         qual o atributo name é o nome da entidade
-        relacionada. A opção syncronized descreve
-        o nome do atributo que realiza o
-        relacionamento com esta entidade.
+        relacionada.
         */
         casas: {
             name: 'Casa',
+
+            /*
+            A opção syncronized descreve
+            o nome do atributo que realiza o
+            relacionamento com esta entidade.
+            */
             syncronized: ['pessoas']
         }
     },
@@ -399,7 +403,7 @@ Como exemplo, vamos criar a estrutura de uma rota http _get_ com a URI _/rota-pe
 
 ```js
 app.get('/rota-personalizada',
-    restful.execAsyn(async function (req, res) {
+    restful.execAsync(async function (req, res, next) {
         // ...
         // Executando alguma coisa
         // ...
@@ -408,6 +412,10 @@ app.get('/rota-personalizada',
 ```
 
 Para mais informações sobre a criação de rotas personalizadas com o Express JS acesse <https://expressjs.com/en/starter/basic-routing.html>.
+
+#### Atenção
+
+Independente da função da rota ser assincrona ou sincrona, para passar a execução para a rota seguinte é necessário chamar o método `next()`. Se a rota retornar o resultado para o cliente, o método `next()` não deverá ser chamado. Caso ocorra algum erro, pode-se colocar o objeto do erro na chamada da função `next` da seguinte forma: `next(<objeto do erro>)`. Mais informações podem ser obtidas na [documentação de roteamento do Express JS](https://expressjs.com/en/starter/basic-routing.html).
 
 ### Preenchimento Automático de Entidade Relacionada
 
@@ -798,7 +806,7 @@ Quantidade          | selectCount | `/pessoas?selectCount=true`   | Busca a quan
 
 ### Método de Busca
 
-Digamos que você deseje realizar uma busca em uma rota personalizada, utilizando um poder ainda maior do que as opções disponíveis anteriormente. Neste caso, basta você chamar o método `restful.query(<condições>, <Entidade>, <descriptor>, <opções>)`.
+Digamos que você deseje realizar uma busca em uma rota personalizada, utilizando um poder ainda maior do que as opções disponíveis anteriormente. Neste caso, basta você chamar o método `restful.query(<condições>, <Entidade>, <opções>)`.
 
 Por exemplo: digamos que você deseje realizar uma pesquisa de todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para realizar esta pesquisa basta realizar a seguinte chamada de método:
 
@@ -807,14 +815,12 @@ let casas = await restful.query({
     'pessoas.casas.pessoas.idade': {
         $gte: 18
     }
-}, Casa, Casa.descriptor)
+}, Casa)
 ```
 
 O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
 
-O argumento `Casa.descriptor` pode ser um objeto personalizado especificamente para esta pesquisa, porém, neste caso, utiliza-se o _descriptor_ definido na modelagem da entidade _Casa_. O terceiro e o quarto argumentos são opcionais. Caso o _descriptor_ utilizado pela pesquisa seja o definido na modelagem, pode-se simplesmente omitir este argumento. O quarto argumento é um objeto com várias opções para a pesquisa.
-
-Os opções do objeto passado no quarto argumento são:
+O terceiro argumento é opcional e é um objeto com várias opções para a pesquisa. As opções deste Objeto são:
 
 Opção             | Valor Padrão | Descrição
 ----------------- | :----------: | -----------
@@ -826,6 +832,7 @@ internalSearch    | `true`       | Se for `false` retorna um objeto de busca a s
 selectCount       | `false`      | Se for `true` retorna a quantidade de elementos da busca. Se for `false` retorna os elementos da busca.
 isCopyEntity      | `false`      | Se for `false` **não** realiza a cópia das entidades buscadas. Neste caso, os atributos das entidades retornadas são imutáveis. Se for `true` as entidades retornadas são uma cópia das originais. Neste caso pode-se alterar os valores de seus atributos. As cópias das entidades **não** possuem os métodos utilizados pelo _mongoose_.
 findOne           | `false`      | Se for `true`, apenas uma entidade é buscada e retornada.
+descriptor        | `null`       | Objeto que descreve a modelagem da entidade. Caso seja `null`, o _descriptor_ utilizado é o _descriptor_ definido na modelagem da entidade.
 
 #### Observação
 
@@ -881,12 +888,13 @@ O método de preenchimento `Entidade.fill` pode ser chamado dentro de uma rota p
 
 ```js
 app.get('/rota-personalizada',
-    restful.execAsync(async function (req, res) {
+    restful.execAsync(async function (req, res, next) {
         // ...
         // Código da rota personalizada
         // ...
 
         res._content_ = casas
+        next()
 
     }, Casa.afterGetFill(restful), 200)
 )
@@ -1062,31 +1070,19 @@ E se quisermos que nossa projeção _projecao-base_ retorne, além do atributo _
 const Pessoa = new Entity({
     //...
     projections: {
-        'projecao-base': async function (pessoa) {
-            pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
-            return pessoa
-        }
-    }
-})
-```
-
-Se nossa projeção for uma função não assincrona e nem retornar uma promise, precisaremos chamar ao final da projeção a função `resolve` passando o objeto a ser retornado como argumento. Se houver algum erro, precisaremos chamar a função `reject` passando o objeto do erro como argumento. Como exemplo de uso nós temos:
-
-```js
-const Pessoa = new Entity({
-    //...
-    projections: {
-        'projecao-base': function (pessoa, resolve, reject) {
+        'projecao-base': async function (pessoa, resolve, reject) {
             try {
-                pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
-                resolve(pessoa)
+              pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
+              resolve(pessoa)
             } catch (err) {
-                reject(err)
+              reject(err)
             }
         }
     }
 })
 ```
+
+Independente de nossa projeção ser assincrona ou sincrona, o método `resolve` deve ser chamado, sendo o argumento o objeto que será retornado pela rota. Em caso de erro, pode-se chamar o método `reject`, passando como argumento o objeto do erro.
 
 #### Projeção Padrão
 
@@ -1096,9 +1092,9 @@ E se quisermos que nossa projeção _projecao-base_ seja executada automaticamen
 const Pessoa = new Entity({
     //...
     projections: {
-        'projecao-base': async function (pessoa) {
+        'projecao-base': async function (pessoa, resolve) {
             pessoa.nomeComIdade=`${pessoa.nome} ${pessoa.idade}`
-            return pessoa
+            resolve(pessoa)
         }
     },
     projectionDefault: 'projecao-base'
@@ -1111,12 +1107,14 @@ E se quisermos que nossas rotas personalizadas também usaem nossas projeções?
 
 ```js
 app.get('/rota-personalizada',
-    restful.execAsync(async function (req, res) {
+    restful.execAsync(async function (req, res, next) {
         // ...
         // Código da rota personalizada
         // ...
 
         res._content_ = pessoas
+        next()
+
     }, Pessoa.afterGetProjections(restful), 200)
 )
 ```
@@ -1125,7 +1123,7 @@ app.get('/rota-personalizada',
 
 Para que o código anterior funcione, é necessário que no código de sua rota personalizada não seja enviado nenhum dado como resposta. Aquilo que seria enviado pela rota como resposta deve ser adicionado na variavel `res._content_`, que o Alpha Restful se encarregará de enviar seu conteúdo.
 
-No último argumento do `restful.execAsync` encontra-se o _status code_ de resposta do http. Caso você deseje, ao invés de colocar no ultimo argumento o _status code_, você pode passar outra função assincrona que se encarregará de enviar o conteúdo presente no `res._content_`.
+No último argumento do `restful.execAsync` encontra-se o _status code_ de resposta do http. Caso você deseje, ao invés de colocar no ultimo argumento o _status code_, você pode passar outra função que se encarregará de enviar o conteúdo presente no `res._content_`.
 
 #### Aplicando Projeções em um Objeto Qualquer
 
@@ -1137,7 +1135,7 @@ Como exemplo disto, vamos criar uma projeção da entidade _Casa_, na qual tal p
 const Casa = new Entity({
     // ...
     projections: {
-        'projecao-casa': async function (casa) {
+        'projecao-casa': async function (casa, resolve) {
 
             /*
             Dentro de uma projeção é altamente recomendável
@@ -1150,7 +1148,7 @@ const Casa = new Entity({
                 casa.pessoas, 'projecao-base', restful
             )
 
-            return casa
+            resolve(casa)
         }
     }
 })
@@ -1173,26 +1171,18 @@ afterRemove (entity, req, res, next) | Executado após a aplicação de uma rota
 beforeEdit (entity, req, res, next) | Executado antes da aplicação de uma rota _put_ ou _patch_
 afterEdit (entity, req, res, next) | Executado após a aplicação de uma rota _put_ ou _patch_
 
-Se a implementação do handler retornar uma promise ou for uma função assincrona, o método `next` não devera ser utilizado e em caso de erro deve ser lançado uma exceção.
-
-Se o handler não retornar uma promise e não for uma função assincrona, obrigatoriamente a função `next` deverá ser executada ao final do procedimento e caso algum erro ocorra, o objeto do erro deve ser jogado como o primeiro argumento da função `next`.
-
 Apenas o handler `beforeCreate` não recebe o conteúdo da entidade (ou entidades) como primeiro argumento. Nos demais handlers, o primeiro argumento é o conteúdo que está sendo manipulado. Este conteúdo também pode ser acessado pelo `res._content_`.
+
+#### Atenção
+
+Independente do handler ser uma função assincrona ou sincrona, o método `next()` deverá ser chamado ao final da execução do handler. Caso algum erro ocorra, pode-se chamar o método `next` passando como argumento o bjeto do erro.
 
 #### Implementando um handler
 
 Para implementar um handler basta adicionar um método na entidade com o nome do handler desejado. Como exemplo vamos implementar o handler `afterQuery` que apenas irá printar a lista de pessoas antes de retornar na requisição.
 
 ```js
-Pessoa.afterQuery = async function (pessoas, req, res) {
-    console.log(pessoas)
-}
-```
-
-Se nosso handler for uma função não assincrona e nem retornar uma promise, precisaremos chamar ao final do handler a função `next`:
-
-```js
-Pessoa.afterQuery = function (pessoas, req, res, next) {
+Pessoa.afterQuery = async function (pessoas, req, res, next) {
     console.log(pessoas)
     next()
 }
@@ -1211,18 +1201,20 @@ Para exemplificar esta integração, definiremos uma rota personalizada que util
 ```js
 app.put('/edit-pessoa',
     restful.execAsync(
-        async function (req, res) {
+        async function (req, res, next) {
             // ... faz alguma coisa
             // ... busca a pessoa
             // ... faz outra coisa
 
             res._content_ = pessoa
+            next()
         },
         Pessoa.getRouteHandler('beforeEdit'),
-        async function (req, res) {
+        async function (req, res, next) {
             // ... faz alguma coisa
             // ... edita a pessoa
             // ... faz outra coisa
+            next()
         },
         Pessoa.getRouteHandler('afterEdit'),
         200
@@ -1237,18 +1229,20 @@ Por fim, se quisessemos integrar nossa rota personalizada ao `beforeEdit`, ao `a
 ```js
 app.put('/edit-pessoa',
     restful.execAsync(
-        async function (req, res) {
+        async function (req, res, next) {
             // ... faz alguma coisa
             // ... busca a pessoa
             // ... faz outra coisa
 
             res._content_ = pessoa
+            next()
         },
         Pessoa.getRouteHandler('beforeEdit'),
-        async function (req, res) {
+        async function (req, res, next) {
             // ... faz alguma coisa
             // ... edita a pessoa
             // ... faz outra coisa
+            next()
         },
         Pessoa.afterGetProjections(restful),
         Pessoa.getRouteHandler('afterEdit'),
