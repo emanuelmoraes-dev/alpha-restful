@@ -110,6 +110,8 @@ module.exports = class Entity {
 			this.getRouteHandler('beforeQuery'),
 			async function (req, res, next) {
 				res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
+				if (!res._content_)
+					throw new IlegallArgumentError('Id Inválido!', `Entidade ${this.name} não possui este id`)
 				next()
 				// res._content_ = copyEntity(res._content_)
 			},
@@ -117,10 +119,7 @@ module.exports = class Entity {
 			this.afterGetProjections(restful),
 			this.getRouteHandler('afterQuery'),
 			async function (req, res, next) {
-				if (res._content_)
-					res.status(200).send(res._content_)
-				else
-					throw new IlegallArgumentError(`Entidade com id ${req.params.id} inexistente!`)
+				res.status(200).send(res._content_)
 			}
 		)
 	}
