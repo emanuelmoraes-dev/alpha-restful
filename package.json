@@ -6,11 +6,11 @@
     "alpha-restful",
     "alpha",
     "restful",
-    "web",
     "rest",
-    "http",
+    "web",
     "express",
     "mongo",
+    "mongodb"
     "nosql",
     "node",
     "api",
