@@ -451,7 +451,7 @@ module.exports = class Entity {
 	async parseFromProjection(projection, content, restful) {
 		if (typeof projection === 'function') {
 			projection = this.parseAsyncProjection(projection, restful)
-			return await projection(content, restful)
+			return await projection(content)
 		} else if (projection instanceof Array) {
 			for (let key of Object.keys(content)) {
 				if (!(projection.indexOf(key) + 1))
