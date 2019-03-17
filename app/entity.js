@@ -422,7 +422,7 @@ module.exports = class Entity {
 					continue
 
 				value = copyEntity(value)
-				content[index] = await restful._fill(value, sync, value._id, {
+				content[index] = await restful._fill(value, sync, value._id, true, {
 					ignoreFillProperties, jsonIgnoreProperties,
 					syncs
 				})
