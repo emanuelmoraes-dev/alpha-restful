@@ -103,25 +103,146 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 ### Inicializando o seu Servidor
 
-Para inicializar sua aplicação na porta _3001_, com o banco de dados no _localhost_ com o nome do banco _db_test_ e com o nome da aplicação de _aplicacao_teste_, basta acrescentar no final de seu script principal o seguinte código:
+Para inicializar sua aplicação na porta _3001_, com o banco de dados no _localhost_ com o nome do banco _db_test_ e com o nome da aplicação de _aplicacao-teste_, basta acrescentar no final de seu script principal o seguinte código:
 
 ```js
 const mongoose = require('mongoose') // ORM de banco de dados MongoDB
 const { Connector, www, Restful, Entity } = require('alpha-restful') // Importa módulos do Alpha-Restful
-const restful = new Restful() // Instância do Alpha Restful
+const restful = new Restful('aplicacao-teste', {
+  locale: 'en'
+}) // Instância do Alpha Restful
 
 // ...
 
 process.env.PORT = 3001 // Porta do servidor
 const connector = new Connector('db_test', 'localhost', restful, app) // Conexão com Banco de Dados Mongo DB
-www(connector, 'aplicacao_teste', true) // Inicializia o servidor
+www(connector, true) // Inicializia o servidor
 ```
 
-O primeiro argumento do construtor da classe `Connector` é o nome do banco a ser usado pela aplicação. O segundo argumento é a localização do banco na rede (neste caso o banco está localizado na própria máquina, mas pode ser alterado para um ip presente na rede). O terceiro argumento é a instância da classe `Restful`, que representa a instância do framework _Alpha Restful_. O Quarto argumento é a instância do Express JS.
+O primeiro argumento do construtor de `Restful` é o nome da sua aplicação. Neste caso definiu-se o nome da aplicação de _aplicacao-teste_.
 
-O primeiro argumento da função `www` é o connector do banco de dados MongoDB. O segundo argumento é o nome de sua aplicação e se o terceiro argumento for `true`, o Alpha Restful irá gerar automaticamente rotas para tratamento de erros. O `www` é uma função que retorna uma promise.
+O segundo argumento deste construtor é um objeto opcional que contém várias opções. Em breve será disponibilizado uma explicação detalhada para cada opção. Umas dessas opções é a opção `locale`, que representa a linguagem na qual o banco de dados _mongodb_ irá reconhecer. Este _locale_ é utilizado para a chamada automática da função _collation_ do _mongodb_ para, por exemplo, possibilitar uma ordenação ignorando acentos e letras maiúsculas/minúsculas. Dependendo de sua versão do _mongodb_, um erro poderá ocorrer neste `collation`. Para corrigir este erro (caso ocorra), basta remover o uso do `collation` com a opção `isLocale` igual a `false`.
 
-Todas as especificações que poderão ser passadas para o Alpha Restful deverão ocorrer antes da Chamada do método `www`. Aqui serão mostrados códigos como se estivessem dentro de um mesmo arquivo, mas o programador poderá se sentir a vontade de modularizar seu código em vários arquivos seguindo a estrutura que achar melhor.
+Caso o locale não seja definido, o padrão é o inglês (_en_). A seguir é apresentado uma tabela com todas as linguagens suportadas pelo _locale_.
+
+Language                          | Locale
+--------------------------------- | ------
+Afrikaans	  	                    | af
+Albanian	  	                    | sq
+Amharic	  	                      | am
+Armenian	  	                    | hy
+Arabic	                          | ar
+Assamese	  	                    | as
+Azeri	                            | az
+Bengali	  	                      | bn
+Belarusian	                      | be
+Bengali	  	                      | bn
+Bosnian	                          | bs
+Bosnian (Cyrillic)                | bs_Cyrl
+Bulgarian	  	                    | bg
+Burmese	  	                      | my
+Catalan                           | ca
+Cherokee	   	                    | chr
+Chinese	  	                      | zh
+Chinese (Traditional)             | zh_Hant
+Croatian	                        | hr
+Czech	   	                        | cs
+Danish	                          | da
+Dutch	nl	                        | nl
+Dzongkha	  	                    | dz
+English	                          | en
+English (United States)           |	en_US
+English (United States, Computer)	| en_US_POSIX	 
+Esperanto	  	                    | eo
+Estonian	  	                    | et
+Ewe	  	                          | ee
+Faroese	  	                      | fo
+Filipino	   	                    | fil
+Finnish	     	                    | fi_FI
+French	  	                      | fr
+French (Canada)	    	            | fr_Ca
+Galician	                        | gl
+Georgian	  	                    | ka
+German	  	                      | de
+German (Austria)	    	          | de_AT
+Greek	  	                        | rl
+Gujarati	  	                    | gu
+Hausa	  	                        | ha
+Hawaiian	   	                    | haw
+Hebrew	                          | he
+Hindi	  	                        | hi
+Hungarian	  	                    | hu
+Icelandic	                        | is
+Igbo	  	                        | ig
+Inari Sami	                      | smn
+Indonesian	  	                  | id
+Irish	  	                        | gs
+Italian	  	                      | it
+Japanese                          | ja
+Kalaallisut                       |	kl
+Kannada	                          | kn
+Kazakh	                          | kk
+Khmer	                            | km
+Konkani	                          | kok
+Korean	                          | ko
+Kyrgyz	                          | ky
+Lakota	                          | lk
+Lao	                              | lo
+Latvian	                          | lv
+Lingala	                          | li
+Lithuanian                        | lt	 
+Lower Sorbian                     |	dsb	 
+Luxembourgish                     |	lb	 
+Macedonian                        |	mk	 
+Malay                             |	ms	 
+Malayalam                         |	ml	 
+Maltese                           |	mt	 
+Marathi                           |	mr	 
+Mongolian                         |	mn	 
+Nepali                            |	ne	 
+Northern Sami                     |	se
+Norwegian Bokmål                  |	nb
+Norwegian Nynorsk                 |	nn
+Oriya                             |	or	 
+Oromo                             |	om
+Pashto                            |	ps	 
+Persian                           |	fa	 
+Persian (Afghanistan)             |	fa_AF	 
+Polish                            | pl	 
+Portuguese                        |	pt	 
+Punjabi                           |	pa	 
+Romanian                          |	ro	 
+Russian                           |	ru	 
+Serbian                           |	sr	 
+Serbian (Latin)                   |	sr_Latn
+Sinhala                           |	si
+Slovak                            |	sk
+Slovenian                         |	sl	 
+Spanish                           |	es
+Swahili                           |	sw
+Swedish                           |	sv
+Tamil                             |	ta
+Telugu                            |	te	 
+Thai                              |	th	 
+Tibetan                           |	bo	 
+Tongan                            |	to	 
+Turkish                           |	tr
+Ukrainian                         |	uk	 
+Upper Sorbian                     |	hsb	 
+Urdu                              |	ur	 
+Uyghur                            |	ug	 
+Vietnamese                        |	vi
+Walser                            |	wae	 
+Welsh                             |	cy	 
+Yiddish                           |	yi
+Yoruba                            |	yo	 
+Zulu                              |	zu
+
+O primeiro argumento do construtor da classe `Connector` é o nome do banco a ser usado pela aplicação. O segundo argumento é a localização do banco na rede (neste caso o banco está localizado na própria máquina). O terceiro argumento é a instância da classe `Restful`, que representa a instância do framework _Alpha Restful_. O Quarto argumento é a instância do Express JS.
+
+O primeiro argumento da função `www` é o connector do banco de dados MongoDB. Se o segundo argumento for `true`, o Alpha Restful irá gerar automaticamente rotas para tratamento de erros. O `www` é uma função que retorna uma promise, na qual o retorno da promise é um objeto contendo o atributo `server` (representando a chamada do método `require('http').createServer(app)`) e o atributo `debug` (usado para mostrar mensagens de debug).
+
+Toda a implementação de sua aplicação deverá ocorrer antes da chamada do método `www`. Aqui serão mostrados códigos como se estivessem dentro de um mesmo arquivo, mas o programador poderá se sentir a vontade de modularizar seu código em vários arquivos seguindo a estrutura que achar melhor.
 
 Para executar a sua aplicação, basta executar o comando:
 
@@ -1139,8 +1260,8 @@ const Casa = new Entity({
 
             /*
             Dentro de uma projeção é altamente recomendável
-            obter a entidade desejada por meio do
-            atributo restful.entities
+            obter a entidade desejada por meio do atributo
+            restful.entities
             */
             const Casa = restful.entities.Casa
 
