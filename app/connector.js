@@ -15,19 +15,15 @@ module.exports = class Connector {
 	}
 
 	onOpen(resolve) {
-		if (process.env.DEBUG)
-			console.log('applying mongodb modeling...')
+		this.restful.debug('applying mongodb modeling ...')
 		this.restful.structDb()
-		if (process.env.DEBUG)
-			console.log('modeling applied to mongodb')
+		this.restful.debug('modeling applied to mongodb')
 		resolve()
-		if (process.env.DEBUG)
-			console.log('established connection with mongodb')
+		this.restful.debug('established connection with mongodb')
 	}
 
 	async connect () {
-		if (process.env.DEBUG)
-			console.log(`establishing connection to mongodb using "${this.host}" and "${this.dbName}" database name...`)
+		this.restful.debug(`establishing connection to mongodb://${this.host}/${this.dbName} ...`)
 		mongoose.connect(`mongodb://${this.host}/${this.dbName}`, { useNewUrlParser: true })
 		return await (new this.restful.Promise((resolve, reject) => {
 			db.on('error', this.onError.bind(this, reject))

@@ -4,7 +4,7 @@ const { copyEntity, convertType } = require('./util/db-utility')
 const { getAttr, extractValuesByArray, enumerate } = require('./util/utility')
 
 module.exports = class Restful {
-	constructor ({
+	constructor (applicationName, {
 		isLocale=true,
 		locale='en',
 		entities={},
@@ -20,6 +20,7 @@ module.exports = class Restful {
 		Promise=require('es6-promise')
 	}={}) {
 		Object.assign(this, {
+			applicationName,
 			isLocale,
 			locale,
 			patchRecursive,
@@ -31,7 +32,8 @@ module.exports = class Restful {
 			limiteName,
 			skipName,
 			sortName,
-			Promise
+			Promise,
+			debug: require('debug')(applicationName + ':server')
 		})
 
 		this.entities = {}
@@ -376,20 +378,17 @@ module.exports = class Restful {
 
 	add (entity) {
 		try {
-			if (process.env.DEBUG)
-				console.log(`registering the entity ${entity.name}...`)
+			this.debug(`registering the entity ${entity.name} ...`)
 
 			if (this.entities[entity.name])
 				Object.assign(entity, this.entities[entity.name])
 			this.entities[entity.name] = entity
 
-			if (process.env.DEBUG)
-				console.log(`applying relationships to the entity ${entity.name}...`)
+			this.debug(`applying relationships to the entity ${entity.name} ...`)
 
 			this._applySync(entity, entity.name)
 
-			if (process.env.DEBUG)
-				console.log(`registered entity ${entity.name}`)
+			this.debug(`registered entity ${entity.name}`)
 
 		} catch (err) {
 			throw internalError(err, this)
@@ -855,13 +854,11 @@ module.exports = class Restful {
 			if (!entity.name)
 				throw new RuntimeError(`Entidade ${entityName} não existe!`)
 
-			if (process.env.DEBUG)
-				console.log(`defining default routes for the entity ${entity.name}...`)
+			this.debug(`defining default routes for the entity ${entity.name} ...`)
 
 			entity.applyRouters(app, this)
 
-			if (process.env.DEBUG)
-				console.log(`standard routes of the defined entity ${entity.name}`)
+			this.debug(`standard routes of the defined entity ${entity.name}`)
 		}
 	}
 

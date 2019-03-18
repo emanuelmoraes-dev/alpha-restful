@@ -18,4 +18,4 @@ restful.applyRouters(app)
 
 process.env.PORT = 3001
 const connector = new Connector('test', 'localhost', restful, app)
-www(connector, 'alpha-restful', true)
+www(connector, true)

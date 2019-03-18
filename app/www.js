@@ -66,10 +66,10 @@ function onListening(resolve, server, debug) {
 		? 'pipe ' + addr
 		: 'port ' + addr.port
 	debug('Listening on ' + bind)
-	resolve()
+	resolve({ server, debug })
 }
 
-module.exports = async function start(connector, applicationName, createErrorHandler=false) {
+module.exports = async function start(connector, createErrorHandler=false) {
 
 	const app = connector.app
 
@@ -88,7 +88,7 @@ module.exports = async function start(connector, applicationName, createErrorHan
 		})
 	}
 
-	const debug = require('debug')(applicationName + ':server')
+	const debug = connector.restful.debug
 
 	await connector.connect()
 
