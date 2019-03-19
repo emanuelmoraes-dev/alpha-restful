@@ -562,7 +562,14 @@ const Casa = new Entity({
     sync: {
         pessoas: {
             name: 'Pessoa',
+
+            /*
+            Caso fill seja true, o atributo pessoas
+            receberá os valores contidos na entidade
+            relacionada
+            */
             fill: true,
+
             sync: { aluguel: 'Aluguel' }
         }
     },
@@ -578,24 +585,7 @@ Por questões de performance, um sub-atributo somente pode ser preenchido se o a
 
 ```js
 const Casa = new Entity({
-    name: 'Casa',
-    resource: 'casas',
-    descriptor: {
-        endereco: {
-            numero: String,
-            rua: String,
-            cidade: String,
-            estado: String,
-            pais: String
-        },
-        pessoas: [{
-            id: mongoose.Types.ObjectId,
-
-            aluguel: {
-                id: mongoose.Types.ObjectId
-            }
-        }]
-    },
+    // ...
     sync: {
         pessoas: {
             name: 'Pessoa',
@@ -619,7 +609,7 @@ const Casa = new Entity({
             }
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 ```
 
@@ -627,24 +617,7 @@ Se além do aluguel quisermos preencher o atributo _pessoas_, bastaria adicionar
 
 ```js
 const Casa = new Entity({
-    name: 'Casa',
-    resource: 'casas',
-    descriptor: {
-        endereco: {
-            numero: String,
-            rua: String,
-            cidade: String,
-            estado: String,
-            pais: String
-        },
-        pessoas: [{
-            id: mongoose.Types.ObjectId,
-
-            aluguel: {
-                id: mongoose.Types.ObjectId
-            }
-        }]
-    },
+    // ...
     sync: {
         pessoas: {
             name: 'Pessoa',
@@ -669,7 +642,7 @@ const Casa = new Entity({
             }
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 ```
 
@@ -698,8 +671,8 @@ const Pessoa = new Entity({
     sync: {
         casas: {
             name: 'Casa',
-            syncronized: ['pessoas'],
-            fill: true
+            syncronized: ['pessoas'], // Atributo usado pela Casa para se relacionar com Pessoa
+            fill: true // Preenche o atributo casas com os valores da casa relacionada
         }
     },
     methods: ['get', 'post', 'put', 'delete', 'patch']
@@ -710,35 +683,18 @@ Digamos também que desejemos preencher o atributo _pessoas_ na entidade _Casa_.
 
 ```js
 const Casa = new Entity({
-    name: 'Casa',
-    resource: 'casas',
-    descriptor: {
-        endereco: {
-            numero: String,
-            rua: String,
-            cidade: String,
-            estado: String,
-            pais: String
-        },
-        pessoas: [{
-            id: mongoose.Types.ObjectId,
-
-            aluguel: {
-                id: mongoose.Types.ObjectId
-            }
-        }]
-    },
+    // ...
     sync: {
         pessoas: {
             name: 'Pessoa',
-            fill: true,
+            fill: true, // Preenche o atributo pessoas com os valores da pessoa relacionada
 
             sync: {
                 aluguel: { name: 'Aluguel' }
             }
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 ```
 
@@ -748,12 +704,7 @@ Para evitar que este erro ocorra, existem duas opções que podem ser utilizadas
 
 ```js
 const Pessoa = new Entity({
-    name: 'Pessoa',
-    resource: '/pessoas',
-    descriptor: {
-        name: String,
-        idade: Number
-    },
+    // ...
     sync: {
         casas: {
             name: 'Casa',
@@ -767,28 +718,11 @@ const Pessoa = new Entity({
             ignoreFillProperties: ['pessoas']
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 
 const Casa = new Entity({
-    name: 'Casa',
-    resource: 'casas',
-    descriptor: {
-        endereco: {
-            numero: String,
-            rua: String,
-            cidade: String,
-            estado: String,
-            pais: String
-        },
-        pessoas: [{
-            id: mongoose.Types.ObjectId,
-
-            aluguel: {
-                id: mongoose.Types.ObjectId
-            }
-        }]
-    },
+    // ...
     sync: {
         pessoas: {
             name: 'Pessoa',
@@ -806,7 +740,7 @@ const Casa = new Entity({
             }
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 ```
 
@@ -818,24 +752,7 @@ Digamos que uma pessoa não possa ser removida se houver um relacionamento desta
 
 ```js
 const Casa = new Entity({
-    name: 'Casa',
-    resource: 'casas',
-    descriptor: {
-        endereco: {
-            numero: String,
-            rua: String,
-            cidade: String,
-            estado: String,
-            pais: String
-        },
-        pessoas: [{
-            id: mongoose.Types.ObjectId,
-
-            aluguel: {
-                id: mongoose.Types.ObjectId
-            }
-        }]
-    },
+    // ...
     sync: {
         pessoas: {
             name: 'Pessoa',
@@ -854,7 +771,7 @@ const Casa = new Entity({
             }
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 ```
 
@@ -864,12 +781,7 @@ Digamos que ao remover uma _Casa_, todas as pessoas relacionadas com esta _Casa_
 
 ```js
 const Pessoa = new Entity({
-    name: 'Pessoa',
-    resource: '/pessoas',
-    descriptor: {
-        name: String,
-        idade: Number
-    },
+    // ...
     sync: {
         casas: {
             name: 'Casa',
@@ -884,7 +796,7 @@ const Pessoa = new Entity({
             deleteCascade: true
         }
     },
-    methods: ['get', 'post', 'put', 'delete', 'patch']
+    // ...
 })
 ```
 
@@ -1085,6 +997,11 @@ const Pessoa = new Entity({
             ignoreFillProperties: ['pessoas']
         },
 
+        /*
+        Definindo atributo que se relaciona com
+        Casa atraves da especificação de uma
+        pesquisa
+        */
         quantidadeCasas: {
             name: 'Casa',
             virtual: true,
@@ -1224,7 +1141,7 @@ const Pessoa = new Entity({
 
 #### Integrando as Projeções com Nossas Rotas Personalizadas
 
-E se quisermos que nossas rotas personalizadas também usaem nossas projeções? Neste caso basta adicionar dois novos argumentos no utilitário `restful.execAsync` e adicionar aquilo que seria enviado no atributo `res._content_`:
+E se quisermos que nossas rotas personalizadas também usem nossas projeções? Neste caso basta adicionar dois novos argumentos no utilitário `restful.execAsync` e adicionar aquilo que seria enviado no atributo `res._content_`:
 
 ```js
 app.get('/rota-personalizada',
@@ -1265,7 +1182,7 @@ const Casa = new Entity({
             */
             const Casa = restful.entities.Casa
 
-            casa.pessoas = await Casa.applyProjections(
+            casa.pessoas = await Pessoa.applyProjections(
                 casa.pessoas, 'projecao-base', restful
             )
 
