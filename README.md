@@ -70,6 +70,15 @@ Este guia **não** engloba todas as funções implementadas pelo Alpha Restful. 
 
 * Instale o banco de dados MongoDB em seu computador clicando [neste link](https://www.mongodb.com/download-center/community).
 
+
+#### Criando Aplicação Node
+
+Você pode criar uma nova aplicação Node através do seguinte comando:
+
+```sh
+npm init -y
+```
+
 #### Incluindo o Alpha Restful em seu Projeto
 
 Execute o seguinte código no diretório de seu projeto
