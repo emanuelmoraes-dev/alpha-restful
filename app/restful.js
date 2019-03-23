@@ -542,6 +542,7 @@ module.exports = class Restful {
 							selectCount: options.selectCount,
 							skip: options.skip,
 							sort: options.sort,
+							findOne: options.findOne,
 							isCopyEntity: false,
 							descriptor: subEntity.descriptor
 						})
