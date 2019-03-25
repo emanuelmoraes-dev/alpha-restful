@@ -357,7 +357,7 @@ module.exports = class Entity {
 			}
 		} else {
 			if (find[restful.selectCountName] === 'true' || find[restful.selectCountName] === true) {
-				let query = moongose.countDocuments(newFind)
+				let query = mongoose.countDocuments(newFind)
 
 				if (limit >= 0)
 					query = query.limit(limit)
@@ -369,7 +369,7 @@ module.exports = class Entity {
 					count: await query.exec()
 				}
 			} else {
-				let query = moongose.find(newFind)
+				let query = mongoose.find(newFind)
 
 				if (limit >= 0)
 					query = query.limit(limit)
