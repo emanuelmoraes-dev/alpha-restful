@@ -20,7 +20,8 @@ module.exports = class Entity {
 		verifyIdsSync=false,
 		verifyRelationshipSync=true,
 		deleteCascadeSync=true,
-		requiredSync=true
+		requiredSync=true,
+		relationshipQueryDefault=true
 	}={}) {
 		Object.assign(this, {
 			name,
@@ -38,7 +39,8 @@ module.exports = class Entity {
 			verifyIdsSync,
 			verifyRelationshipSync,
 			deleteCascadeSync,
-			requiredSync
+			requiredSync,
+			relationshipQueryDefault
 		})
 
 		if (this.resource && this.resource[0] === '/')
@@ -341,16 +343,45 @@ module.exports = class Entity {
 		if (!newFind.$and || !(newFind.$and instanceof Array) || !newFind.$and.length)
 			delete newFind.$and
 
-		if (find[restful.selectCountName] == 'true') {
-			return await restful.query(newFind, this, {
-				limit, skip, selectCount: true, internalSearch: true,
-				descriptor: this.descriptor
-			})
+		if (this.relationshipQueryDefault) {
+			if (find[restful.selectCountName] === 'true' || find[restful.selectCountName] === true) {
+				return await restful.query(newFind, this, {
+					limit, skip, selectCount: true, internalSearch: true,
+					descriptor: this.descriptor
+				})
+			} else {
+				return await restful.query(newFind, this, {
+					limit, skip, sort, select, internalSearch: true,
+					descriptor: this.descriptor
+				})
+			}
 		} else {
-			return await restful.query(newFind, this, {
-				limit, skip, sort, select, internalSearch: true,
-				descriptor: this.descriptor
-			})
+			if (find[restful.selectCountName] === 'true' || find[restful.selectCountName] === true) {
+				let query = moongose.countDocuments(newFind)
+
+				if (limit >= 0)
+					query = query.limit(limit)
+
+				if (skip >= 0)
+					query = query.skip(skip)
+
+				return {
+					count: await query.exec()
+				}
+			} else {
+				let query = moongose.find(newFind)
+
+				if (limit >= 0)
+					query = query.limit(limit)
+
+				if (skip >= 0)
+					query = query.skip(skip)
+
+				if (sort)
+					query = query.sort(sort)
+
+				return await query.exec()
+			}
 		}
 	}
 
