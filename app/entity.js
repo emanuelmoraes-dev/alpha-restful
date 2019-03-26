@@ -465,6 +465,7 @@ module.exports = class Entity {
 				return content[0]
 			return content
 		} catch (err) {
+			console.error(err)
 			throw internalError(err, restful)
 		}
 	}
@@ -526,6 +527,7 @@ module.exports = class Entity {
 
 			return content
 		} catch (err) {
+			console.error(err)
 			throw internalError(err, restful)
 		}
 	}

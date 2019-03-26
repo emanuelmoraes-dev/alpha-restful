@@ -79,7 +79,7 @@ module.exports = class Restful {
 
 			type = descriptor[attr]
 		} else {
-			type = String
+			type = null
 		}
 
 		if (type instanceof Array)
@@ -103,210 +103,215 @@ module.exports = class Restful {
 		findOne=false, descriptor=null
 	} = {}) {
 
-		if (!descriptor)
-			descriptor = target.descriptor
+		try {
+			if (!descriptor)
+				descriptor = target.descriptor
 
-		let newFind
+			let newFind
 
-		if (conditions instanceof Array) {
-			newFind=[]
-			for (let [value, index] of enumerate(conditions)) {
-				newFind[index] = await this.query(value, target, {
-					internalSearch: false, selectCount: false, isCopyEntity: true,
-					descriptor
-				})
-			}
-		} else {
-			newFind = {}
-			for (let key in conditions) {
-				if (['select', 'sort', 'limit', 'skip'].indexOf(key)+1) continue
-				if (['$or', '$and', '$in', '$nin'].indexOf(key)+1) {
-					newFind[key] = await this.query(conditions[key], target, {
+			if (conditions instanceof Array) {
+				newFind=[]
+				for (let [value, index] of enumerate(conditions)) {
+					newFind[index] = await this.query(value, target, {
 						internalSearch: false, selectCount: false, isCopyEntity: true,
 						descriptor
 					})
+				}
+			} else {
+				newFind = {}
+				for (let key in conditions) {
+					if (['select', 'sort', 'limit', 'skip'].indexOf(key)+1) continue
+					if (['$or', '$and', '$in', '$nin'].indexOf(key)+1) {
+						newFind[key] = await this.query(conditions[key], target, {
+							internalSearch: false, selectCount: false, isCopyEntity: true,
+							descriptor
+						})
 
-					if (key === '$and' && (!(newFind[key] instanceof Array) ||
-							newFind[key].indexOf(null)+1 || !newFind[key].length)) {
-						newFind = null
-						break
-					} else if (key !== '$and' && newFind[key] instanceof Array &&
-							newFind[key].length) {
-						newFind[key] = newFind[key].filter(c => c !== null)
-						if (!newFind[key].length) {
+						if (key === '$and' && (!(newFind[key] instanceof Array) ||
+								newFind[key].indexOf(null)+1 || !newFind[key].length)) {
 							newFind = null
 							break
+						} else if (key !== '$and' && newFind[key] instanceof Array &&
+								newFind[key].length) {
+							newFind[key] = newFind[key].filter(c => c !== null)
+							if (!newFind[key].length) {
+								newFind = null
+								break
+							}
 						}
+
+						continue
+					} else if (['$gt', '$gte', '$lt', '$lte', '$eq'].indexOf(key)+1) {
+						newFind[key] = conditions[key]
+						continue
 					}
 
-					continue
-				} else if (['$gt', '$gte', '$lt', '$lte', '$eq'].indexOf(key)+1) {
-					newFind[key] = conditions[key]
-					continue
-				}
+					let rt = this._getAttrSearchValid(key, target, descriptor)
 
-				let rt = this._getAttrSearchValid(key, target, descriptor)
+					if ((!rt.target || !rt.target.name) && !rt.end)
+						throw new IlegallArgumentError(`O atributo ${rt.remaining} não existe!`)
 
-				if ((!rt.target || !rt.target.name) && !rt.end)
-					throw new IlegallArgumentError(`O atributo ${rt.remaining} não existe!`)
+					if (!rt.end) {
+						rt.target = this.entities[rt.target.name]
+						rt.descriptor = this.entities[rt.target.name].descriptor
+					}
 
-				if (!rt.end) {
-					rt.target = this.entities[rt.target.name]
-					rt.descriptor = this.entities[rt.target.name].descriptor
-				}
-
-				if (rt.end) {
-					if (rt.syncronized || rt.virtual)
-						throw new Error(`Condição de busca ${key} inválida!`)
-					newFind[key] = convertType(rt.type, conditions[key])
-				} else {
-					if (rt.syncronized) {
-						if (rt.syncronized instanceof Array)
-							rt.syncronized = rt.syncronized[0]
-
-						if (!rt.syncronized)
-							throw new Error(`O atributo 'syncronized' do 'sync' da entidade ${target.name} não deve ser um array vazio!`)
-
-						let subConditions = {}
-						subConditions[rt.remaining] = conditions[key]
-
-						let subQuery = await this.query(subConditions, rt.target, {
-							select: false, internalSearch: true, selectCount: false,
-							isCopyEntity: true, descriptor: rt.descriptor
-						})
-
-						subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
-						subQuery = extractValuesByArray(subQuery, true)
-
-						if (!(subQuery instanceof Array) || !subQuery.length) {
-							newFind = null
-							break
-						}
-
-						if (!newFind._id)
-							newFind._id = {}
-
-						if (!newFind._id.$in) {
-							newFind._id.$in = subQuery
-						} else {
-							newFind._id.$in = [
-								...newFind._id.$in,
-								...subQuery
-							]
-						}
-					} else if (rt.virtual) {
-
-						rt.find = rt.find || {}
-
-						let subConditions = {}
-						subConditions[rt.remaining] = conditions[key]
-
-						subConditions = {
-							$and: [
-								rt.find,
-								subConditions,
-							]
-						}
-
-						let subQueryCount = await this.query(subConditions, rt.target, {
-							internalSearch: true, selectCount: true, limit: rt.limit,
-							skip: rt.skip, descriptor: rt.descriptor
-						})
-
-						if (!subQueryCount.count) {
-							newFind = null
-							break
-						}
-
+					if (rt.end) {
+						if (rt.syncronized || rt.virtual)
+							throw new Error(`Condição de busca ${key} inválida!`)
+						newFind[key] = convertType(rt.type, conditions[key])
 					} else {
+						if (rt.syncronized) {
+							if (rt.syncronized instanceof Array)
+								rt.syncronized = rt.syncronized[0]
 
-						let subConditions = {}
-						subConditions[rt.remaining] = conditions[key]
+							if (!rt.syncronized)
+								throw new Error(`O atributo 'syncronized' do 'sync' da entidade ${target.name} não deve ser um array vazio!`)
 
-						let attr = rt.remaining
-						if (rt.remaining.match(/\./g))
-							attr = rt.remaining.split('.')[0]
+							let subConditions = {}
+							subConditions[rt.remaining] = conditions[key]
 
-						if (rt.target && rt.target.sync && !rt.target.sync[attr] &&
-						rt.descriptor && !rt.descriptor[attr])
-							throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.target.name}!`)
+							let subQuery = await this.query(subConditions, rt.target, {
+								select: false, internalSearch: true, selectCount: false,
+								isCopyEntity: true, descriptor: rt.descriptor
+							})
 
-						let subQuery = await this.query(subConditions, rt.target, {
-							select: '_id', internalSearch: true, selectCount: false,
-							isCopyEntity: true, descriptor: rt.descriptor
-						})
-						subQuery = subQuery.map(e => e._id)
+							subQuery = getAttr(`${rt.syncronized}.id`, subQuery, true)
+							subQuery = extractValuesByArray(subQuery, true)
 
-						if (!(subQuery instanceof Array) || !subQuery.length) {
-							newFind = null
-							break
-						}
+							if (!(subQuery instanceof Array) || !subQuery.length) {
+								newFind = null
+								break
+							}
 
-						if (!newFind[`${rt.attrSearch}.id`])
-							newFind[`${rt.attrSearch}.id`] = {}
+							if (!newFind._id)
+								newFind._id = {}
 
-						if (!newFind[`${rt.attrSearch}.id`].$in) {
-							newFind[`${rt.attrSearch}.id`].$in = subQuery
+							if (!newFind._id.$in) {
+								newFind._id.$in = subQuery
+							} else {
+								newFind._id.$in = [
+									...newFind._id.$in,
+									...subQuery
+								]
+							}
+						} else if (rt.virtual) {
+
+							rt.find = rt.find || {}
+
+							let subConditions = {}
+							subConditions[rt.remaining] = conditions[key]
+
+							subConditions = {
+								$and: [
+									rt.find,
+									subConditions,
+								]
+							}
+
+							let subQueryCount = await this.query(subConditions, rt.target, {
+								internalSearch: true, selectCount: true, limit: rt.limit,
+								skip: rt.skip, descriptor: rt.descriptor
+							})
+
+							if (!subQueryCount.count) {
+								newFind = null
+								break
+							}
+
 						} else {
-							newFind[`${rt.attrSearch}.id`].$in = [
-								...newFind[`${rt.attrSearch}.id`].$in,
-								...subQuery
-							]
+
+							let subConditions = {}
+							subConditions[rt.remaining] = conditions[key]
+
+							let attr = rt.remaining
+							if (rt.remaining.match(/\./g))
+								attr = rt.remaining.split('.')[0]
+
+							if (rt.target && rt.target.sync && !rt.target.sync[attr] &&
+							rt.descriptor && !rt.descriptor[attr])
+								throw new IlegallArgumentError(`A condição de busca '${rt.remaining}' é inválida para a entidade ${rt.target.name}!`)
+
+							let subQuery = await this.query(subConditions, rt.target, {
+								select: '_id', internalSearch: true, selectCount: false,
+								isCopyEntity: true, descriptor: rt.descriptor
+							})
+							subQuery = subQuery.map(e => e._id)
+
+							if (!(subQuery instanceof Array) || !subQuery.length) {
+								newFind = null
+								break
+							}
+
+							if (!newFind[`${rt.attrSearch}.id`])
+								newFind[`${rt.attrSearch}.id`] = {}
+
+							if (!newFind[`${rt.attrSearch}.id`].$in) {
+								newFind[`${rt.attrSearch}.id`].$in = subQuery
+							} else {
+								newFind[`${rt.attrSearch}.id`].$in = [
+									...newFind[`${rt.attrSearch}.id`].$in,
+									...subQuery
+								]
+							}
 						}
 					}
 				}
 			}
-		}
 
-		if (!internalSearch)
-			return newFind
+			if (!internalSearch)
+				return newFind
 
-		if (newFind === null)
-			return []
+			if (newFind === null)
+				return []
 
-		if (typeof target === 'string')
-			target = { name: target }
+			if (typeof target === 'string')
+				target = { name: target }
 
-		let entity = this.entities[target.name]
-		let find, data
+			let entity = this.entities[target.name]
+			let find, data
 
-		if (selectCount === 'true' || selectCount === true) {
-			find = entity.model.countDocuments(newFind)
+			if (selectCount === 'true' || selectCount === true) {
+				find = entity.model.countDocuments(newFind)
 
-			if (limit === 0 || limit)
-				find = find.limit(limit)
+				if (limit === 0 || limit)
+					find = find.limit(limit)
 
-			if (skip === 0 || skip)
-				find = find.skip(skip)
+				if (skip === 0 || skip)
+					find = find.skip(skip)
 
-			data = {
-				count: await find.exec()
+				data = {
+					count: await find.exec()
+				}
+			} else {
+				if (findOne)
+					find = entity.model.findOne(newFind)
+				else
+					find = entity.model.find(newFind)
+
+				if (limit === 0 || limit)
+					find = find.limit(limit)
+
+				if (skip === 0 || skip)
+					find = find.skip(skip)
+
+				if (sort)
+					find = find.sort(sort)
+
+				if (select)
+					find = find.select(select)
+
+				data = await find.exec()
+
+				if (isCopyEntity)
+					data = copyEntity(data)
 			}
-		} else {
-			if (findOne)
-				find = entity.model.findOne(newFind)
-			else
-				find = entity.model.find(newFind)
 
-			if (limit === 0 || limit)
-				find = find.limit(limit)
-
-			if (skip === 0 || skip)
-				find = find.skip(skip)
-
-			if (sort)
-				find = find.sort(sort)
-
-			if (select)
-				find = find.select(select)
-
-			data = await find.exec()
-
-			if (isCopyEntity)
-				data = copyEntity(data)
+			return data
+		} catch(err) {
+			console.error(err)
+			throw internalError(err, restful)
 		}
-
-		return data
 	}
 
 	_applySyncronized (entityName, target, field, source, nameSyncronized) {

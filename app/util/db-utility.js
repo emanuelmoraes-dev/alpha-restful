@@ -7,7 +7,7 @@ module.exports = exports = {
 		return JSON.parse(JSON.stringify(data))
 	},
 	convertType (type, value) {
-		if (!value) return value
+		if (!value || !type) return value
 
 		if (value && value instanceof Array) {
 			for (let [v, i] of enumerate(value))
