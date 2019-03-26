@@ -64,6 +64,9 @@ module.exports = class Restful {
 			attr = attrSearch
 		}
 
+		if (target && target.sync && target.sync[attr] && target.sync[attr].dynamicData)
+			return { target, attrSearch: `${context}.${attrSearch}`, end: true, type: null }
+
 		if (attr != '_id') {
 			if (!descriptor[attr] && target && target.sync && target.sync[attr]
 					&& target.sync[attr].syncronized)
