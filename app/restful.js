@@ -465,6 +465,8 @@ module.exports = class Restful {
 
 				let options = sync[attr]
 
+				if (!options) continue
+
 				if (typeof options === 'string')
 					options = { name: options }
 
@@ -497,8 +499,27 @@ module.exports = class Restful {
 							id: data[attr]._id
 						}
 					}
-				} else if (!data[attr] && options.virtual) {
-					data[attr] = options.virtualDefault
+				} else if (!data[attr] && options.name && options.virtual) {
+					const subEntity = this.entities[options.name]
+
+					let find = options.find || {}
+
+					data[attr] = await this.query(find, subEntity, {
+						internalSearch: true,
+						limit: options.limit,
+						select: options.select,
+						selectCount: options.selectCount,
+						skip: options.skip,
+						sort: options.sort,
+						findOne: options.findOne,
+						isCopyEntity: true,
+						descriptor: subEntity.descriptor
+					})
+
+					if (options.selectCount !== true && options.selectCount !== 'true')
+						data[attr] = copyEntity(data[attr])
+					else
+						data[attr] = data[attr].count
 				}
 
 				if ((jsonIgnoreProperties.indexOf(attr)+1) || options.jsonIgnore)
@@ -540,25 +561,7 @@ module.exports = class Restful {
 
 					if (options.name && options.virtual) {
 						subEntity = this.entities[options.name]
-
-						let find = options.find || {}
-
-						subEntities = await this.query(find, subEntity, {
-							internalSearch: true,
-							limit: options.limit,
-							select: options.select,
-							selectCount: options.selectCount,
-							skip: options.skip,
-							sort: options.sort,
-							findOne: options.findOne,
-							isCopyEntity: false,
-							descriptor: subEntity.descriptor
-						})
-
-						if (options.selectCount !== true && options.selectCount !== 'true')
-							subEntities = copyEntity(subEntities)
-						else
-							subEntities = [subEntities.count]
+						subEntities = value
 					} else if (options.name && options.fill !== false) {
 						subEntity = this.entities[options.name]
 						subEntities = await subEntity.findByIds(ids, this)
@@ -597,37 +600,28 @@ module.exports = class Restful {
 							})
 					}
 
-					if (!options.virtual) {
-						for (let [v, index] of enumerate(value))
-							if (options.sync && options.subFill !== false) {
-								value[index] = await this._fill(v, options.sync, id, recursive, {
-									ignoreFillProperties: newIgnoreFillProperties,
-									jsonIgnoreProperties: newJsonIgnoreProperties ,
-									syncs
-								})
-							}
+					for (let [v, index] of enumerate(value))
+						if (options.sync && options.subFill !== false) {
+							value[index] = await this._fill(v, options.sync, id, recursive, {
+								ignoreFillProperties: newIgnoreFillProperties,
+								jsonIgnoreProperties: newJsonIgnoreProperties ,
+								syncs
+							})
+						}
 
+					if (!options.virtual) {
 						for (let [v, index] of enumerate(value)) {
 							value[index] = {
 								...(subEntities && subEntities[index] || {}),
 								...v
 							}
 						}
-
-						if (!originalIsArray)
-							value = value[0]
-
-						data[attr] = value
-					} else {
-						if (options.selectCount === true || options.selectCount === 'true')
-							data[attr] = subEntities[0]
-						else if (!options.singleResult)
-							data[attr] = subEntities
-						else if (subEntities.length)
-							data[attr] = subEntities[0]
-						else
-							data[attr] = null
 					}
+
+					if (!originalIsArray)
+						value = value[0]
+
+					data[attr] = value
 				}
 			}
 
