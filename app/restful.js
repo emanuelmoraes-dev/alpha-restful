@@ -310,7 +310,7 @@ module.exports = class Restful {
 			return data
 		} catch(err) {
 			console.error(err)
-			throw internalError(err, restful)
+			throw internalError(err, this)
 		}
 	}
 
