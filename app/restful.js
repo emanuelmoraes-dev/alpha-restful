@@ -480,6 +480,11 @@ module.exports = class Restful {
 				else if (options.jsonIgnoreProperties && typeof options.jsonIgnoreProperties === 'string')
 					newJsonIgnoreProperties.push(options.jsonIgnoreProperties)
 
+				const limit = parseInt(options.limit)
+				const skip = parseInt(options.skip)
+				const sort = options.sort
+				const select = options.select
+
 				if (!data[attr] && !options.jsonIgnore && options.syncronized && id) {
 					let attrSyncronized = options.syncronized
 					if (attrSyncronized instanceof Array) {
@@ -487,14 +492,44 @@ module.exports = class Restful {
 						let subEntity = this.entities[options.name]
 						let find = {}
 						find[`${attrSyncronized}.id`] = id
-						data[attr] = await subEntity.model.find(find).select('_id').exec()
+
+						let query = subEntity.model.find(find).select('_id')
+
+						if (sort)
+							query = query.sort(sort)
+
+						if (limit)
+							query = query.limit(sort)
+
+						if (skip)
+							query = query.skip(skip)
+
+						if (select)
+							query = query.select(select)
+
+						data[attr] = await query.exec()
 						data[attr] = copyEntity(data[attr])
 						data[attr] = data[attr].map(d => ({ id: d._id }))
 					} else {
 						let subEntity = this.entities[options.name]
 						let find = {}
 						find[`${attrSyncronized}.id`] = id
-						data[attr] = await subEntity.model.findOne(find).select('_id').exec()
+
+						let query = subEntity.model.findOne(find).select('_id')
+
+						if (sort)
+							query = query.sort(sort)
+
+						if (limit)
+							query = query.limit(sort)
+
+						if (skip)
+							query = query.skip(skip)
+
+						if (select)
+							query = query.select(select)
+
+						data[attr] = await query.exec()
 						data[attr] = {
 							id: data[attr]._id
 						}
@@ -540,6 +575,26 @@ module.exports = class Restful {
 					value = [value]
 				}
 
+				if (!options.ignoreSubAttr && sort) {
+					let attr = sort
+					let order = -1
+
+					if (attr[0] === '-') {
+						attr = attr.substring(1)
+						order = 1
+					}
+
+					value.sort((a, b) => {
+						return a[attr] < b[attr] ? order : -order
+					})
+				}
+
+				if (!options.ignoreSubAttr && skip)
+					value = value.slice(skip)
+
+				if (!options.ignoreSubAttr && limit)
+					 value = value.slice(0, limit)
+
 				let ids = []
 
 				if (!options.virtual)
@@ -562,10 +617,32 @@ module.exports = class Restful {
 					if (options.name && options.virtual) {
 						subEntity = this.entities[options.name]
 						subEntities = value
+					} else if (!options.ignoreSubAttr && options.name && options.fill !== false) {
+						subEntity = this.entities[options.name]
+						subEntities = await subEntity.findByIds(ids, select, this)
+						subEntities = copyEntity(subEntities)
 					} else if (options.name && options.fill !== false) {
 						subEntity = this.entities[options.name]
-						subEntities = await subEntity.findByIds(ids, this)
-						subEntities = copyEntity(subEntities)
+
+						let query = subEntity.model.find({
+							_id: {
+								$in: ids
+							}
+						})
+
+						if (sort)
+							query = query.sort(sort)
+
+						if (limit)
+							query = query.limit(limit)
+
+						if (skip)
+							query = query.skip(skip)
+
+						if (select)
+							query = query.select(select)
+
+						subEntities = await query.exec()
 					}
 
 					let recursive = fillRec
@@ -591,7 +668,7 @@ module.exports = class Restful {
 					if (subEntity && subEntity.name && syncs && syncs[subEntity.name])
 						syncSubEntity = syncs[subEntity.name]
 
-					if (options.selectCount !== true && options.selectCount !== 'true' || !options.virtual) {
+					if (options.fill !== false && !options.virtual) {
 						for (let [se, index] of enumerate(subEntities))
 							subEntities[index] = await this._fill(se, syncSubEntity, se._id, recursive, {
 								ignoreFillProperties: newIgnoreFillProperties,
@@ -600,16 +677,17 @@ module.exports = class Restful {
 							})
 					}
 
-					for (let [v, index] of enumerate(value))
-						if (options.sync && options.subFill !== false) {
+					if (!options.ignoreSubAttr && options.sync && options.subFill !== false) {
+						for (let [v, index] of enumerate(value)) {
 							value[index] = await this._fill(v, options.sync, id, recursive, {
 								ignoreFillProperties: newIgnoreFillProperties,
 								jsonIgnoreProperties: newJsonIgnoreProperties ,
 								syncs
 							})
 						}
+					}
 
-					if (!options.virtual) {
+					if (!options.ignoreSubAttr && !options.virtual) {
 						for (let [v, index] of enumerate(value)) {
 							value[index] = {
 								...(subEntities && subEntities[index] || {}),
@@ -617,6 +695,9 @@ module.exports = class Restful {
 							}
 						}
 					}
+
+					if (options.ignoreSubAttr)
+						value = subEntities
 
 					if (!originalIsArray)
 						value = value[0]

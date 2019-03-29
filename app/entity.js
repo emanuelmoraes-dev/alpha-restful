@@ -413,13 +413,18 @@ module.exports = class Entity {
 		}
 	}
 
-	async findByIds (ids, restful) {
+	async findByIds (ids, select, restful) {
 		try {
 			let data = []
 			for (let id of ids) {
-				let d = await this.model.findOne({
+				let query = this.model.findOne({
 					_id: id
-				}).exec()
+				})
+
+				if (select)
+					query = query.select(select)
+
+				let d = await query.exec()
 
 				// d = copyEntity(d)
 
