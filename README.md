@@ -519,7 +519,7 @@ const Pessoa = new Entity({
 
 Neste exemplo, os atributos _idade_ e _casas_ não serão incluídos no json de busca da entidade _Pessoa_.
 
-#### Observação
+#### Atenção!!
 
 Por questões de desempenho, somente atributos diretos são garantidos de maneira incondicional a serem ignorados pelo _jsonIgnore_, ou seja, na entidade _Casa_, os atributos dentro de _endereco_ não serão ignorados de maneira individual. Os atributos dentro de _endereco_ serão ignorados se o atributo _endereco_ for ignorado. Caso você deseje que um sub-atributo possa ser ignorado de maneira garantida e individual, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
 
@@ -876,7 +876,17 @@ isCopyEntity      | `false`      | Se for `false` **não** realiza a cópia das 
 findOne           | `false`      | Se for `true`, apenas uma entidade é buscada e retornada.
 descriptor        | `null`       | Objeto que descreve a modelagem da entidade. Caso seja `null`, o _descriptor_ utilizado é o _descriptor_ definido na modelagem da entidade.
 
+#### Atenção!
+
+O método `restful.query` utiliza as definições presentes do _descriptor_ das entidades para mapear as possibilizades de busca, inclusive com os atributos presentes nas sub-entidades. Por causa deste comportamento, todos os atributos devem ser mapeados no _descriptor_ para serem localizados pelo `restful.query`, porém existem situações na qual um atributo é do tipo `Object` ou `Array` e seus subatributos são dinâmicos e impossíveis de serem mapeados. Neste caso, no objeto _sync_ deste atributo deve ser habilitado a opção `dynamicData` igual a `true`. Com esta opção habilitada, o método `restful.query` **não** irá procurar sub-atributos na entidade relacionada pelo atributo dinâmico.
+
 #### Observação
+
+O método `restful.query` irá internamente chamar o método de busca do moongose (`Entidade.model.find`), portanto a sintaxe presente no objeto de busca do moongose é preservada pelo método `restful.query`, com a diferença de que através do método `restful.query`, os atributos das entidades relacionadas são enxergadas pelo método de busca, como se eles já estivessem dentro do documento principal.
+
+Para mais informações sobre o método de busca do mongose [Acesse](https://mongoosejs.com/docs/queries.html).
+
+#### Atenção!
 
 Ao realizar uma pesquisa no método `restful.query`, os atributos com a opção _jsonIgnore_ igual a `true` **não** serão ignorados. Para que estes atributos sejam ignorados é necessário que o método de preenchimento (explicado logo a seguir) seja chamado.
 
@@ -923,6 +933,14 @@ sync                 | `null`       | Objeto _sync_ a ser usado ao invés do _sy
 syncs                | `{}`         | Objeto cuja a chave é o nome da entidade e o valor é o _sync_ a ser usado ao invés do _sync_ definido na modelagem de tal entidade. A entidade que não estiver dentro desta opção terá o _sync_ definido em sua modelagem usado.
 ignoreFillProperties | `[]`         | Lista de propriedade que não serão preenchidas em qualquer nível.
 jsonIgnoreProperties | `[]`         | Lista de propriedade que não serão incluídas em qualquer nível.
+
+#### Observação
+
+Por padrão, ao preencher um atributo com a entidade relacionada, todos os valores deste atributo serão preenchidos e estarão dentro do json, mas pode-se ordenar e paginar os resultandos dentro do preenchimento, utilizando as opções _limit_ (quantidade máxima de elementos), _skip_ (quantidade de elementos a serem pulados) e _sort_ (atributo a ser ordenado de maneira crescente ou decrescente (com o hífen no início)).
+
+A opção _sort_ irá ordenar os elementos de dentro do atributo pelo atributo passado nesta opção. Por padrão, apenas atributos armazenados dentro do documento principal poderão ser utilizados pela ordenação. Caso seja necessário ordenar por algum atributo presente na entidade relacionada, é necessário habilitar como `true` a opção _ignoreSubAttr_, que irá excluir do json os atributos de relacionamento presentes dentro do documento principal.
+
+Também é possível selecionar quais atributos diretos (primeiro nível) estarão contidos dentro do json com a opção _select_, que pode ser um array com todos os atributos a serem adicionados no json, mas pode ser também uma string, separando os atributos a serem selecionados com espaço.
 
 #### Forma Alternativa Para Integrar Preenchimento em Rotas Personalizadas
 
@@ -983,6 +1001,12 @@ Como exemplo de um método disponibilizado para remoção de entidades no mongoo
 ```js
 await pessoa.remove()
 ```
+
+### Manipulação da Entidade Pelo Moongose e pelo MongoDB
+
+Caso você dejese salvar, buscar, editar ou remover uma entidade, pode-se utilizar os métodos disponíveis pelo moongose ou pelo MongoDB. O _schema_ da entidade descrita pela documentação do moongose pode ser obtido através da opção `Entidade.schema`. O _model_ da entidade descrita pela documentação do Moongose pode ser obtido através da opção `Entidade.model`. Caso você busque uma entidade pelo método `restful.query` e deseje ter acesso aos métodos do objeto disponibilizados pelo moongose, basta desabilitar a opçao `isCopyEntity`, assim como é explicado na seção *Método de Busca* deste documento.
+
+Para mais informações sobre os métodos disponibilizados pelo moongose para manipulação de entidades acesse a documentação pelo link <https://mongoosejs.com/docs/guides.html>.
 
 ### Relacionamento Virtual
 
