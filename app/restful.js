@@ -484,6 +484,10 @@ module.exports = class Restful {
 				const skip = parseInt(options.skip)
 				const sort = options.sort
 				const select = options.select
+				let selectArray = []
+
+				if (typeof select === 'string')
+					selectArray = select.split(' ')
 
 				if (!data[attr] && !options.jsonIgnore && options.syncronized && id) {
 					let attrSyncronized = options.syncronized
@@ -585,7 +589,9 @@ module.exports = class Restful {
 					}
 
 					value.sort((a, b) => {
-						return a[attr] < b[attr] ? order : -order
+						a = getAttr(attr, a)
+						b = getAttr(attr, b)
+						return a < b ? order : -order
 					})
 				}
 
@@ -681,11 +687,17 @@ module.exports = class Restful {
 						for (let [v, index] of enumerate(value)) {
 							value[index] = await this._fill(v, options.sync, id, recursive, {
 								ignoreFillProperties: newIgnoreFillProperties,
-								jsonIgnoreProperties: newJsonIgnoreProperties ,
+								jsonIgnoreProperties: newJsonIgnoreProperties,
 								syncs
 							})
 						}
 					}
+
+					if (!options.ignoreSubAttr && selectArray.length)
+						for (let v of value)
+							for (let attr in v)
+								if (selectArray.indexOf(attr) === -1)
+									delete v[attr]
 
 					if (!options.ignoreSubAttr && !options.virtual) {
 						for (let [v, index] of enumerate(value)) {
