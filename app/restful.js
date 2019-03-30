@@ -483,11 +483,15 @@ module.exports = class Restful {
 				const limit = parseInt(options.limit)
 				const skip = parseInt(options.skip)
 				const sort = options.sort
-				const select = options.select
+				let select = options.select
 				let selectArray = []
 
 				if (typeof select === 'string')
 					selectArray = select.split(' ')
+				else if (select instanceof Array)
+					selectArray = select
+
+				select = selectArray.join(' ')
 
 				if (!data[attr] && !options.jsonIgnore && options.syncronized && id) {
 					let attrSyncronized = options.syncronized
