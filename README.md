@@ -882,7 +882,7 @@ O método `restful.query` utiliza as definições presentes do _descriptor_ das 
 
 #### Observação
 
-O método `restful.query` irá internamente chamar o método de busca do moongose (`Entidade.model.find`), portanto a sintaxe presente no objeto de busca do moongose é preservada pelo método `restful.query`, com a diferença de que através do método `restful.query`, os atributos das entidades relacionadas são enxergadas pelo método de busca, como se eles já estivessem dentro do documento principal.
+O método `restful.query` irá internamente chamar o método de busca do Mongoose (`Entidade.model.find`), portanto a sintaxe presente no objeto de busca do Mongoose é preservada pelo método `restful.query`, com a diferença de que através do método `restful.query`, os atributos das entidades relacionadas são enxergadas pelo método de busca, como se eles já estivessem dentro do documento principal.
 
 Para mais informações sobre o método de busca do mongose [Acesse](https://mongoosejs.com/docs/queries.html).
 
@@ -933,6 +933,30 @@ sync                 | `null`       | Objeto _sync_ a ser usado ao invés do _sy
 syncs                | `{}`         | Objeto cuja a chave é o nome da entidade e o valor é o _sync_ a ser usado ao invés do _sync_ definido na modelagem de tal entidade. A entidade que não estiver dentro desta opção terá o _sync_ definido em sua modelagem usado.
 ignoreFillProperties | `[]`         | Lista de propriedade que não serão preenchidas em qualquer nível.
 jsonIgnoreProperties | `[]`         | Lista de propriedade que não serão incluídas em qualquer nível.
+
+#### Atenção!
+
+A opção _sync_ do último argumento do método `Entidade.fill` **apenas** é aplicada ao primeiro nível, ou seja, no exemplo apresentado, se houver alguma sub-entidade que se relaciona com _Pessoa_, o _sync_ de Pessoa utilizado será o objeto _sync_ definido na modelagem da entidade.
+
+Por causa disso, no exemplo apresentado, o atributo _pessoas_ em _Casa_, se não estivesse sendo ignorado, utilizaria o objeto _sync_ definido na modelagem da entidade. Para sobrescrever o _sync_ em todas as chamadas e sub-chamadas de todas as sub-entidades de sub-entidades, seria necessário sobrescrever também na opção _syncs_:
+
+```js
+pessoas = await Pessoa.fill(pessoas, restful, {
+    sync: {
+        nome: { jsonIgnore: true },
+        casas: { fill: true }
+    },
+    syncs: {
+        Casa: {
+            pessoas: { jsonIgnore: true }
+        },
+        Pessoa: {
+            nome: { jsonIgnore: true },
+            casas: { fill: true }
+        }
+    }
+})
+```
 
 #### Observação
 
@@ -1004,9 +1028,9 @@ await pessoa.remove()
 
 ### Manipulação da Entidade Pelo Moongose e pelo MongoDB
 
-Caso você dejese salvar, buscar, editar ou remover uma entidade, pode-se utilizar os métodos disponíveis pelo moongose ou pelo MongoDB. O _schema_ da entidade descrita pela documentação do moongose pode ser obtido através da opção `Entidade.schema`. O _model_ da entidade descrita pela documentação do Moongose pode ser obtido através da opção `Entidade.model`. Caso você busque uma entidade pelo método `restful.query` e deseje ter acesso aos métodos do objeto disponibilizados pelo moongose, basta desabilitar a opçao `isCopyEntity`, assim como é explicado na seção **Método de Busca** deste documento.
+Caso você dejese salvar, buscar, editar ou remover uma entidade, pode-se utilizar os métodos disponíveis pelo Mongoose ou pelo MongoDB. O _schema_ da entidade descrita pela documentação do Mongoose pode ser obtido através da opção `Entidade.schema`. O _model_ da entidade descrita pela documentação do Moongose pode ser obtido através da opção `Entidade.model`. Caso você busque uma entidade pelo método `restful.query` e deseje ter acesso aos métodos do objeto disponibilizados pelo Mongoose, basta desabilitar a opçao `isCopyEntity`, assim como é explicado na seção **Método de Busca** deste documento.
 
-Para mais informações sobre os métodos disponibilizados pelo moongose para manipulação de entidades acesse a documentação pelo link <https://mongoosejs.com/docs/guides.html>.
+Para mais informações sobre os métodos disponibilizados pelo Mongoose para manipulação de entidades acesse a documentação pelo link <https://mongoosejs.com/docs/guides.html>.
 
 ### Relacionamento Virtual
 
