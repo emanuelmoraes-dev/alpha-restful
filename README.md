@@ -48,7 +48,7 @@ O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro
 
     * Cada funcionalidade poderá ser utilizada em separado em procedimentos e rotas personalizadas do programador. Isto implica que as funções aqui apresentadas poderão ser utilizadas de diferentes maneiras, dependendo apenas da maneira como elas são chamadas/definidas.
 
-    * O Alpha Restful é altamente adaptável, ou seja, caso você já possua uma aplicação backend, usando node js, express js e mongoose, torna-se muito fácil integrar este framework ou parte dele em seu código já existente!
+    * O Alpha Restful é altamente adaptável, ou seja, caso você já possua uma aplicação backend, usando node js, express js e Mongoose, torna-se muito fácil integrar este framework ou parte dele em seu código já existente!
 
     * Com o Alpha Restful o programador terá a total liberdade de alterar qualquer comportamento genérico ou específico da ferramenta, adaptando seu comportamento para as suas necessidades.
 
@@ -288,7 +288,7 @@ const Pessoa = new Entity({
 restful.add(Pessoa) // Adiciona ao Restful a entidade Pessoa
 ```
 
-O _descriptor_ descreve como a entidade _Pessoa_ está modelada. A sintaxe do descriptor segue as especificações presentes nos [_schemas_](https://mongoosejs.com/docs/guide.html) do mongoose.
+O _descriptor_ descreve como a entidade _Pessoa_ está modelada. A sintaxe do descriptor segue as especificações presentes nos [_schemas_](https://mongoosejs.com/docs/guide.html) do Mongoose.
 
 ### Integração com o Mongoose
 
@@ -811,15 +811,15 @@ const Pessoa = new Entity({
 
 ### Rota Padrão de Busca
 
-Caso seja habilitada a criação de CRUD, habilitando a geração de método http _get_, automaticamente é gerada uma rota de busca na qual buscas complexas podem ser realizadas alterando apenas os paprâmetros da rota.
+Caso seja habilitada a criação de CRUD, habilitando a geração de método http _get_, automaticamente é gerada uma rota de busca na qual buscas complexas podem ser realizadas alterando apenas os parâmetros da rota.
 
-Como exemplo de busca, imagina que deseja-se buscar todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para se realizar esta pesquisa bastaria fazer uma requisição http _get_ com a seguinte url:
+Como exemplo de busca, imagine que deseja-se buscar todas as casas, na qual existe pelo menos uma pessoa que mora em alguma _Casa_, que nesta _Casa_ existe uma pessoa que possui idade maior ou igual a 18 anos. Para se realizar esta pesquisa bastaria fazer uma requisição http _get_ com a seguinte url:
 
 ```http
 /casas?pessoas.casas.pessoas.idade__$gte=18
 ```
 
-Nesta rota de busca pode-se realizar pesquisas em atributos e sub-atributos da entidade e de sub-endades relacionadas.
+Nesta rota de busca pode-se realizar pesquisas em atributos e sub-atributos da entidade e de sub-entidades relacionadas.
 
 Você também pode adicionar várias condições. Neste caso, você poderia deixar esta busca ainda mais específica, exigindo que todas as casas buscadas precisa-se estar na rua "Castelo". Neste caso bastaria realizar a seguinte requisição http _get_:
 
@@ -860,7 +860,7 @@ let casas = await restful.query({
 }, Casa)
 ```
 
-O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
+O primeiro argumento do método de busca contém as especificações do [objeto de busca](https://mongoosejs.com/docs/queries.html) usado pelo Mongoose, com o diferencial de poder utilizar atributos de sub-entidades de sub-entidades, como se elas estivessem dentro do mesmo documento.
 
 O terceiro argumento é opcional e é um objeto com várias opções para a pesquisa. As opções deste Objeto são:
 
@@ -870,7 +870,7 @@ select            | `null`       | Atributos a serem buscados
 skip              | `null`       | Quantidade de elementos a serem pulados
 limit             | `null`       | Quantidade máxima de elementos  da busca
 sort              | `null`       | Atributo a ser ordenado
-internalSearch    | `true`       | Se for `false` retorna um objeto de busca a ser utilizado em uma pesquisa com o mongoose. Se for `true` retorna-se o resultado da busca
+internalSearch    | `true`       | Se for `false` retorna um objeto de busca que pode ser utilizado como primeiro argumento do método de busca do Mongoose (`Entidade.model.find`). Se for `true` retorna-se o resultado da busca
 selectCount       | `false`      | Se for `true` retorna a quantidade de elementos da busca. Se for `false` retorna os elementos da busca.
 isCopyEntity      | `false`      | Se for `false` **não** realiza a cópia das entidades buscadas. Neste caso, os atributos das entidades retornadas são imutáveis. Se for `true` as entidades retornadas são uma cópia das originais. Neste caso pode-se alterar os valores de seus atributos. As cópias das entidades **não** possuem os métodos utilizados pelo _mongoose_.
 findOne           | `false`      | Se for `true`, apenas uma entidade é buscada e retornada.
@@ -994,9 +994,9 @@ O primeiro argumento é o id da pessoa a ser removida. O segundo argumento é um
 
 Este método **NÃO** irá remover a pessoa. Este método irá manter o comportamento padrão que o Alpha Restful aplica em uma entidade **antes** dela ser removida.
 
-Após a chamada deste método, pode-se remover a entidade usando as ferramentas do mongoose ou usando as ferramentas disponibilizadas pelo MongoDB.
+Após a chamada deste método, pode-se remover a entidade usando as ferramentas do Mongoose ou usando as ferramentas disponibilizadas pelo MongoDB.
 
-Como exemplo de um método disponibilizado para remoção de entidades no mongoose temos:
+Como exemplo de um método disponibilizado para remoção de entidades no Mongoose temos:
 
 ```js
 await pessoa.remove()
@@ -1004,7 +1004,7 @@ await pessoa.remove()
 
 ### Manipulação da Entidade Pelo Moongose e pelo MongoDB
 
-Caso você dejese salvar, buscar, editar ou remover uma entidade, pode-se utilizar os métodos disponíveis pelo moongose ou pelo MongoDB. O _schema_ da entidade descrita pela documentação do moongose pode ser obtido através da opção `Entidade.schema`. O _model_ da entidade descrita pela documentação do Moongose pode ser obtido através da opção `Entidade.model`. Caso você busque uma entidade pelo método `restful.query` e deseje ter acesso aos métodos do objeto disponibilizados pelo moongose, basta desabilitar a opçao `isCopyEntity`, assim como é explicado na seção *Método de Busca* deste documento.
+Caso você dejese salvar, buscar, editar ou remover uma entidade, pode-se utilizar os métodos disponíveis pelo moongose ou pelo MongoDB. O _schema_ da entidade descrita pela documentação do moongose pode ser obtido através da opção `Entidade.schema`. O _model_ da entidade descrita pela documentação do Moongose pode ser obtido através da opção `Entidade.model`. Caso você busque uma entidade pelo método `restful.query` e deseje ter acesso aos métodos do objeto disponibilizados pelo moongose, basta desabilitar a opçao `isCopyEntity`, assim como é explicado na seção **Método de Busca** deste documento.
 
 Para mais informações sobre os métodos disponibilizados pelo moongose para manipulação de entidades acesse a documentação pelo link <https://mongoosejs.com/docs/guides.html>.
 
@@ -1331,5 +1331,3 @@ O guia aqui presente engloga a grande maioria das funcionalidades implementadas,
 Sinta-se a vontade de testar as funcionalidades aqui apresentadas e em caso de algum erro você poderá relatar aqui nas Issues que eu tentarei resolver o mais rápido possível.
 
 Este software ainda **não** está 100% pronto para o uso. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados. Eu aceito contribuições da comunidade.
-
-De mais, aceito sugestões e ficaria muito grato em receber o crédito em caso de divulgação desta ferramenta. Obrigado!
