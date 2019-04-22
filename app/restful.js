@@ -634,12 +634,25 @@ module.exports = class Restful {
 					} else if (options.name && options.fill !== false) {
 						subEntity = this.entities[options.name]
 
-						let query = subEntity.model.find({
-							_id: {
-								$in: ids
-							}
-						})
+						let optionsFind = options.find
 
+						if (optionsFind && typeof optionsFind === 'function')
+							optionsFind = optionsFind(data, value)
+
+						let query
+
+						if (optionsFind && typeof optionsFind === 'object') {
+							query = subEntity.model.find({
+								$and: [{ _id: { $in: ids } }, optionsFind]
+							})
+						} else {
+							query = subEntity.model.find({
+								_id: {
+									$in: ids
+								}
+							})
+						}
+						
 						if (sort)
 							query = query.sort(sort)
 
@@ -653,6 +666,7 @@ module.exports = class Restful {
 							query = query.select(select)
 
 						subEntities = await query.exec()
+						subEntities = copyEntity(subEntities)
 					}
 
 					let recursive = fillRec
