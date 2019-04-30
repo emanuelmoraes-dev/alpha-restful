@@ -964,6 +964,8 @@ Por padrão, ao preencher um atributo com a entidade relacionada, todos os valor
 
 A opção _sort_ irá ordenar os elementos de dentro do atributo pelo atributo passado nesta opção. Por padrão, apenas atributos armazenados dentro do documento principal poderão ser utilizados pela ordenação. Caso seja necessário ordenar por algum atributo presente na entidade relacionada, é necessário habilitar como `true` a opção _ignoreSubAttr_, que irá excluir do json os atributos de relacionamento presentes dentro do documento principal.
 
+Caso a opção _ignoreSubAttr_ seja `true`, pode-se utilizar a opção `find` dentro das opções de preenchimento. A opção _find_ permite que seja definido uma especificação de pesquisa, para que apenas as subentidades que se encaixar nestas condições sejam incluídas dentro do json. O valor de _find_ pode ser um objeto literal de busca (objeto a ser utilizado no primeiro argumento do método `restful.query`), assim como pode ser também uma função que retorna este objeto literal. Para este último caso, o primeiro argumento da função é a instância da entidade que terá seus atributos preenchidos e o segundo argumento da função é um array com todos os valores presentes no documento principal dentro do atributo a ser preenchido.
+
 Também é possível selecionar quais atributos diretos (primeiro nível) estarão contidos dentro do json com a opção _select_, que pode ser um array com todos os atributos a serem adicionados no json, mas pode ser também uma string, separando os atributos a serem selecionados com espaço.
 
 #### Forma Alternativa Para Integrar Preenchimento em Rotas Personalizadas
