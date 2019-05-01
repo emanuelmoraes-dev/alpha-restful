@@ -9,7 +9,7 @@ restful.add(new Entity({
     descriptor: {
         description: String,
         info: {
-            peoples: [{ id: mongoose.Types.ObjectId, rent: { id: mongoose.Types.ObjectId }, date: Date }],
+            peoples: [{ id: mongoose.Schema.Types.ObjectId, rent: { id: mongoose.Schema.Types.ObjectId }, date: Date }],
         },
         address: {
             street: String,
@@ -22,9 +22,9 @@ restful.add(new Entity({
         info: {
             subFill: true,
             sync: {
-                peoples: { 
-                    name: 'People', 
-                    fill: true, 
+                peoples: {
+                    name: 'People',
+                    fill: true,
                     jsonIgnoreProperties: ['houses'],
                     sync: {
                         rent: 'Rent'

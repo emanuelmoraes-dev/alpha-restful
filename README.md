@@ -349,7 +349,7 @@ const Casa = new Entity({
         ser armazenada
         */
         pessoas: [{
-            id: mongoose.Types.ObjectId // Id da entidade pessoa
+            id: mongoose.Schema.Types.ObjectId // Id da entidade pessoa
         }]
     },
     /*
@@ -448,7 +448,7 @@ const Casa = new Entity({
             pais: String
         },
         pessoas: [{
-            id: mongoose.Types.ObjectId,
+            id: mongoose.Schema.Types.ObjectId,
 
             /*
             No relacionamento entre Pessoa e Casa existe
@@ -457,7 +457,7 @@ const Casa = new Entity({
             Aluguel
             */
             aluguel: {
-                id: mongoose.Types.ObjectId
+                id: mongoose.Schema.Types.ObjectId
             }
         }]
     },
@@ -564,8 +564,8 @@ const Casa = new Entity({
             pais: String
         },
         pessoas: [{
-            id: mongoose.Types.ObjectId,
-            aluguel: { id: mongoose.Types.ObjectId }
+            id: mongoose.Schema.Types.ObjectId,
+            aluguel: { id: mongoose.Schema.Types.ObjectId }
         }]
     },
     sync: {
