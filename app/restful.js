@@ -652,7 +652,7 @@ module.exports = class Restful {
 								}
 							})
 						}
-						
+
 						if (sort)
 							query = query.sort(sort)
 
@@ -944,7 +944,7 @@ module.exports = class Restful {
 			for (let entityName in this.entities) {
 				let entity = this.entities[entityName]
 				entity.schema = new mongoose.Schema(entity.descriptor)
-				entity.model = mongoose.model(entityName, entity.schema)
+				entity.model = mongoose.model(entityName, entity.schema, entity.resource)
 
 				if (this.isLocale) {
 					let find = entity.model.find.bind(entity.model)

@@ -136,62 +136,62 @@ Caso o locale não seja definido, o padrão é o inglês (_en_). A seguir é apr
 
 Language                          | Locale
 --------------------------------- | ------
-Afrikaans	  	                    | af
-Albanian	  	                    | sq
+Afrikaans	  	                  | af
+Albanian	  	                  | sq
 Amharic	  	                      | am
-Armenian	  	                    | hy
+Armenian	  	                  | hy
 Arabic	                          | ar
-Assamese	  	                    | as
-Azeri	                            | az
+Assamese	  	                  | as
+Azeri	                          | az
 Bengali	  	                      | bn
 Belarusian	                      | be
 Bengali	  	                      | bn
 Bosnian	                          | bs
 Bosnian (Cyrillic)                | bs_Cyrl
-Bulgarian	  	                    | bg
+Bulgarian	  	                  | bg
 Burmese	  	                      | my
 Catalan                           | ca
-Cherokee	   	                    | chr
+Cherokee	   	                  | chr
 Chinese	  	                      | zh
 Chinese (Traditional)             | zh_Hant
-Croatian	                        | hr
-Czech	   	                        | cs
+Croatian	                      | hr
+Czech	   	                      | cs
 Danish	                          | da
-Dutch	nl	                        | nl
-Dzongkha	  	                    | dz
+Dutch	nl	                      | nl
+Dzongkha	  	                  | dz
 English	                          | en
 English (United States)           |	en_US
-English (United States, Computer)	| en_US_POSIX	 
-Esperanto	  	                    | eo
-Estonian	  	                    | et
+English (United States, Computer) | en_US_POSIX	 
+Esperanto	  	                  | eo
+Estonian	  	                  | et
 Ewe	  	                          | ee
 Faroese	  	                      | fo
-Filipino	   	                    | fil
-Finnish	     	                    | fi_FI
+Filipino	   	                  | fil
+Finnish	     	                  | fi_FI
 French	  	                      | fr
-French (Canada)	    	            | fr_Ca
-Galician	                        | gl
-Georgian	  	                    | ka
+French (Canada)	    	          | fr_Ca
+Galician	                      | gl
+Georgian	  	                  | ka
 German	  	                      | de
-German (Austria)	    	          | de_AT
-Greek	  	                        | rl
-Gujarati	  	                    | gu
-Hausa	  	                        | ha
-Hawaiian	   	                    | haw
+German (Austria)	    	      | de_AT
+Greek	  	                      | rl
+Gujarati	  	                  | gu
+Hausa	  	                      | ha
+Hawaiian	   	                  | haw
 Hebrew	                          | he
-Hindi	  	                        | hi
-Hungarian	  	                    | hu
-Icelandic	                        | is
-Igbo	  	                        | ig
+Hindi	  	                      | hi
+Hungarian	  	                  | hu
+Icelandic	                      | is
+Igbo	  	                      | ig
 Inari Sami	                      | smn
 Indonesian	  	                  | id
-Irish	  	                        | gs
+Irish	  	                      | gs
 Italian	  	                      | it
 Japanese                          | ja
 Kalaallisut                       |	kl
 Kannada	                          | kn
 Kazakh	                          | kk
-Khmer	                            | km
+Khmer	                          | km
 Konkani	                          | kok
 Korean	                          | ko
 Kyrgyz	                          | ky
@@ -277,8 +277,8 @@ Digamos que você deseje criar a entidade _Pessoa_ com o atributo _nome_ e _idad
 
 ```js
 const Pessoa = new Entity({
-    name: 'Pessoa', // Nome da sua entidade e da sua coleção de documentos no MongoDB relacionada a esta entidade
-    resource: '/pessoas', // URI utilizada para acessar os recursos REST desta entidade
+    name: 'Pessoa', // Nome da sua entidade
+    resource: '/pessoas', // URI utilizada para acessar os recursos REST desta entidade. Também é o nome da coleção de documentos utilizada para esta entidade (sem a barra)
     descriptor: { // Objeto que descreve os atributos da entidade
         name: String, // Uma pessoa possui um nome que é do tipo String
         idade: Number // Uma pessoa possui uma idade que é do tipo Number
@@ -302,8 +302,8 @@ Para que o Alpha Restful crie as rotas dos métodos http de CRUD, basta informar
 
 ```js
 const Pessoa = new Entity({
-    name: 'Pessoa', // Nome da sua entidade e da sua coleção de documentos no MongoDB relacionada a esta entidade
-    resource: '/pessoas', // URI utilizada para acessar os recursos REST desta entidade
+    name: 'Pessoa', // Nome da sua entidade
+    resource: '/pessoas', // URI utilizada para acessar os recursos REST desta entidade. Também é o nome da coleção de documentos utilizada para esta entidade (sem a barra)
     descriptor: { // Objeto que descreve os atributos da entidade
         name: String, // Uma pessoa possui um nome que é do tipo String
         idade: Number // Uma pessoa possui uma idade que é do tipo Number
