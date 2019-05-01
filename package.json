@@ -16,7 +16,7 @@
     "api",
     "framework"
   ],
-  "version": "0.7.19",
+  "version": "0.7.20",
   "main": "app/index.js",
   "scripts": {
     "start": "node examples/example1/main.js",
