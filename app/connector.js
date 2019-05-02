@@ -18,6 +18,7 @@ module.exports = class Connector {
 		this.restful.debug('applying mongodb modeling ...')
 		this.restful.structDb()
 		this.restful.debug('modeling applied to mongodb')
+		this.restful.db = mongoose.connection.db
 		resolve()
 		this.restful.debug('established connection with mongodb')
 	}
