@@ -663,7 +663,7 @@ Uma alternativa ao _fill_ é a opção _fillRec_. Tal opção contém um número
 
 Da mesma forma, por padrão, sub-atributos somente poderão ser ignorados pelo _jsonIgnore_ se o atributo pai tiver a opção _fill_ ou _subFill_. Caso você deseje que sub-atributos possam ser ignorados pelo _jsonIgnore_, independente das opções _fill_ e _subFill_, basta adicionar a opção _ignoreFieldsRecursive_ como `false` nas opções da entidade.
 
-Se você desejar que por padrão sub-atributos de sub-entidades também possam ser ignorados pelo _jsonIgnore_ de maneira individual, independente das opções _fill_ e _subFill_, além de adcionar a opção _ignoreFieldsRecursive_ como `false`, torna-se necessário também adicionar a opção _ignoreFieldsRecursiveSubEntity_ como `false` nas opções da entidade.
+Se você desejar que por padrão sub-atributos de sub-entidades também possam ser ignorados pelo _jsonIgnore_ de maneira individual, independente das opções _fill_ e _subFill_, além de adicionar a opção _ignoreFieldsRecursive_ como `false`, torna-se necessário também adicionar a opção _ignoreFieldsRecursiveSubEntity_ como `false` nas opções da entidade.
 
 #### Evitando Preenchimento Circular
 
@@ -709,7 +709,11 @@ const Casa = new Entity({
 
 Se executarmos uma pesquisa por _Pessoa_ ou por _Casa_, nós iremos notar um problema: o sistema irá entrar em recursão infinita, pois ao buscar uma _Pessoa_, o atributo _casas_ será preenchido pelos atributos de _Casa_. Por sua vez, nos atributos de _Casa_ são preenchidos os atributos de _Pessoa_, assim o procedimento segue, gerando um erro de preenchimento circular.
 
-Para evitar que este erro ocorra, existem duas opções que podem ser utilizadas: _jsonIgnoreProperties_ e _ignoreFillProperties_. O _jsonIgnoreProperties_ contém uma lista de nomes de atributos que não serão incluídos dentro do json depois da recursão na qual esta opção está inserida. O _ignoreFillProperties_ contém uma lista de nomes de atributos que não serão preenchidos depois da recursão na qual esta opção está inserida.
+Para evitar que este erro ocorra, existem duas opções que podem ser utilizadas: _jsonIgnoreProperties_ e _ignoreFillProperties_.
+
+O _jsonIgnoreProperties_ contém uma lista de nomes (ou apenas uma String com o nome desejado) de atributos que não serão incluídos dentro do json depois da recursão na qual esta opção está inserida.
+
+O _ignoreFillProperties_ contém uma lista de nomes (ou apenas uma String com o nome desejado ) de atributos que não serão preenchidos depois da recursão na qual esta opção está inserida.
 
 ```js
 const Pessoa = new Entity({
@@ -878,7 +882,7 @@ descriptor        | `null`       | Objeto que descreve a modelagem da entidade. 
 
 #### Atenção!
 
-O método `restful.query` utiliza as definições presentes do _descriptor_ das entidades para mapear as possibilizades de busca, inclusive com os atributos presentes nas sub-entidades. Por causa deste comportamento, todos os atributos devem ser mapeados no _descriptor_ para serem localizados pelo `restful.query`, porém existem situações na qual um atributo é do tipo `Object` ou `Array` e seus subatributos são dinâmicos e impossíveis de serem mapeados. Neste caso, no objeto _sync_ deste atributo deve ser habilitado a opção `dynamicData` igual a `true`. Com esta opção habilitada, o método `restful.query` **não** irá procurar sub-atributos na entidade relacionada pelo atributo dinâmico.
+O método `restful.query` utiliza as definições presentes do _descriptor_ das entidades para mapear as possibilizades de busca, inclusive com os atributos presentes nas sub-entidades. Por causa deste comportamento, todos os atributos devem ser mapeados no _descriptor_ para serem localizados pelo `restful.query`, porém existem situações na qual um atributo é do tipo `Object` ou `Array` e seus sub-atributos são dinâmicos e impossíveis de serem mapeados. Neste caso, no objeto _sync_ deste atributo deve ser habilitado a opção `dynamicData` igual a `true`. Com esta opção habilitada, o método `restful.query` **não** irá procurar sub-atributos na entidade relacionada pelo atributo dinâmico.
 
 #### Observação
 
@@ -970,7 +974,7 @@ Também é possível selecionar quais atributos diretos (primeiro nível) estar�
 
 #### Forma Alternativa Para Integrar Preenchimento em Rotas Personalizadas
 
-O método de preenchimento `Entidade.fill` pode ser chamado dentro de uma rota personalizada para preencher os atributos com os valores contidos nas entidades relacionadas por eles. Esse método pode ser chamado explicitamente, mas também pode ser chamado de maneira alternativa como uma opção aop método `restful.execAsync`:
+O método de preenchimento `Entidade.fill` pode ser chamado dentro de uma rota personalizada para preencher os atributos com os valores contidos nas entidades relacionadas por eles. Esse método pode ser chamado explicitamente, mas também pode ser chamado de maneira alternativa como uma opção ao método `restful.execAsync`:
 
 ```js
 app.get('/rota-personalizada',
@@ -1141,7 +1145,7 @@ Para chamar esta projeção em uma requisição http basta adicionar o atributo 
 Por exemplo, se quisermos chamar esta projeção para a rota de busca de todas as pessoas, nós podemos fazer a seguinte requisição:
 
 ```http
-http://localhost:3001/pessoas?projection=projecao-base
+/pessoas?projection=projecao-base
 ```
 
 #### Projeção Definida como Objeto
@@ -1239,7 +1243,7 @@ const Casa = new Entity({
             obter a entidade desejada por meio do atributo
             restful.entities
             */
-            const Casa = restful.entities.Casa
+            const Pessoa = restful.entities.Pessoa
 
             casa.pessoas = await Pessoa.applyProjections(
                 casa.pessoas, 'projecao-base', restful
@@ -1356,4 +1360,6 @@ O guia aqui presente engloga a grande maioria das funcionalidades implementadas,
 
 Sinta-se a vontade de testar as funcionalidades aqui apresentadas e em caso de algum erro você poderá relatar aqui nas Issues que eu tentarei resolver o mais rápido possível.
 
-Este software ainda **não** está 100% pronto para o uso. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados. Eu aceito contribuições da comunidade.
+Este software ainda **não** está 100% pronto. Existem alguns detalhes importantes a serem tratados e testes mais severos a serem realizados.
+
+Sinta-se livre para sugerir qualquer mudança no framework ou para realizar qualquer sugestão de atualização de seu código fonte.
