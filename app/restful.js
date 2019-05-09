@@ -561,7 +561,8 @@ module.exports = class Restful {
 
 					if (options.selectCount !== true && options.selectCount !== 'true') {
 						data[attr] = copyEntity(data[attr])
-						data[attr].id = data[attr]._id
+						if (data[attr]) 
+							data[attr].id = data[attr]._id
 					} else {
 						data[attr] = data[attr].count
 					}
