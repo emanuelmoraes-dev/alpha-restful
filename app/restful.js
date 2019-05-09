@@ -559,10 +559,12 @@ module.exports = class Restful {
 						descriptor: subEntity.descriptor
 					})
 
-					if (options.selectCount !== true && options.selectCount !== 'true')
+					if (options.selectCount !== true && options.selectCount !== 'true') {
 						data[attr] = copyEntity(data[attr])
-					else
+						data[attr].id = data[attr]._id
+					} else {
 						data[attr] = data[attr].count
+					}
 				}
 
 				if ((jsonIgnoreProperties.indexOf(attr)+1) || options.jsonIgnore)
