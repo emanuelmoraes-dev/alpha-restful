@@ -113,7 +113,7 @@ module.exports = class Entity {
 			async function (req, res, next) {
 				res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
 				if (!res._content_)
-					throw new IlegallArgumentError('Id Inválido!', `Entidade ${this.name} não possui este id`)
+					throw new IlegallArgumentError('Id Inválido!', `Entidade ${that.name} não possui este id`)
 				next()
 				// res._content_ = copyEntity(res._content_)
 			},
