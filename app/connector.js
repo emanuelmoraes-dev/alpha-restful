@@ -6,7 +6,7 @@ module.exports = class Connector {
 	constructor (dbName, host, restful, app, useNewUrlParser) {
 		if (host instanceof Restful) {
 			this.url = dbName
-			this.useNewUrlParser = !!app
+			this.useNewUrlParser = app
 			this.app = restful
 			this.restful = host
 			this.host = null
@@ -17,8 +17,13 @@ module.exports = class Connector {
 			this.host = host
 			this.restful = restful
 			this.app = app
-			this.useNewUrlParser = !!useNewUrlParser
+			this.useNewUrlParser = useNewUrlParser
 		}
+
+		if (this.useNewUrlParser === undefined)
+			this.useNewUrlParser = true
+
+		this.useNewUrlParser = !!this.useNewUrlParser
 	}
 
 	onError(reject, err) {
