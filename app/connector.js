@@ -41,12 +41,14 @@ module.exports = class Connector {
 	}
 
 	async connect () {
-		this.restful.debug(`establishing connection to mongodb://${this.host}/${this.dbName} ...`)
-
-		if (this.url)
+		if (this.url) {
+			this.restful.debug(`establishing connection to ${this.url} ...`)
 			mongoose.connect(this.url, { useNewUrlParser: this.useNewUrlParser })
-		else
+		}
+		else {
+			this.restful.debug(`establishing connection to mongodb://${this.host}/${this.dbName} ...`)
 			mongoose.connect(`mongodb://${this.host}/${this.dbName}`, { useNewUrlParser: this.useNewUrlParser })
+		}
 
 		return await (new this.restful.Promise((resolve, reject) => {
 			db.on('error', this.onError.bind(this, reject))
