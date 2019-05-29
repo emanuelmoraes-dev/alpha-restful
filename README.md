@@ -124,7 +124,7 @@ const restful = new Restful('aplicacao-teste', {
 // ...
 
 process.env.PORT = 3001 // Porta do servidor
-const connector = new Connector('db_test', 'localhost', restful, app) // Conexão com Banco de Dados Mongo DB
+const connector = new Connector('mongodb://localhost/db_test', restful, app) // Conexão com Banco de Dados Mongo DB
 www(connector, true) // Inicializia o servidor
 ```
 
@@ -247,7 +247,7 @@ Yiddish                           |	yi
 Yoruba                            |	yo	 
 Zulu                              |	zu
 
-O primeiro argumento do construtor da classe `Connector` é o nome do banco a ser usado pela aplicação. O segundo argumento é a localização do banco na rede (neste caso o banco está localizado na própria máquina). O terceiro argumento é a instância da classe `Restful`, que representa a instância do framework _Alpha Restful_. O Quarto argumento é a instância do Express JS.
+O primeiro argumento do construtor da classe `Connector` é a URL do local onde o banco de dados mongodb está localizado. O segundo argumento é a instância da classe `Restful`, que representa a instância do framework _Alpha Restful_. O terceiro argumento é a instância do Express JS.
 
 O primeiro argumento da função `www` é o connector do banco de dados MongoDB. Se o segundo argumento for `true`, o Alpha Restful irá gerar automaticamente rotas para tratamento de erros. O `www` é uma função que retorna uma promise, na qual o retorno da promise é um objeto contendo o atributo `server` (representando a chamada do método `require('http').createServer(app)`) e o atributo `debug` (usado para mostrar mensagens de debug).
 
