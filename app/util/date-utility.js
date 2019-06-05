@@ -1,238 +1,211 @@
 const isISODate = require('is-iso-date')
+const { scape } = require('./utility')
 
-const MILISSEGUNDO = 'milissegundo'
-const SECOND = 'segundo'
-const MINUTE = 'minuto'
-const HOUR = 'hora'
-const DAY = 'dia'
-const WEEK = 'semana'
-const MONTH = 'mes'
-const TWO_MONTHS = 'bimestre'
-const SEMESTER = 'semestre'
-const QUARTER = 'trimestre'
-const YEAR = 'ano'
+const PERIODS = {
+  MILISSEGUNDO: 'milissegundo',
+  SECOND: 'segundo',
+  MINUTE: 'minuto',
+  HOUR: 'hora',
+  DAY: 'dia',
+  WEEK: 'semana',
+  MONTH: 'mes',
+  TWO_MONTHS: 'bimestre',
+  SEMESTER: 'semestre',
+  QUARTER: 'trimestre',
+  YEAR: 'ano'
+}
 
-module.exports = exports = {
-	PERIODS: {
-		MILISSEGUNDO,
-		SECOND,
-		MINUTE,
-		HOUR,
-		DAY,
-		WEEK,
-		MONTH,
-		TWO_MONTHS,
-		SEMESTER,
-		QUARTER,
-		YEAR
-	},
-	dateInApointment(date, target, period, duration) {
+function toDate (str, pattern='dd/MM/yyyy hh:mm:ss:ll') {
+  str = str.trim()
 
-		let minimo
+  let expPattern = /yyyy|MM|M|dd|d|hh|h|mm|m|ss|s|l/g
+  let seps = pattern.split(expPattern)
 
-		switch (period) {
-			case DAY:
-				minimo = 1000 * 60 * 60 * 24
-				break
-			case WEEK:
-				minimo = 1000 * 60 * 60 * 24 * 7
-				break
-			case MONTH:
-				minimo = 1000 * 60 * 60 * 24 * 28
-				break
-			case TWO_MONTHS:
-				minimo = 1000 * 60 * 60 * 24 * 28 * 2
-				break
-			case SEMESTER:
-				minimo = 1000 * 60 * 60 * 24 * 28 * 6
-				break
-			case QUARTER:
-				minimo = 1000 * 60 * 60 * 24 * 28 * 3
-				break
-			case YEAR:
-				minimo = 1000 * 60 * 60 * 24 * 365
-				break
-			default:
-				throw { message: `Período ${period} inválido` }
-		}
+  let sepsScape = seps.filter(s => s).map(scape)
+  let expSepsScape = new RegExp(sepsScape.join('|'), 'g')
+  let mask = pattern.split(expSepsScape).filter(p => p)
+  let values = str.split(expSepsScape).filter(p => p)
 
-		let passo = minimo * duration
-		let timeDate = date.getTime()
-		let timeTarget = target.getTime()
-		let dif = timeTarget - timeDate
-		let add = Math.floor(dif / passo)
+  let dateValues = {
+    day: 0,
+    month: 0,
+    year: 0,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0
+  }
 
-		let dateIt = exports.plus(date, period, duration * add)
+  let valid = true
 
-		if (exports.dateEquals(dateIt, target))
-			return true
+  for (let i = 0; i < mask.length; i++) {
+    let m = mask[i]
 
-		while (dateIt.getTime() <= target.getTime()) {
-			if (exports.dateEquals(dateIt, target))
-				return true
-			dateIt = exports.plus(dateIt, period, duration)
-		}
+    if (i >= values.length)
+      break
 
-		return false
-	},
-	toDate(str) {
-		str = str.trim();
-		// Converte "dia/mes/ano <hora, <minuto, <segundo, <milisegundo>>>>"
-		// Para [dia, mes, ano <hora, <minuto, <segundo, <milisegundo>>>>]
+    let v = values[i]
+    v = parseInt(v)
 
-		let dateArray = str.split(/\/|\s+|:/g)
+    if (Number.isNaN(v)) {
+      valid = false
+      break
+    }
 
-		// Troca dia por ano
-		let tmp = dateArray[0]
-		dateArray[0] = dateArray[2]
-		dateArray[2] = tmp
+    if (['d', 'dd'].indexOf(m)+1)
+      dateValues.day = v
+    else if (['M', 'MM'].indexOf(m)+1)
+      dateValues.month = v
+    else if ('yyyy' === m)
+      dateValues.year = v
+    else if (['h', 'hh'].indexOf(m)+1)
+      dateValues.hour = v
+    else if (['m', 'mm'].indexOf(m)+1)
+      dateValues.minute = v
+    else if (['s', 'ss'].indexOf(m)+1)
+      dateValues.second = v
+    else if ('l' === m)
+      dateValues.millisecond = v
+  }
 
-		// Decrementa-se o mes
-		dateArray[1] = dateArray[1] - 1
+  // Cria um date
+  return valid && new Date(
+    dateValues.year,
+    dateValues.month-1,
+    dateValues.day,
+    dateValues.hour,
+    dateValues.minute,
+    dateValues.second,
+    dateValues.millisecond
+  )
+}
 
-		let valid = true
+function dateToStr (valor, pattern = 'dd/MM/yyyy') {
+  pattern = pattern.trim()
+  if (typeof (valor) === 'string' && isISODate(valor)) { valor = new Date(valor) }
 
-		for (let it of dateArray) {
-			it = Number.parseInt(it)
-			if (Number.isNaN(it)) {
-				valid = false
-				break
-			}
-		}
+  if (valor instanceof Date) {
+    let dia = `${valor.getDate()}`
+    let mes = `${valor.getMonth() + 1}`
+    let hora = `${valor.getHours()}`
+    let minuto = `${valor.getMinutes()}`
+    let segundo = `${valor.getSeconds()}`
+    let milissegundo = `${valor.getMilliseconds()}`
+    let ano = `${valor.getFullYear()}`
 
-		// Cria um date
-		return valid && new Date(...dateArray)
-	},
-	scape(str) {
-		return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	},
-	dateToStr(valor, pattern = "dd/MM/yyyy") {
-		pattern = pattern.trim()
-		if (typeof (valor) == 'string' && isISODate(valor))
-			valor = new Date(valor);
+    let values = {
+      yyyy: ano,
+      MM: mes.length === 1 ? `0${mes}` : mes,
+      M: mes,
+      dd: dia.length === 1 ? `0${dia}` : dia,
+      d: dia,
+      hh: hora.length === 1 ? `0${hora}` : hora,
+      h: hora,
+      mm: minuto.length === 1 ? `0${minuto}` : minuto,
+      m: minuto,
+      ss: segundo.length === 1 ? `0${segundo}` : segundo,
+      s: segundo,
+      l: milissegundo,
+      '': ''
+    }
 
-		if (valor instanceof Date) {
-			let dia = `${valor.getDate()}`
-			let mes = `${valor.getMonth() + 1}`
-			let hora = `${valor.getHours()}`
-			let minuto = `${valor.getMinutes()}`
-			let segundo = `${valor.getSeconds()}`
-			let milissegundo = `${valor.getMilliseconds()}`
-			let ano = `${valor.getFullYear()}`
+    let expPattern = /yyyy|MM|M|dd|d|hh|h|mm|m|ss|s|l/g
+    let seps = pattern.split(expPattern)
 
-			let values = {
-				yyyy: ano,
-				yy: ano.substring(ano.length-2, ano.length),
-				MM: mes.length == 1 ? `0${mes}` : mes,
-				M: mes,
-				dd: dia.length == 1 ? `0${dia}` : dia,
-				d: dia,
-				hh: hora.length == 1 ? `0${hora}` : hora,
-				h: hora,
-				mm: minuto.length == 1 ? `0${minuto}` : minuto,
-				m: minuto,
-				ss: segundo.length == 1 ? `0${segundo}` : segundo,
-				s: segundo,
-				ll: milissegundo.length == 1 ? `0${milissegundo}` : milissegundo,
-				l: milissegundo,
-				'': ''
-			}
+    let sepsScape = seps.filter(s => s).map(scape)
+    let mask = pattern.split(new RegExp(sepsScape.join('|'), 'g')).filter(p => p)
 
-			let expPattern = /yyyy|yy|MM|M|dd|d|hh|h|mm|m|ss|s|ll|l/g
-			let seps = pattern.split(expPattern)
+    return seps.reduce((anterior, atual, index) => {
+      let m = mask[index]
+      if (!m) m = ''
+      return `${anterior}${atual}${values[m]}`
+    }, '')
+  }
 
-			let sepsScape = seps.filter(s => s).map(exports.scape)
-			let mask = pattern.split(new RegExp(sepsScape.join('|'), 'g')).filter(p => p)
+  return valor
+}
 
-			return seps.reduce((anterior, atual, index) => {
-				let m = mask[index]
-				if (!m) m = ''
-				return `${anterior}${atual}${values[m]}`
-			}, '')
-		}
+function plus (date, period, duration) {
+  let [dia, mes, ano, hora, minuto, segundo, milissegundo] = [
+    date.getDate(),
+    date.getMonth(),
+    date.getFullYear(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds()
+  ]
 
-		return valor
-	},
-	plus(date, period, duration) {
+  switch (period) {
+    case PERIODS.MILISSEGUNDO: return new Date(ano, mes, dia, hora, minuto, segundo, milissegundo + duration)
+    case PERIODS.SECOND: return new Date(ano, mes, dia, hora, minuto, segundo + duration, milissegundo)
+    case PERIODS.MINUTE: return new Date(ano, mes, dia, hora, minuto + duration, segundo, milissegundo)
+    case PERIODS.HOUR: return new Date(ano, mes, dia, hora + duration, minuto, segundo, milissegundo)
+    case PERIODS.DAY: return new Date(ano, mes, dia + duration, hora, minuto, segundo, milissegundo)
+    case PERIODS.WEEK: return new Date(ano, mes, dia + duration * 7, hora, minuto, segundo, milissegundo)
+    case PERIODS.MONTH: return new Date(ano, mes + duration, dia, hora, minuto, segundo, milissegundo)
+    case PERIODS.TWO_MONTHS: return new Date(ano, mes + duration * 2, dia, hora, minuto, segundo, milissegundo)
+    case PERIODS.SEMESTER: return new Date(ano, mes + duration * 6, dia, hora, minuto, segundo, milissegundo)
+    case PERIODS.QUARTER: return new Date(ano, mes + duration * 3, dia, hora, minuto, segundo, milissegundo)
+    case PERIODS.YEAR: return new Date(ano + duration, mes, dia, hora, minuto, segundo, milissegundo)
+    default:
+      throw new Error(`Período ${period} inválido`)
+  }
+}
 
-		let [dia, mes, ano, hora, minuto, segundo, milissegundo] = [
-			date.getDate(),
-			date.getMonth(),
-			date.getFullYear(),
-			date.getHours(),
-			date.getMinutes(),
-			date.getSeconds(),
-			date.getMilliseconds()
-		]
+function dateEquals (date1, date2, ignore) {
+  let values1 = [
+    date1.getFullYear(),
+    date1.getMonth(),
+    date1.getDate(),
+    date1.getHours(),
+    date1.getMinutes(),
+    date1.getSeconds(),
+    date1.getMilliseconds()
+  ]
 
-		switch (period) {
-			case MILISSEGUNDO: return new Date(ano, mes, dia, hora, minuto, segundo, milissegundo + duration)
-			case SECOND: return new Date(ano, mes, dia, hora, minuto, segundo + duration, milissegundo)
-			case MINUTE: return new Date(ano, mes, dia, hora, minuto + duration, segundo, milissegundo)
-			case HOUR: return new Date(ano, mes, dia, hora + duration, minuto, segundo, milissegundo)
-			case DAY: return new Date(ano, mes, dia + duration, hora, minuto, segundo, milissegundo)
-			case WEEK: return new Date(ano, mes, dia + duration * 7, hora, minuto, segundo, milissegundo)
-			case MONTH: return new Date(ano, mes + duration, dia, hora, minuto, segundo, milissegundo)
-			case TWO_MONTHS: return new Date(ano, mes + duration * 2, dia, hora, minuto, segundo, milissegundo)
-			case SEMESTER: return new Date(ano, mes + duration * 6, dia, hora, minuto, segundo, milissegundo)
-			case QUARTER: return new Date(ano, mes + duration * 3, dia, hora, minuto, segundo, milissegundo)
-			case YEAR: return new Date(ano + duration, mes, dia, hora, minuto, segundo, milissegundo)
-			default:
-				throw { message: `Período ${period} inválido` }
-		}
-	},
-	dateEquals(date1, date2, ignore) {
-		let values1 = [
-			date1.getFullYear(),
-			date1.getMonth(),
-			date1.getDate(),
-			date1.getHours(),
-			date1.getMinutes(),
-			date1.getSeconds(),
-			date1.getMilliseconds()
-		]
+  let values2 = [
+    date2.getFullYear(),
+    date2.getMonth(),
+    date2.getDate(),
+    date2.getHours(),
+    date2.getMinutes(),
+    date2.getSeconds(),
+    date2.getMilliseconds()
+  ]
 
-		let values2 = [
-			date2.getFullYear(),
-			date2.getMonth(),
-			date2.getDate(),
-			date2.getHours(),
-			date2.getMinutes(),
-			date2.getSeconds(),
-			date2.getMilliseconds()
-		]
+  return values1.reduce((anterior, atual, index) => {
+    if ((ignore === 0 || ignore) && ignore >= 0 && index >= ignore) { return anterior }
+    if (!anterior) { return false }
+    if (atual !== values2[index]) { return false }
+    return true
+  }, true)
+}
 
-		return values1.reduce((anterior, atual, index) => {
-			if ((ignore == 0 || ignore) && ignore >= 0 && index >= ignore)
-				return anterior
-			if (!anterior)
-				return false
-			if (atual !== values2[index])
-				return false
-			return true
-		}, true)
-	},
-	getDateIgnore(date, ignore) {
-		let values = [
-			date.getFullYear(),
-			date.getMonth(),
-			date.getDate(),
-			date.getHours(),
-			date.getMinutes(),
-			date.getSeconds(),
-			date.getMilliseconds()
-		]
+function getDateIgnore (date, ignore) {
+  let values = [
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds()
+  ]
 
-		let dateArray = values.reduce((anterior, atual, index) => {
-			if ((ignore == 0 || ignore) && ignore >= 0 && index >= ignore)
-				return [...anterior, 0]
-			return [...anterior, atual]
-		}, [])
+  let dateArray = values.reduce((anterior, atual, index) => {
+    if ((ignore === 0 || ignore) && ignore >= 0 && index >= ignore) { return [...anterior, 0] }
+    return [...anterior, atual]
+  }, [])
 
-		return new Date(...dateArray)
-	},
-	getDateDayWeekByDate(dayWeek, date) {
-		let diff = dayWeek - date.getDay()
-		return exports.plus(date, DAY, diff)
-	}
+  return new Date(...dateArray)
+}
+
+module.exports = {
+	PERIODS,
+	toDate,
+	dateToStr,
+	plus,
+	dateEquals,
+	getDateIgnore
 }

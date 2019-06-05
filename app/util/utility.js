@@ -7,6 +7,10 @@ module.exports = exports = {
 		}
 	},
 
+	scape (str) {
+		return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	},
+
 	getAttr(pathAttr, obj, searchArray=false) {
 		if (!obj)
 			return obj
