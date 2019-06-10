@@ -1,4 +1,4 @@
-const { Connector, www } = require('../../app')
+const { Connector, www } = require('../../src')
 const restful = require('./restful')
 require('./models')
 const express = require('express')

@@ -17,10 +17,11 @@
     "framework"
   ],
   "version": "0.7.29",
-  "main": "app/index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node examples/example1/main.js",
-    "dev": "DEBUG=alpha-restful:* node examples/example1/main.js"
+    "dev": "DEBUG=alpha-restful:* node examples/example1/main.js",
+    "docs": "jsdoc -c jsdoc.json"
   },
   "dependencies": {
     "cookie-parser": "~1.4.3",
@@ -41,5 +42,8 @@
     "node": ">=8.0.0"
   },
   "license": "MIT",
-  "private": false
+  "private": false,
+  "devDependencies": {
+    "jsdoc": "^3.6.2"
+  }
 }

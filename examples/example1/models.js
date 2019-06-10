@@ -1,4 +1,4 @@
-const { Entity } = require('../../app')
+const { Entity } = require('../../src')
 const restful = require('./restful')
 const mongoose = require('mongoose')
 
