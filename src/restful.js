@@ -516,6 +516,9 @@ module.exports = class Restful {
 							query = query.select(select)
 
 						data[attr] = await query.exec()
+
+						if (!data[attr]) continue
+
 						data[attr] = copyEntity(data[attr])
 						data[attr] = data[attr].map(d => ({ id: d._id }))
 					} else {
@@ -538,6 +541,9 @@ module.exports = class Restful {
 							query = query.select(select)
 
 						data[attr] = await query.exec()
+						
+						if (!data[attr]) continue
+
 						data[attr] = {
 							id: data[attr]._id
 						}
