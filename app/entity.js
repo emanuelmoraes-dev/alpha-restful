@@ -206,6 +206,8 @@ module.exports = class Entity {
 		return restful.execAsync(
 			async function (req, res, next) {
 				res._content_ = await that.model.findOne({ _id: req.params.id }).exec()
+				if (!res._content_)
+					throw new IlegallArgumentError('Id Inválido!', `Entidade ${that.name} não possui este id`)
 				next()
 			},
 			this.getRouteHandler('beforeRemove'),
@@ -232,6 +234,9 @@ module.exports = class Entity {
 				req.body._id = id
 
 				let content = await that.model.findOne({ _id: id }).exec()
+
+				if (!content)
+					throw new IlegallArgumentError('Id Inválido!', `Entidade ${that.name} não possui este id`)
 
 				content = copyEntity(content)
 				// req.body = prepareEntity(req.body, that.descriptor)
