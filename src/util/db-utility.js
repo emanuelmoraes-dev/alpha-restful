@@ -6,7 +6,7 @@ module.exports = exports = {
 		if (!data) return data
 		return JSON.parse(JSON.stringify(data))
 	},
-	convertType (type, value) {
+	convertType (type, value, convertNumberToBoolean=false) {
 		if (!value || !type) return value
 
 		if (value && value instanceof Array) {
@@ -27,6 +27,8 @@ module.exports = exports = {
 				return `${value}`
 			else if (type === Date && typeof value === 'string' && isISODate(value))
 				return new Date(value)
+			else if (type === Boolean && convertNumberToBoolean)
+				return value == 1
 			return value
 		}
 	},

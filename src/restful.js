@@ -17,7 +17,8 @@ module.exports = class Restful {
 		limiteName='limit',
 		skipName='skip',
 		sortName='sort',
-		Promise=require('es6-promise')
+		Promise=require('es6-promise'),
+		convertNumberToBoolean=false
 	}={}) {
 		Object.assign(this, {
 			applicationName,
@@ -33,7 +34,8 @@ module.exports = class Restful {
 			skipName,
 			sortName,
 			Promise,
-			debug: require('debug')(applicationName + ':server')
+			debug: require('debug')(applicationName + ':server'),
+			convertNumberToBoolean
 		})
 
 		this.entities = {}
@@ -162,7 +164,7 @@ module.exports = class Restful {
 					if (rt.end) {
 						if (rt.syncronized || rt.virtual)
 							throw new Error(`Condição de busca ${key} inválida!`)
-						newFind[key] = convertType(rt.type, conditions[key])
+						newFind[key] = convertType(rt.type, conditions[key], this.convertNumberToBoolean)
 					} else {
 						if (rt.syncronized) {
 							if (rt.syncronized instanceof Array)
