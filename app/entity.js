@@ -279,7 +279,7 @@ module.exports = class Entity {
 
 		if (find[restful.selectName]) {
 			select = find[restful.selectName]
-			select = select.split(/[,./\\; -+_]+/g).join(' ')
+			select = select.split(/[,\s+]/g).join(' ')
 		}
 
 		let limit = parseInt(find[restful.limiteName])
