@@ -72,9 +72,8 @@ module.exports = async function start(connector, createErrorHandler=false) {
 		// error handler
 		app.use(function(err, req, res, next) {
 			err.status = err.status || 500
-			err.messageClient = err.messageClient || err.message
 			console.error(err)
-			res.status(err.status).send({ message: err.message, messageClient: err.messageClient })
+			res.status(err.status).send({ message: err.message })
 		})
 	}
 
