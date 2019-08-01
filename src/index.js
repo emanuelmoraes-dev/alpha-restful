@@ -3,5 +3,6 @@ module.exports = {
 	Restful: require('./restful'),
 	Entity: require('./entity'),
 	Connector: require('./connector'),
-	util: require('./util')
+	util: require('./util'),
+	errors: require('./errors')
 }
