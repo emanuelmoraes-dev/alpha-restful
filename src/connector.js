@@ -4,6 +4,7 @@ const Restful = require('./restful')
 const db = mongoose.connection
 
 /**
+ * @class Connector
  * Responsável por encapsular a instância do Alpha Restful e 
  * fornecer métodos para conectar o Alpha Restful com o MongoDB.
  */
@@ -11,8 +12,10 @@ class Connector {
 	/**
 	 * Responsible for encapsulating the Alpha Restful instance and 
 	 * providing methods for connecting Alpha Restful with MongoDB.
-	 * @param {object} restful - Alpha Restful Instance
+	 * @param {object} restful - Alpha Restful Instance 
+	 * @see AlphaRestful
 	 * @param {object} app - Express JS instance
+	 * @see {@link http://expressjs.com}
 	 * @param {object} connInfo
 	 * @param {boolean} [connInfo.useNewUrlParser] - Flag used for mongoose. See on {@link https://mongoosejs.com/docs/deprecations.html#the-usenewurlparser-option}
 	 * @param {string} [connInfo.url] - String used to connect to MongoDB
@@ -25,7 +28,7 @@ class Connector {
 
 		if (!url) 
 			url = `mongodb://${host}/${dbName}`
-		
+
 		this.url = url
 		this.restful = restful
 		this.app = app

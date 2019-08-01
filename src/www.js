@@ -1,9 +1,7 @@
 const createError = require('http-errors')
 const http = require('http')
 
-/**
- * Normalize a port into a number, string, or false.
- */
+//Normalize a port into a number, string, or false.
 function normalizePort(val) {
 	var port = parseInt(val, 10)
 
@@ -20,9 +18,7 @@ function normalizePort(val) {
 	return false
 }
 
-/**
- * Event listener for HTTP server "error" event.
- */
+// Event listener for HTTP server "error" event.
 function onError(reject, port, error) {
 	reject(error)
 
@@ -49,9 +45,7 @@ function onError(reject, port, error) {
 	}
 }
 
-/**
- * Event listener for HTTP server "listening" event.
- */
+// Event listener for HTTP server "listening" event.
 function onListening(resolve, server, debug) {
 	var addr = server.address();
 	var bind = typeof(addr) === 'string' ? 'pipe ' + addr : 'port ' + addr.port
@@ -59,7 +53,13 @@ function onListening(resolve, server, debug) {
 	resolve({ server, debug })
 }
 
-module.exports = async function start(connector, createErrorHandler=false) {
+/**
+ * Run to boot server
+ * @param {object} connector - Connector instance
+ * @see Connector
+ * @param {boolean} [createErrorHandler=false] - If true, automatically creates default error handling handlers. Default false
+ */
+async function www(connector, createErrorHandler=false) {
 
 	const app = connector.app
 
@@ -97,3 +97,5 @@ module.exports = async function start(connector, createErrorHandler=false) {
 		server.on('listening', onListening.bind(null, resolve, server, debug))
 	}))
 }
+
+module.exports = www
