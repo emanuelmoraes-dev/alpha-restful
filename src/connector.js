@@ -5,8 +5,8 @@ const db = mongoose.connection
 
 /**
  * @class Connector
- * Responsável por encapsular a instância do Alpha Restful e 
- * fornecer métodos para conectar o Alpha Restful com o MongoDB.
+ * Responsible for encapsulating the Alpha Restful instance and 
+ * providing methods for connecting Alpha Restful with MongoDB.
  */
 class Connector {
 	/**
