@@ -655,7 +655,7 @@ const Casa = new Entity({
 
 Se a opção _fill_ é igual a `true`, o atributo sincronizado irá ser preenchido, mas se além desta opção também está presente a opção _subFill_ igual a `false`, então o Alpha Restful não irá preencher os sub-atributos dos níveis abaixo.
 
-Uma alternativa ao _fill_ é a opção _fillRec_. Tal opção contém um número que indica quantos níveis abaixo serão preenchidos com a opção _fill_ igual a `true`. Se _fillRec_ for um número negativo, o Alpha Restful irá tentar expandir todos os níveis abaixo em todos os sub-atributos da entidade e das sub-entidades. A opção _fill_ possui maior prioridade que a opção _fillRec_. Se _fillRec_ for negativo, a recursão somente terminará se algum _fill_ abaixo for igual a `false` ou se não houver mais atributos abaixo para ser preenchidos.
+Uma alternativa ao _fill_ é a opção _fillRec_. Tal opção contém um número que indica quantos níveis abaixo serão preenchidos. Se _fillRec_ for um número negativo, o Alpha Restful irá tentar preencher todos os níveis abaixo em todos os sub-atributos da entidade e das sub-entidades. A opção _fill_ possui maior prioridade que a opção _fillRec_. Se _fillRec_ for negativo, a recursão somente terminará se algum _fill_ abaixo for igual a `false` ou se não houver mais atributos abaixo para ser preenchidos.
 
 ##### Observação
 
@@ -847,6 +847,7 @@ Pular               | skip        | `/pessoas?skip=20`            | Busca todas 
 Ordenar Crescente   | order       | `/pessoas?order=name`         | Busca todas as pessoas ordenando de maneira crescente por nome
 Ordenar Decrescente | order       | `/pessoas?order=-name`        | Busca todas as pessoas ordenando de maneira decrescente por nome
 Quantidade          | selectCount | `/pessoas?selectCount=true`   | Busca a quantidade de pessoas registradas no banco de dados
+Selecionar          | select      | `/pessoas?select=name,idade`  | Busca todas as pessoas selecionando o nome e a idade
 
 ### Método de Busca
 
@@ -1274,7 +1275,7 @@ Apenas o handler `beforeCreate` não recebe o conteúdo da entidade (ou entidade
 
 #### Atenção
 
-Independente do handler ser uma função assincrona ou sincrona, o método `next()` deverá ser chamado ao final da execução do handler. Caso algum erro ocorra, pode-se chamar o método `next` passando como argumento o bjeto do erro.
+Independente do handler ser uma função assincrona ou sincrona, o método `next()` deverá ser chamado ao final da execução do handler. Caso algum erro ocorra, pode-se chamar o método `next` passando como argumento o objeto do erro.
 
 #### Implementando um handler
 
