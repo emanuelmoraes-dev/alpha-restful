@@ -55,9 +55,10 @@ function onListening(resolve, server, debug) {
 
 /**
  * Run to boot server
- * @param {object} connector - Connector instance
- * @see Connector
+ * @param {Connector} connector - Connector instance
  * @param {boolean} [createErrorHandler=false] - If true, automatically creates default error handling handlers. Default false
+ * @returns resolve(server: require('http').createServer(app), debug: require('debug')(applicationName + ':server')) or reject(error)
+ * @memberof module:alpha-restful
  */
 async function www(connector, createErrorHandler=false) {
 

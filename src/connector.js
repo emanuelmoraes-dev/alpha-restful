@@ -4,19 +4,17 @@ const Restful = require('./restful')
 const db = mongoose.connection
 
 /**
- * @class Connector
  * Responsible for encapsulating the Alpha Restful instance and 
  * providing methods for connecting Alpha Restful with MongoDB.
+ * @memberof module:alpha-restful
  */
 class Connector {
 	/**
 	 * Responsible for encapsulating the Alpha Restful instance and 
 	 * providing methods for connecting Alpha Restful with MongoDB.
-	 * @param {object} restful - Alpha Restful Instance 
-	 * @see AlphaRestful
-	 * @param {object} app - Express JS instance
-	 * @see {@link http://expressjs.com}
-	 * @param {object} connInfo
+	 * @param {AlphaRestful} restful - Alpha Restful Instance
+	 * @param {Object} app - Express JS instance. See on {@link http://expressjs.com}
+	 * @param {Object} connInfo
 	 * @param {boolean} [connInfo.useNewUrlParser] - Flag used for mongoose. See on {@link https://mongoosejs.com/docs/deprecations.html#the-usenewurlparser-option}
 	 * @param {string} [connInfo.url] - String used to connect to MongoDB
 	 * @param {string} [connInfo.host] - Database location. Example: 'localhost'
@@ -53,7 +51,7 @@ class Connector {
 
 	/**
 	 * Connect Alpha Restful to MongoDB
-	 * @returns {Promise}
+	 * @returns resolve() or reject(error)
 	 */
 	async connect () {
 		this.restful.debug(`establishing connection to ${this.url} ...`)
