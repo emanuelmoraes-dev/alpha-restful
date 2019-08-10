@@ -48,7 +48,7 @@ class InternalError extends AlphaRestfulError {
  * Generic Errors
  * @module alpha-restful/errors/generic-errors
  */
-module.exports = {
+module.exports = exports = {
 	AlphaRestfulError,
 	IllegalArgumentError,
 	InternalError

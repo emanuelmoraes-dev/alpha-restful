@@ -63,4 +63,4 @@ class Connector {
 	}
 }
 
-module.exports = Connector
+module.exports = exports = Connector

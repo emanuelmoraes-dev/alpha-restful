@@ -99,4 +99,4 @@ async function www(connector, createErrorHandler=false) {
 	}))
 }
 
-module.exports = www
+module.exports = exports = www

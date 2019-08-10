@@ -3,7 +3,7 @@ const { copyEntity, prepareEntity, patchUpdate } = require('./util/db-utility')
 const { enumerate } = require('./util/utility')
 const mongoose = require('mongoose')
 
-module.exports = class Entity {
+module.exports = exports = class Entity {
 	constructor ({
 		name,
 		resource,

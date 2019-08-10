@@ -3,7 +3,7 @@ const { internalError, IlegallArgumentError, RuntimeError } = require('./util/ex
 const { copyEntity, convertType } = require('./util/db-utility')
 const { getAttr, extractValuesByArray, enumerate } = require('./util/utility')
 
-module.exports = class Restful {
+module.exports = exports = class Restful {
 	constructor (applicationName, {
 		isLocale=true,
 		locale='en',

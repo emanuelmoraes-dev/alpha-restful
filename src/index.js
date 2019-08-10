@@ -3,7 +3,7 @@
  * managing a Web Rest application using Express JS and Mongoose.
  * @module alpha-restful
  */
-module.exports = {
+module.exports = exports = {
 	www: require('./www'),
 	Restful: require('./restful'),
 	Entity: require('./entity'),
