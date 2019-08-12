@@ -5,7 +5,7 @@
  */
 module.exports = exports = {
 	www: require('./www'),
-	Restful: require('./restful'),
+	AlphaRestful: require('./alpha-restful'),
 	Entity: require('./entity'),
 	Connector: require('./connector')
 }

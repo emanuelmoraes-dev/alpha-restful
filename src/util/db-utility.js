@@ -23,11 +23,10 @@ module.exports = exports = {
 	 * @param {object|function} t - Is or has the function that represents the type to be converted
 	 * @param {function} t.type - If 't' is an object 'type' is the function that represents the type to be converted.
 	 * @param {string|number|date|object|array} value - Value to convert. If it is an array, returns an array with the converted values. If it is an object, an object is returned with each converted property (except the 'type' property). The conversion is recursive to an array or object.
-	 * @param {boolean} booleanToNumber - If true, boolean values are converted to number (1 = true and 0 = false)
 	 * @returns {string|number|date|object|array} Converted value
 	 * @memberof module:alpha-restful/util/db-utility
 	 */
-	convertType (t, value, booleanToNumber=false) {
+	convertType (t, value) {
 		if (value === null || value === undefined || !t) return value
 
 		if (value && value instanceof Array) {
@@ -49,8 +48,6 @@ module.exports = exports = {
 				return `${value}`
 			else if (type === Date && typeof value === 'string' && isISODate(value))
 				return new Date(value)
-			else if (type === Boolean && booleanToNumber)
-				return value && 1 || 0
 			else if (type === Boolean)
 				return !!value
 			return value

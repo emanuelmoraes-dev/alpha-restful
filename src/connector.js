@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const { InternalError } = require('./errors/generic_errors')
-const Restful = require('./restful')
 const db = mongoose.connection
 
 /**

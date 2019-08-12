@@ -1,16 +1,28 @@
 const mongoose = require('mongoose')
-const { internalError, IlegallArgumentError, RuntimeError } = require('./util/exception-utility')
 const { copyEntity, convertType } = require('./util/db-utility')
 const { getAttr, extractValuesByArray, enumerate } = require('./util/utility')
 
-module.exports = exports = class Restful {
+/**
+ * Represents the framework, containing its functionality, storing and managing system entities
+ * @memberof module:alpha-restful
+ */
+class AlphaRestful {
+	/**
+	 * Create an instance of Alpha Restful, containing its functionality, storing and managing system entities
+	 * @param {string} applicationName - Name of the application. Used as a reference for debugging
+	 * @param {Object} [options] - Options used to change Alpha Restful behavior
+	 * @param {boolean} [options.isLocale] - If true, MongoDB's "collation" function will be called automatically to, for example, enable sorting by ignoring accents and uppercase and lowercase letters. Default value: true
+	 * @param {string} [options.locale] - Language to use in the "collation" function that MongoDB can, for example, sort by ignoring accents and uppercase and lowercase letters. Default value: "pt"
+	 * @param {Object} [options.entities] - System entities to be managed by Alpha Restful. This parameter is an object whose key is the name of the entity and the value is an instance of the "Entity" class. Default value: empty object
+	 * @param {boolean} [options.patchRecursive] - If true, by default Alpha Restful will execute the "alpha-restful/util/patchUpdate" function on the CRUD patch route unless the user passes the "patchRecursive = false" option as a url parameter. Default value: false
+	 * @param {string} [options.patchRecursiveName] - Name of the parameter to pass in the URL of the patch CRUD route to decide if the "alpha-restful/util/patchUpdate" function will be executed. Default value: "patchRecursive"
+	 */
 	constructor (applicationName, {
 		isLocale=true,
 		locale='en',
 		entities={},
 		patchRecursive=false,
 		patchRecursiveName='patchRecursive',
-		messageClientInternalError='Erro Interno! Por Favor, Contatar seu Suporte!',
 		projectionName='projection',
 		selectName='select',
 		selectCountName='selectCount',
@@ -18,7 +30,9 @@ module.exports = exports = class Restful {
 		skipName='skip',
 		sortName='sort',
 		Promise=require('es6-promise'),
-		convertNumberToBoolean=false
+		defaultIdentifierName="id",
+		defaultFilterCrudHttpGet=true,
+		defaultFillCrudHttpGet=true
 	}={}) {
 		Object.assign(this, {
 			applicationName,
@@ -26,7 +40,6 @@ module.exports = exports = class Restful {
 			locale,
 			patchRecursive,
 			patchRecursiveName,
-			messageClientInternalError,
 			projectionName,
 			selectName,
 			selectCountName,
@@ -35,7 +48,9 @@ module.exports = exports = class Restful {
 			sortName,
 			Promise,
 			debug: require('debug')(applicationName + ':server'),
-			convertNumberToBoolean
+			defaultIdentifierName,
+			defaultFilterCrudHttpGet,
+			defaultFillCrudHttpGet
 		})
 
 		this.entities = {}
@@ -164,7 +179,7 @@ module.exports = exports = class Restful {
 					if (rt.end) {
 						if (rt.syncronized || rt.virtual)
 							throw new Error(`Condição de busca ${key} inválida!`)
-						newFind[key] = convertType(rt.type, conditions[key], this.convertNumberToBoolean)
+						newFind[key] = convertType(rt.type, conditions[key])
 					} else {
 						if (rt.syncronized) {
 							if (rt.syncronized instanceof Array)
@@ -1027,3 +1042,5 @@ module.exports = exports = class Restful {
 		}
 	}
 }
+
+module.exports = exports = AlphaRestful
