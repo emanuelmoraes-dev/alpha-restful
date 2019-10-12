@@ -16,6 +16,15 @@ class AlphaRestful {
 	 * @param {Object} [options.entities] - System entities to be managed by Alpha Restful. This parameter is an object whose key is the name of the entity and the value is an instance of the "Entity" class. Default value: empty object
 	 * @param {boolean} [options.patchRecursive] - If true, by default Alpha Restful will execute the "alpha-restful/util/patchUpdate" function on the CRUD patch route unless the user passes the "patchRecursive = false" option as a url parameter. Default value: false
 	 * @param {string} [options.patchRecursiveName] - Name of the parameter to pass in the URL of the patch CRUD route to decide if the "alpha-restful/util/patchUpdate" function will be executed. Default value: "patchRecursive"
+	 * @param {string} [options.projectionName] - Name of the parameter to pass in the URL of an HTTP request to use a projection whose name was defined in this parameter. Default value: "projection"
+	 * @param {string} [options.selectName] - The parameter name to pass the default CURD HTTP GET route to inform the attributes to include in the search response. Default value: "select"
+	 * @param {string} [options.hideUIdName] - The name of the parameter to pass the default CURD HTTP GET route to tell if "_id" will not be included. Default value: "hideUId"
+	 * @param {string} [options.selectCountName] - The name of the parameter to pass the default CURD HTTP GET route to tell if the search result should be the number of results rather than the results themselves. Default value: "selectCount"
+	 * @param {string} [options.limiteName] - The name of the parameter to pass the default CURD HTTP GET route to report the maximum number of results for the search. Default value: "limit"
+	 * @param {string} [options.skipName] - The parameter name to pass the default CURD HTTP GET route to report the number of search results to be skipped. Default value: "skip"
+	 * @param {string} [options.sortName] - The name of the parameter to pass the default CURD HTTP GET route to tell by which attributes the search will be sorted. Default value: "sort"
+	 * @param {Promise} [options.Promise] - Promise to be used by Alpha Restful. Default value: require('es6-promise')
+	 * @param {string} [options.defaultIdentifierName] - 
 	 */
 	constructor (applicationName, {
 		isLocale=true,
@@ -25,6 +34,7 @@ class AlphaRestful {
 		patchRecursiveName='patchRecursive',
 		projectionName='projection',
 		selectName='select',
+		hideUIdName='hideUId',
 		selectCountName='selectCount',
 		limiteName='limit',
 		skipName='skip',
@@ -42,6 +52,7 @@ class AlphaRestful {
 			patchRecursiveName,
 			projectionName,
 			selectName,
+			hideUIdName,
 			selectCountName,
 			limiteName,
 			skipName,

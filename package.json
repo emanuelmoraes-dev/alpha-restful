@@ -46,5 +46,9 @@
   "devDependencies": {
     "jsdoc": "^3.6.3",
     "tui-jsdoc-template": "^1.2.2"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/emanuelmoraes-dev/alpha-restful/issues"
+  },
+  "homepage": "https://github.com/emanuelmoraes-dev/alpha-restful#readme"
 }

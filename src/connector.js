@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { InternalError } = require('./errors/generic_errors')
+const { ConnectorNonexistentConnectionParametersError } = require('./errors/connector-errors')
 const db = mongoose.connection
 
 /**
@@ -21,7 +21,7 @@ class Connector {
 	 */
 	constructor (restful, app, { useNewUrlParser=true, url=null, host=null, dbName=null }={}) {
 		if (!url && (!host || !dbName)) 
-			throw new InternalError("The 'url' parameter is required unless the 'host' and 'dbName' parameters are passed")
+			throw new ConnectorNonexistentConnectionParametersError()
 
 		if (!url) 
 			url = `mongodb://${host}/${dbName}`

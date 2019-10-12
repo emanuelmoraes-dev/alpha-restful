@@ -274,20 +274,13 @@ module.exports = exports = class Entity {
 		)
 	}
 
-	async _query (find, restful) {
+	getRequestedQuery (find, restful) {
 		let select = null
 
 		if (find[restful.selectName]) {
 			select = find[restful.selectName]
 			select = select.split(/[,\s+]/g).join(' ')
 		}
-
-		let limit = parseInt(find[restful.limiteName])
-		let skip = parseInt(find[restful.skipName])
-		let sort
-
-		if (find[restful.sortName])
-			sort = find[restful.sortName]
 
 		let newFind = { $and: [] }
 
@@ -312,7 +305,7 @@ module.exports = exports = class Entity {
 
 				} else if (key.match(/__/)) {
 					let keyArray = key.split(/__/)
-					if (['$gt', '$gte', '$lt', '$lte', '$eq'].indexOf(keyArray[1])+1) {
+					if (['$gt', '$gte', '$lt', '$lte', '$eq', '$ne'].indexOf(keyArray[1])+1) {
 
 						let condition = {}
 						condition[keyArray[0]] = {}
@@ -344,6 +337,20 @@ module.exports = exports = class Entity {
 				}
 			}
 		}
+
+		return newFind
+	}
+
+	async _query (find, restful) {
+
+		let limit = parseInt(find[restful.limiteName])
+		let skip = parseInt(find[restful.skipName])
+		let sort
+
+		if (find[restful.sortName])
+			sort = find[restful.sortName]
+
+		let newFind = this.getRequestedQuery(find, restful)
 
 		if (!newFind.$and || !(newFind.$and instanceof Array) || !newFind.$and.length)
 			delete newFind.$and
