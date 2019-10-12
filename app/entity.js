@@ -274,21 +274,7 @@ module.exports = class Entity {
 		)
 	}
 
-	async _query (find, restful) {
-		let select = null
-
-		if (find[restful.selectName]) {
-			select = find[restful.selectName]
-			select = select.split(/[,\s+]/g).join(' ')
-		}
-
-		let limit = parseInt(find[restful.limiteName])
-		let skip = parseInt(find[restful.skipName])
-		let sort
-
-		if (find[restful.sortName])
-			sort = find[restful.sortName]
-
+	getRequestedQuery (find, restful) {
 		let newFind = { $and: [] }
 
 		if (this.querySync) {
@@ -344,6 +330,26 @@ module.exports = class Entity {
 				}
 			}
 		}
+
+		return newFind
+	}
+
+	async _query (find, restful) {
+		let select = null
+
+		if (find[restful.selectName]) {
+			select = find[restful.selectName]
+			select = select.split(/[,\s+]/g).join(' ')
+		}
+
+		let limit = parseInt(find[restful.limiteName])
+		let skip = parseInt(find[restful.skipName])
+		let sort
+
+		if (find[restful.sortName])
+			sort = find[restful.sortName]
+
+		let newFind = this.getRequestedQuery(find, restful)
 
 		if (!newFind.$and || !(newFind.$and instanceof Array) || !newFind.$and.length)
 			delete newFind.$and
