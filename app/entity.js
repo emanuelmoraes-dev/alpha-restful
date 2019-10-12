@@ -298,7 +298,7 @@ module.exports = class Entity {
 
 				} else if (key.match(/__/)) {
 					let keyArray = key.split(/__/)
-					if (['$gt', '$gte', '$lt', '$lte', '$eq'].indexOf(keyArray[1])+1) {
+					if (['$gt', '$gte', '$lt', '$lte', '$eq', '$ne'].indexOf(keyArray[1])+1) {
 
 						let condition = {}
 						condition[keyArray[0]] = {}
