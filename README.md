@@ -1,3 +1,31 @@
+# IMPORTANT WARNING
+This version of Alpha Restful is just a prototype of things to come. Little of this package will be reused and many features will be restructured. We strongly recommend NOT to use this package for production as it will soon be completely discontinued. In the future, a completely redesigned Alpha Restful will emerge, with a completely new architecture and new functions, as well as allowing the inclusion of plugins in which any specific behavior can be replaced and new functions can be added by the community.
+
+# Why does Alpha Restful Exist?
+Alpha Restful is designed for NodeJS and MongoDB lovers.
+
+One of MongoDB's goals is to allow data to be stored with denormalization. In turn, this yields many benefits. One of the biggest benefits of denormalization is a substantial increase in performance by not requiring the joining of multiple relational tables. In addition to this benefit, denormalization allows applications to be created easily because the storage model is too close to the model to be used by an application via JavaScript code (for example).
+
+The advantage of denormalization is welcome for many different situations, but sometimes data needs to be normalized to avoid special updates of the same record in many different locations. Denormalization should never be treated as an absolute rule, because in many cases denormalization of all data becomes completely unfeasible.
+
+So how do you get all the simplicity, performance and power of MongoDB in a denormalized application but with some normalized data?
+
+MongoDB can leave application data normalized if necessary, but many simple operations in the relational model can become very difficult in MongoDB for normalized data.
+
+Looking at this situation, how good would it be if we could develop in MongoDB so that all operations could be performed the same way, regardless of whether the data was normalized or denormalized?
+
+What if all searches and junctions were made so that the decision to change data for normalization or denormalization didn't change, considering the searches and junctions you already implemented?
+
+It is for these purposes that Alpha Restful was designed. If your MongoDB application never needs to normalize your data, Alpha Restful is completely useless to you.
+
+But what would happen if in the future only specific data needed to be normalized? If you are using pure MongoDB, it is likely that all your searches involving this data will need to be redone, and depending on the type of search, the code can become very complex and you will need to merge documents.
+
+In the scenario described earlier, if you were using Alpha Restful, you would only have to do two things. Change your template so that your data is stored normally. The second thing to do is to tell Alpha Restful where your data would be if it were denormalized. After doing these two things, the idea is that absolutely nothing needs to be done and that all the research done is not changed.
+
+Alpha Restful currently serves many of its goals, but some details of its architecture can be problematic and some details of this structure are partially completed and many crucial features have not yet been developed. For this reason, Alpha Restful is being redrawn. The next new version of this framework will be much simpler to use and will achieve the objectives proposed here much more efficiently.
+
+Currently, the guide written here is in Portuguese as it is a BETA version that will be discontinued. But the new version of Alpha Restful will be completely in English.
+
 # Alpha Restful (Versão Beta)
 
 O Alpha Restful é um framework para o desenvolvimento de aplicações web Rest backend em MongoDB, feito para Node JS. Esta ferramenta é executada em cima do Express JS e da ORM de banco de dados Mongoose.
@@ -7,52 +35,6 @@ O Alpha Restful é um framework para o desenvolvimento de aplicações web Rest 
 O Alpha Restful possui compatibilidade **apenas** com o **NODE 8 ou superior!**
 
 O Alpha Restful está em versão Beta. Por causa disto, eventualmente algum erro poderá ocorrer. Caso você detecte algum erro, sinta-se livre para fazer uma publicação nas Issues do github, que eu tentarei resolver o mais rápido possível.
-
-## Mas Porque Usar o Alpha Restful?
-
-* O Alpha Restful gerencia todas as suas entidades e sub-entidades.
-
-    * Todas as entidades com seus respectivos relacionamentos entre si são gerenciadas e integradas com várias funções disponibilizadas pelo framework.
-
-    * Ao declarar uma entidade, é possível definir várias opções em seus atributos e relacionamentos.
-
-        * Com apenas a habilitação de uma opção, os atributos relacionados com outra entidade são preenchidos por todos os atributos armazenados na entidade relacionada, mesmo estando em outro documento.
-
-        * Com apenas a habilitação de uma opção, uma instância de uma entidade não pode ser removida se possuir um relacionamento com um atributo de outra entidade.
-
-        * Com apenas a habilitação de uma opção, as instâncias relacionadas com a instância da qual deseja-se remover, serão removidas também.
-
-    * Ao remover a instância de uma entidade, automaticamente são removidos seus valores nas instâncias de entidades relacionadas (É possível desativar esta função caso desejado).
-
-    * É possível definir atributos de relacionamento entre duas entidades. Estes atributos de relacionamento podem inclusive ter relacionamento com outra entidade e ainda podem possuir outros atributos que por sua vez também podem ter relacionamento com outras entidades, podendo repetir este procedimento em qualquer quantidade de níveis.
-
-    * Com o Alpha Restful você poderá realizar relacionamento virtual entre entidades, evitando a criação de rotas e códigos de pesquisa personalizados desnecessários.
-
-    * É disponibilizado um método de busca, na qual pode-se fazer uma pesquisa por atributos de sub-entidades de qualquer nível, como se estas sub-entidades e sub-entidades de sub-entidades estivessem dentro do mesmo objeto, mesmo estando armazenadas em documentos separados.
-
-* O Alpha Restful é rápido e fácil!
-
-    * O desenvolvimento de uma API Rest backend se torna extremamente fácil e simples de ser desenvolvido! Com pouquíssimas linhas de código um aplicação completa pode ser criada!
-
-    * As funções e verificações, além das disponibilizadas pelo MongoDB e Mongoose, possui um ótimo desempenho, mas podem ser desativadas individualmente para garantir uma performance ou liberdade ainda maior.
-
-    * O Alpha Restful gera todas as rotas CRUD padrão de uma aplicação Rest, bastando apenas definir quais métodos http você deseja que seja criado.
-
-    * Com apenas a passagem de uma simples opção no modelo da entidade, é gerado uma rota padrão "get" de busca da entidade. Nesta rota de busca, é possível realizar pesquisas filtradas complexas, de maneira bastante simples e utilizando atributos da entidade e das sub-entidades relacionadas sem a necessidade de criar nada além do modelo da entidade.
-
-* Liberdade! Flexibilidade! e Adaptabilidade!
-
-    * Cada funcionalidade disponibilizada por esta ferramenta foi organizada e modularizada. Isto significa que o programador poderá facilmente modificar e sobrescrever cada ação realizada pelo framework, sem a modificação de seu código fonte aqui presente!
-
-    * Cada função desta ferramenta possui a opção de ser desabilitada caso o programador deseje uma performance ou liberdade ainda maior.
-
-    * Cada funcionalidade poderá ser utilizada em separado em procedimentos e rotas personalizadas do programador. Isto implica que as funções aqui apresentadas poderão ser utilizadas de diferentes maneiras, dependendo apenas da maneira como elas são chamadas/definidas.
-
-    * O Alpha Restful é altamente adaptável, ou seja, caso você já possua uma aplicação backend, usando node js, express js e Mongoose, torna-se muito fácil integrar este framework ou parte dele em seu código já existente!
-
-    * Com o Alpha Restful o programador terá a total liberdade de alterar qualquer comportamento genérico ou específico da ferramenta, adaptando seu comportamento para as suas necessidades.
-
-* O Alpha Restful é Livre! e completamente Gratuito! Sinta-se a vontade para utilizar esta ferramenta para qualquer fim comercial ou não comercial.
 
 ## Guia
 
@@ -844,6 +826,7 @@ Menor ou Igual      | __$lte       | `/pessoas?idade__$lte=18`      | Busca toda
 Está Em             | __$in       | `/pessoas?idade__$in=18,19`   | Busca todas as pessoas com idade igual a 18 ou 19 anos
 Não Está Em         | __$nin      | `/pessoas?idade__$nin=18,19`  | Busca todas as pessoas na qual a idade não é 18 nem 19 anos
 Expressão Regular   | __regex     | `/pessoas?nome__regex=/^Em/i` | Busca todas as pessoas na qual o nome começa com "Em" (Case Insensitive)
+Negação da Expressão Regular   | __$not_regex     | `/pessoas?nome__$not_regex=/^Em/i` | Busca todas as pessoas na qual o nome não começa com "Em" (Case Insensitive)
 Limite              | limit       | `/pessoas?limit=10`           | Busca as pessoas com um limite de 10 pessoas
 Pular               | skip        | `/pessoas?skip=20`            | Busca todas as pessoas pulando as 20 primeiras pessoas da pesquisa
 Ordenar Crescente   | order       | `/pessoas?order=name`         | Busca todas as pessoas ordenando de maneira crescente por nome
@@ -1151,7 +1134,7 @@ Por exemplo, se quisermos chamar esta projeção para a rota de busca de todas a
 
 #### Projeção Definida como Objeto
 
-Ainda continuando nossos exemplos de projeção, se quisermos que nossa projeção _projecao-base_ retorne APENAS pessoas contendo 1 (um) atributo, sendo este atributo uma concatenação do nome com a idade da pessoa, basta fazer o seguinte:
+Ainda continuando nossos exemplos de projeção, se quisermos que nossa projeção _projecao-base_ retorne APENAS pessoas contendo um (pode ter mais de um) atributo, sendo este atributo uma concatenação do nome com a idade da pessoa, basta fazer o seguinte:
 
 ```js
 const Pessoa = new Entity({
