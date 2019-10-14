@@ -291,11 +291,18 @@ module.exports = class Entity {
 					let regexp = value.split('/')
 					regexp = new RegExp(regexp[1], regexp[2])
 
-					let condition = {}
-					condition[key] = regexp
+					let condition = { [key]: regexp }
+					newFind.$and.push(condition)
+				} else if (key.endsWith('__$not_regex')) {
+					let value = find[key]
+					key = key.split('__regex')[0]
+					let regexp = value.split('/')
+					regexp = new RegExp(regexp[1], regexp[2])
+
+					let condition = { [key]: { $not: {} } }
+					condition[key].$not.$regex = regexp
 
 					newFind.$and.push(condition)
-
 				} else if (key.match(/__/)) {
 					let keyArray = key.split(/__/)
 					if (['$gt', '$gte', '$lt', '$lte', '$eq', '$ne'].indexOf(keyArray[1])+1) {
