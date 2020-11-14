@@ -1,32 +1,9 @@
 # IMPORTANT WARNING
-This version of Alpha Restful is just a prototype of things to come. Little of this package will be reused and many features will be restructured. We strongly recommend NOT to use this package for production as it will soon be completely discontinued. In the future, a completely redesigned Alpha Restful will emerge, with a completely new architecture and new functions, as well as allowing the inclusion of plugins in which any specific behavior can be replaced and new functions can be added by the community.
-
-# Why does Alpha Restful Exist?
-Alpha Restful is designed for NodeJS and MongoDB lovers.
-
-One of MongoDB's goals is to allow data to be stored with denormalization. In turn, this yields many benefits. One of the biggest benefits of denormalization is a substantial increase in performance by not requiring the joining of multiple relational tables. In addition to this benefit, denormalization allows applications to be created easily because the storage model is too close to the model to be used by an application via JavaScript code (for example).
-
-The advantage of denormalization is welcome for many different situations, but sometimes data needs to be normalized to avoid special updates of the same record in many different locations. Denormalization should never be treated as an absolute rule, because in many cases denormalization of all data becomes completely unfeasible.
-
-So how do you get all the simplicity, performance and power of MongoDB in a denormalized application but with some normalized data?
-
-MongoDB can leave application data normalized if necessary, but many simple operations in the relational model can become very difficult in MongoDB for normalized data.
-
-Looking at this situation, how good would it be if we could develop in MongoDB so that all operations could be performed the same way, regardless of whether the data was normalized or denormalized?
-
-What if all searches and junctions were made so that the decision to change data for normalization or denormalization didn't change, considering the searches and junctions you already implemented?
-
-It is for these purposes that Alpha Restful was designed. If your MongoDB application never needs to normalize your data, Alpha Restful is completely useless to you.
-
-But what would happen if in the future only specific data needed to be normalized? If you are using pure MongoDB, it is likely that all your searches involving this data will need to be redone, and depending on the type of search, the code can become very complex and you will need to merge documents.
-
-In the scenario described earlier, if you were using Alpha Restful, you would only have to do two things. Change your template so that your data is stored normally. The second thing to do is to tell Alpha Restful where your data would be if it were denormalized. After doing these two things, the idea is that absolutely nothing needs to be done and that all the research done is not changed.
-
-Alpha Restful currently serves many of its goals, but some details of its architecture can be problematic and some details of this structure are partially completed and many crucial features have not yet been developed. For this reason, Alpha Restful is being redrawn. The next new version of this framework will be much simpler to use and will achieve the objectives proposed here much more efficiently.
+This version of Alpha Restful is just a prototype of what is to come. We strongly recommend NOT to use this package for production, as it is discontinued. In the future, a completely redesigned Alpha Restful will appear, with a totally new architecture and new functions, in addition to allowing the inclusion of plugins in which any specific behavior can be replaced and new functions can be added by the community.
 
 Currently, the guide written here is in Portuguese as it is a BETA version that will be discontinued. But the new version of Alpha Restful will be completely in English.
 
-# Alpha Restful (Versão Beta)
+# Alpha Restful (Discontinued. A new Alpha Restful, completely redesigned, will arrive soon)
 
 O Alpha Restful é um framework para o desenvolvimento de aplicações web Rest backend em MongoDB, feito para Node JS. Esta ferramenta é executada em cima do Express JS e da ORM de banco de dados Mongoose.
 
